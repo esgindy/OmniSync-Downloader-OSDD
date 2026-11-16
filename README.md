@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
 [![Async Engine](https://img.shields.io/badge/Engine-Starlette%20%2B%20HTTPX-green.svg)]()
 
-[English](#-english) • [العربية](#-باللغة-العربية) • [Roadmap](#-roadmap--خريطة-التطوير)
+[English](#-english) • [العربية](#-باللغة-العربية)
 
 </div>
 
@@ -55,15 +55,6 @@
 - **Smart Browser Authentication:** Automated login via Edge/Chrome to capture FedAuth & session cookies, with fallback cURL / cookie import.
 - **Integrity Audit & Verification:** Post-download byte-level comparison, missing file detection, and CSV / JSON export.
 - **Windows Long Path & Unicode Support:** Native handling of paths exceeding 260 characters (`\\?\` prefix) and robust UTF-8 Arabic character sanitization.
-
----
-
-### 🗺️ Roadmap / خريطة التطوير
-
-- **v1.0 (Released):** SharePoint & OneDrive direct folder streaming, auto-resuming, delta sync & integrity verification.
-- **v2.0 (Current):** Local Drive-to-Drive & NAS synchronization, Streaming SHA-256 Deep Audit, live speed/remaining metrics, 1-click silent start & auto-shutdown.
-- **v3.0 (Next):** Google Drive integration for direct folder streaming and multi-cloud sync.
-- **v4.0 (Planned):** Universal Social Media & YouTube direct media downloader (تنزيل من روابط يوتيوب ومختلف منصات التواصل الاجتماعي).
 
 ---
 
@@ -131,15 +122,6 @@ playwright install chromium
 - **تسجيل دخول ذكي وسلس:** التقاط تلقائي لكوكيز المصادقة (FedAuth / rtFa) من خلال متصفح تفاعلي (Edge أو Chrome).
 - **فحص سلامة واكتمال التحميل (Verification Audit):** تدقيق شامل بعد انتهاء التحميل وتصدير تقارير CSV و JSON.
 - **دعم المسارات الطويلة واللغة العربية:** دعم مسارات ويندوز (`\\?\`) والتعامل السليم مع الأسماء العربية.
-
----
-
-### 🗺️ خريطة الإصدارات القادمة
-
-- **الإصدار v1.0 (مكتمل ومرفوع):** تحميل ومزامنة مجلدات شيربوينت وون درايف بالكامل بدون ضغط مع الاستئناف الذكي والفحص.
-- **الإصدار v2.0 (الحالي):** مزامنة كاملة بين هاردين أو جهازين (Disk-to-Disk / Drive-to-Drive / NAS) مع فحص تطابق عميق (Streaming SHA-256) للملفات الضخمة ومؤشرات حية وتشغيل صامت.
-- **الإصدار v3.0 (التالي):** إضافة دعم Google Drive للتحميل المباشر والمزامنة المتعددة.
-- **الإصدار v4.0 (المخطط):** إضافة محرك تنزيل شامل للفيديوهات والميديا من منصات التواصل الاجتماعي ويوتيوب.
 
 ---
 
