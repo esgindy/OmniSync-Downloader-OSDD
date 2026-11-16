@@ -761,6 +761,7 @@
       <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">4</span><span data-i18n="nav_verify">التحقق وتقرير المزامنة</span></a>
       <a class="step-chip" href="#diskSyncCard" id="navDiskSync" style="border:1.5px solid var(--accent); background:rgba(29, 78, 216, 0.06);"><span class="num" style="background:var(--accent); color:#fff; font-weight:700;">v2</span><span data-i18n="nav_disk_sync">مزامنة هارد لهارد (Drive-to-Drive)</span></a>
       <a class="step-chip" href="#cloudBridgeCard" id="navCloudBridge" style="border:1.5px solid #8b5cf6; background:rgba(139, 92, 246, 0.08);"><span class="num" style="background:#8b5cf6; color:#fff; font-weight:700;">v3</span><span data-i18n="nav_cloud_bridge">Google Drive وجسر السحابات</span></a>
+      <a class="step-chip" href="#mediaCard" id="navMedia" style="border:1.5px solid #ef4444; background:rgba(239, 68, 68, 0.08);"><span class="num" style="background:#ef4444; color:#fff; font-weight:700;">v4</span><span data-i18n="nav_media">تنزيل الفيديو والوسائط (Media &amp; YouTube)</span></a>
     </nav>
 
     <!-- LIVE DOWNLOAD DASHBOARD (Always at the top) -->
@@ -1444,6 +1445,100 @@
         </div>
       </div>
     </section>
+
+    <!-- STEP 8: Universal Media & Social Downloader (v4.0) -->
+    <section class="card" id="mediaCard" style="border:1.5px solid #ef4444; box-shadow:0 6px 20px rgba(239, 68, 68, 0.1);">
+      <div class="card-header" style="background:linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(249, 115, 22, 0.06) 100%);">
+        <div>
+          <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
+            <span class="step-badge" style="background:#ef4444; color:#fff;">v4.0</span>
+            <span data-i18n="title_media_downloader">محرك تنزيل الفيديو والوسائط الشامل (Universal Media &amp; Social Streamer)</span>
+          </h2>
+          <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-soft);" data-i18n="sub_media_downloader">
+            تحميل الفيديوهات والمقاطع الصوتية وقوائم التشغيل مباشرة من YouTube و TikTok و Instagram و Facebook و X وجميع المنصات بأعلى جودة أو استخراج الصوت MP3.
+          </p>
+        </div>
+        <div class="row">
+          <span class="badge badge-neutral" id="mediaStatusBadge">Media: خامل</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Supported platforms visual tags -->
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; font-size:12px;">
+          <span class="chip" style="color:#ef4444; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle; margin-left:4px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg> YouTube &amp; Shorts</span>
+          <span class="chip" style="color:#000; font-weight:600;">TikTok</span>
+          <span class="chip" style="color:#e1306c; font-weight:600;">Instagram &amp; Reels</span>
+          <span class="chip" style="color:#1877f2; font-weight:600;">Facebook</span>
+          <span class="chip" style="color:#0f172a; font-weight:600;">X (Twitter)</span>
+          <span class="chip" style="color:#ff4500; font-weight:600;">Reddit</span>
+          <span class="chip" style="color:#1ab7ea; font-weight:600;">Vimeo</span>
+          <span class="chip" style="color:#ff5500; font-weight:600;">SoundCloud</span>
+        </div>
+
+        <!-- URL Input Row -->
+        <div class="row" style="margin-bottom:12px; gap:8px;">
+          <div style="flex:1;">
+            <label class="field-label" for="mediaUrlInput"><strong data-i18n="label_media_url">رابط الفيديو أو قائمة التشغيل:</strong></label>
+            <div style="display:flex; gap:8px;">
+              <input type="url" id="mediaUrlInput" class="ltr" placeholder="https://www.youtube.com/watch?v=... or TikTok, Instagram, X..." style="flex:1;" />
+              <button class="btn btn-primary" id="mediaInspectBtn" type="button" style="background:#ef4444; border-color:#dc2626; font-weight:700;">
+                <span data-i18n="btn_inspect_media">فحص الرابط</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Local Save Directory Row -->
+        <div class="row" style="margin-bottom:14px; gap:8px;">
+          <div style="flex:1;">
+            <label class="field-label" for="mediaDestDirInput"><strong data-i18n="label_media_dest">مجلد الحفظ المحلي:</strong></label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="mediaDestDirInput" class="ltr" placeholder="D:\Downloads\Media" style="flex:1;" />
+              <button class="btn btn-secondary btn-sm" id="pickMediaDirBtn" type="button" data-i18n="btn_browse_folder">اختيار المجلد</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview & Format Selector Card (Dynamic) -->
+        <div id="mediaPreviewBox" class="hidden" style="margin-top:14px; padding:16px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface);">
+          <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+            <div id="mediaThumbWrap" style="width:160px; min-width:140px; border-radius:8px; overflow:hidden; background:#000; box-shadow:0 3px 10px rgba(0,0,0,0.15); position:relative;">
+              <img id="mediaThumbnailImg" src="" alt="Thumbnail" style="width:100%; height:auto; display:block; object-fit:cover;" />
+              <span id="mediaDurationBadge" style="position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,0.75); color:#fff; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:700;">00:00</span>
+            </div>
+            <div style="flex:1; min-width:240px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span class="badge badge-info" id="mediaPlatformBadge">YouTube</span>
+                <span id="mediaPlaylistBadge" class="badge badge-warning hidden">قائمة تشغيل</span>
+              </div>
+              <h3 id="mediaTitleText" style="margin:0 0 6px; font-size:16px; line-height:1.4;">--</h3>
+              <div id="mediaAuthorText" style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">--</div>
+
+              <div class="row" style="gap:10px; align-items:center; flex-wrap:wrap;">
+                <div>
+                  <label class="field-label" for="mediaFormatSelect" style="margin-bottom:4px;"><strong data-i18n="label_media_quality">الجودة والصيغة:</strong></label>
+                  <select id="mediaFormatSelect" style="padding:7px 12px; border-radius:var(--radius-xs); border:1px solid var(--border); font-size:13.5px; font-weight:600; background:var(--bg); color:var(--text); min-width:220px;">
+                    <option value="best">أفضل جودة فيديو + صوت (Best MP4)</option>
+                    <option value="1080p">Full HD (1080p)</option>
+                    <option value="720p">HD (720p)</option>
+                    <option value="480p">SD (480p)</option>
+                    <option value="audio_mp3">استخراج صوت فقط (MP3)</option>
+                    <option value="audio_m4a">استخراج صوت فقط (M4A)</option>
+                  </select>
+                </div>
+                <div style="margin-top:18px;">
+                  <button class="btn btn-primary" id="startMediaDownloadBtn" type="button" style="background:#ef4444; border-color:#dc2626; font-weight:700; padding:8px 24px;">
+                    <span data-i18n="btn_start_media_download">بدء التحميل الآن ⚡</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="mediaStatusBanner" class="banner hidden" style="margin-top:14px;"></div>
+      </div>
+    </section>
   </main>
 
   <!-- Footer with Copyright -->
@@ -1481,6 +1576,14 @@
           nav_local_dir: "المجلد المحلي والتشغيل",
           nav_verify: "التحقق وتقرير المزامنة",
           nav_disk_sync: "مزامنة هارد لهارد (Drive-to-Drive)",
+          nav_media: "تنزيل الوسائط ويوتيوب",
+          title_media_downloader: "محرك تنزيل الفيديو والوسائط الشامل (Universal Media & Social Streamer)",
+          sub_media_downloader: "تحميل الفيديوهات والمقاطع الصوتية وقوائم التشغيل مباشرة من YouTube و TikTok و Instagram و Facebook و X بأعلى جودة أو استخراج الصوت MP3.",
+          label_media_url: "رابط الفيديو أو قائمة التشغيل:",
+          btn_inspect_media: "فحص الرابط",
+          label_media_dest: "مجلد الحفظ المحلي:",
+          label_media_quality: "الجودة والصيغة:",
+          btn_start_media_download: "بدء التحميل الآن ⚡",
           card_dash_title: "داش بورد التحميل الحية المباشرة",
           kpi_overall_progress: "إجمالي التقدم",
           kpi_live_speed: "سرعة التحميل الحية ⚡",
@@ -1531,6 +1634,14 @@
           nav_local_dir: "Local Path & Run",
           nav_verify: "Verification & Audit",
           nav_disk_sync: "Drive-to-Drive Sync",
+          nav_media: "Media & YouTube",
+          title_media_downloader: "Universal Media & Social Streamer (v4.0)",
+          sub_media_downloader: "Direct stream downloader for YouTube, TikTok, Instagram, Facebook, X & playlists with max quality or MP3 audio extraction.",
+          label_media_url: "Media or Playlist URL:",
+          btn_inspect_media: "Inspect Link",
+          label_media_dest: "Local Download Folder:",
+          label_media_quality: "Quality & Format:",
+          btn_start_media_download: "Start Download Now ⚡",
           card_dash_title: "Live Download Telemetry Dashboard",
           kpi_overall_progress: "Overall Progress",
           kpi_live_speed: "Live Download Speed ⚡",
@@ -1581,6 +1692,14 @@
           nav_local_dir: "Ruta Local y Ejecutar",
           nav_verify: "Verificación y Auditoría",
           nav_disk_sync: "Sincronizar Disco a Disco",
+          nav_media: "Medios y YouTube",
+          title_media_downloader: "Descargador Universal de Medios y Redes Sociales (v4.0)",
+          sub_media_downloader: "Descarga directa de videos y listas de YouTube, TikTok, Instagram, Facebook, X con máxima calidad o extracción MP3.",
+          label_media_url: "URL del video o lista:",
+          btn_inspect_media: "Examinar Enlace",
+          label_media_dest: "Carpeta de Guardado Local:",
+          label_media_quality: "Calidad y Formato:",
+          btn_start_media_download: "Iniciar Descarga Ahora ⚡",
           card_dash_title: "Panel de Descarga en Tiempo Real",
           kpi_overall_progress: "Progreso Total",
           kpi_live_speed: "Velocidad en Vivo ⚡",
@@ -1631,6 +1750,14 @@
           nav_local_dir: "Chemin Local & Lancement",
           nav_verify: "Vérification & Audit",
           nav_disk_sync: "Synchro Disque à Disque",
+          nav_media: "Médias & YouTube",
+          title_media_downloader: "Téléchargeur Universel de Médias & Réseaux Sociaux (v4.0)",
+          sub_media_downloader: "Téléchargement direct de YouTube, TikTok, Instagram, Facebook, X avec qualité maximale ou extraction MP3.",
+          label_media_url: "URL de la vidéo ou playlist:",
+          btn_inspect_media: "Inspecter le Lien",
+          label_media_dest: "Dossier de Sauvegarde Local:",
+          label_media_quality: "Qualité et Format:",
+          btn_start_media_download: "Lancer le Téléchargement ⚡",
           card_dash_title: "Tableau de Bord de Téléchargement en Direct",
           kpi_overall_progress: "Progression Globale",
           kpi_live_speed: "Vitesse en Direct ⚡",
@@ -1681,6 +1808,14 @@
           nav_local_dir: "Lokaler Pfad & Start",
           nav_verify: "Überprüfung & Bericht",
           nav_disk_sync: "Laufwerk-zu-Laufwerk Sync",
+          nav_media: "Medien & YouTube",
+          title_media_downloader: "Universeller Medien- & Social-Downloader (v4.0)",
+          sub_media_downloader: "Direkter Download von YouTube, TikTok, Instagram, Facebook, X in bester Qualität oder MP3-Audio-Extraktion.",
+          label_media_url: "Video- oder Playlist-URL:",
+          btn_inspect_media: "Link Analysieren",
+          label_media_dest: "Lokaler Speicherordner:",
+          label_media_quality: "Qualität & Format:",
+          btn_start_media_download: "Jetzt Herunterladen ⚡",
           card_dash_title: "Live-Download Telemetrie Dashboard",
           kpi_overall_progress: "Gesamtfortschritt",
           kpi_live_speed: "Live-Geschwindigkeit ⚡",
@@ -1731,6 +1866,14 @@
           nav_local_dir: "本地路径与运行",
           nav_verify: "完整性核查",
           nav_disk_sync: "磁盘间同步 (v2)",
+          nav_media: "媒体与YouTube下载",
+          title_media_downloader: "通用社交媒体与视频流下载引擎 (v4.0)",
+          sub_media_downloader: "直接下载 YouTube、TikTok、Instagram、Facebook、X 等平台的视频、音频及播放列表，支持最高画质或提取 MP3。",
+          label_media_url: "视频或播放列表链接:",
+          btn_inspect_media: "解析链接",
+          label_media_dest: "本地保存目录:",
+          label_media_quality: "画质与格式:",
+          btn_start_media_download: "立即开始下载 ⚡",
           card_dash_title: "实时下载遥测仪表盘",
           kpi_overall_progress: "总进度",
           kpi_live_speed: "实时下载速度 ⚡",
@@ -1781,6 +1924,14 @@
           nav_local_dir: "Локальный Путь и Пуск",
           nav_verify: "Проверка и Отчет",
           nav_disk_sync: "Синхронизация Дисков",
+          nav_media: "Медиа и YouTube",
+          title_media_downloader: "Универсальный Загрузчик Медиа и Соцсетей (v4.0)",
+          sub_media_downloader: "Прямая загрузка видео и плейлистов с YouTube, TikTok, Instagram, Facebook, X в максимальном качестве или извлечение MP3.",
+          label_media_url: "Ссылка на видео или плейлист:",
+          btn_inspect_media: "Проверить Ссылку",
+          label_media_dest: "Локальная папка загрузки:",
+          label_media_quality: "Качество и Формат:",
+          btn_start_media_download: "Начать Загрузку ⚡",
           card_dash_title: "Телеметрия Загрузки в Реальном Времени",
           kpi_overall_progress: "Общий Прогресс",
           kpi_live_speed: "Скорость Загрузки ⚡",
@@ -1831,6 +1982,14 @@
           nav_local_dir: "Destino Local & Execução",
           nav_verify: "Verificação & Auditoria",
           nav_disk_sync: "Sincronização Disco a Disco",
+          nav_media: "Mídia & YouTube",
+          title_media_downloader: "Downloader Universal de Mídia & Redes Sociais (v4.0)",
+          sub_media_downloader: "Download direto do YouTube, TikTok, Instagram, Facebook, X em qualidade máxima ou extração de áudio MP3.",
+          label_media_url: "URL do vídeo ou playlist:",
+          btn_inspect_media: "Inspecionar Link",
+          label_media_dest: "Pasta de Download Local:",
+          label_media_quality: "Qualidade e Formato:",
+          btn_start_media_download: "Iniciar Download Agora ⚡",
           card_dash_title: "Painel de Telemetria de Download ao Vivo",
           kpi_overall_progress: "Progresso Geral",
           kpi_live_speed: "Velocidade em Tempo Real ⚡",
@@ -2899,8 +3058,10 @@
         $("dashStatusBadge").className = `badge ${statusClass}`;
         $("dashStatusBadge").textContent = statusText;
         $("topJobBadge").textContent = `التحميل: ${statusText}`;
-        $("dashModeBadge").textContent = `الوضع: ${snap.mode === "sync" ? "مزامنة (Sync)" : "تحميل مباشر"}`;
-        $("dashModeBadge").className = `badge ${snap.mode === "sync" ? "badge-info" : "badge-neutral"}`;
+        const modeLabel = snap.mode === "media" ? "وسائط وميديا (Media)" : snap.mode === "sync" ? "مزامنة (Sync)" : "تحميل مباشر";
+        const modeClass = snap.mode === "media" ? "badge-warning" : snap.mode === "sync" ? "badge-info" : "badge-neutral";
+        $("dashModeBadge").textContent = `الوضع: ${modeLabel}`;
+        $("dashModeBadge").className = `badge ${modeClass}`;
 
         const totalFiles = snap.total_files || 0;
         const completedFiles = snap.completed_files || 0;
@@ -3837,6 +3998,138 @@
           showToast("تم تفعيل جسر السحابات والتدفق المباشر بنجاح", "success");
         } catch (err) {
           showToast(err.message, "error");
+        }
+      });
+
+      // ------------------------------------------------------------------
+      // Media & Social Downloader Engine (v4.0)
+      // ------------------------------------------------------------------
+      let inspectedMediaInfo = null;
+
+      $("pickMediaDirBtn").addEventListener("click", async () => {
+        try {
+          const res = await apiJson("/api/system/pick-folder", {
+            method: "POST",
+            body: JSON.stringify({ initial_dir: $("mediaDestDirInput").value.trim() }),
+          });
+          if (res.path) $("mediaDestDirInput").value = res.path;
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("mediaInspectBtn").addEventListener("click", async () => {
+        const url = $("mediaUrlInput").value.trim();
+        if (!url) {
+          showToast("يرجى إدخال رابط الفيديو أو قائمة التشغيل أولاً", "warning");
+          return;
+        }
+
+        const btn = $("mediaInspectBtn");
+        btn.disabled = true;
+        btn.textContent = "جاري الفحص...";
+        $("mediaStatusBadge").className = "badge badge-info";
+        $("mediaStatusBadge").textContent = "Media: جاري الفحص...";
+
+        try {
+          const res = await apiJson("/api/media/info", {
+            method: "POST",
+            body: JSON.stringify({ url }),
+          });
+
+          if (!res.ok || !res.info) {
+            throw new Error(res.error || "فشل فحص الرابط");
+          }
+
+          inspectedMediaInfo = res.info;
+          $("mediaPreviewBox").classList.remove("hidden");
+          $("mediaTitleText").textContent = inspectedMediaInfo.title || "Unknown Title";
+          $("mediaAuthorText").textContent = inspectedMediaInfo.uploader ? `بواسطة: ${inspectedMediaInfo.uploader}` : "";
+          $("mediaPlatformBadge").textContent = inspectedMediaInfo.platform?.name || "Media";
+
+          if (inspectedMediaInfo.thumbnail) {
+            $("mediaThumbnailImg").src = inspectedMediaInfo.thumbnail;
+            $("mediaThumbWrap").style.display = "block";
+          } else {
+            $("mediaThumbWrap").style.display = "none";
+          }
+
+          if (inspectedMediaInfo.duration_str) {
+            $("mediaDurationBadge").textContent = inspectedMediaInfo.duration_str;
+          }
+
+          if (inspectedMediaInfo.is_playlist) {
+            $("mediaPlaylistBadge").classList.remove("hidden");
+            $("mediaPlaylistBadge").textContent = `قائمة تشغيل (${inspectedMediaInfo.playlist_count} فيديو)`;
+          } else {
+            $("mediaPlaylistBadge").classList.add("hidden");
+          }
+
+          // Populate formats
+          if (Array.isArray(inspectedMediaInfo.formats)) {
+            const sel = $("mediaFormatSelect");
+            sel.innerHTML = "";
+            for (const f of inspectedMediaInfo.formats) {
+              const opt = document.createElement("option");
+              opt.value = f.id;
+              opt.textContent = `${f.name} - ${f.desc}`;
+              sel.appendChild(opt);
+            }
+          }
+
+          $("mediaStatusBadge").className = "badge badge-neutral";
+          $("mediaStatusBadge").textContent = "Media: جاهز للتحميل";
+          showToast("تم جلب بيانات الفيديو بنجاح", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+          $("mediaStatusBadge").className = "badge badge-neutral";
+          $("mediaStatusBadge").textContent = "Media: خطأ بالفحص";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "فحص الرابط";
+        }
+      });
+
+      $("startMediaDownloadBtn").addEventListener("click", async () => {
+        const url = $("mediaUrlInput").value.trim();
+        let dest_dir = $("mediaDestDirInput").value.trim();
+        if (!dest_dir) {
+          dest_dir = "D:\\Downloads\\Media";
+          $("mediaDestDirInput").value = dest_dir;
+        }
+
+        if (!url) {
+          showToast("يرجى إدخال رابط الفيديو أولاً", "warning");
+          return;
+        }
+
+        const format_id = $("mediaFormatSelect").value;
+        const audio_only = format_id.startsWith("audio");
+        const btn = $("startMediaDownloadBtn");
+        btn.disabled = true;
+
+        try {
+          const res = await apiJson("/api/media/download", {
+            method: "POST",
+            body: JSON.stringify({
+              url,
+              dest_dir,
+              format_id,
+              audio_only,
+            }),
+          });
+
+          if (!res.ok) {
+            throw new Error(res.error || "فشل بدء التحميل");
+          }
+
+          if (res.snapshot) handleSnapshot(res.snapshot);
+          $("step4Card").scrollIntoView({ behavior: "smooth", block: "start" });
+          showToast("بدأ تحميل الوسائط مباشرة عبر الداش بورد الحية ⚡", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          btn.disabled = false;
         }
       });
 

@@ -32,6 +32,7 @@ temp/
 audit_*.json
 
 # IDEs, Editors and OS metadata
+AGENTS.md
 .vscode/
 .idea/
 *.swp

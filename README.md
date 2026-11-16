@@ -5,7 +5,7 @@
 **Resilient Multi-Source File Streamer & Sync Engine**  
 *أداة التحميل المباشر والمزامنة الذكية للملفات والمجلدات الضخمة*
 
-[![Release](https://img.shields.io/badge/Release-v3.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
+[![Release](https://img.shields.io/badge/Release-v4.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
@@ -25,13 +25,26 @@
 
 - In **v1.0**, OSDD solved Microsoft SharePoint and OneDrive folder downloads by pulling files **directly file-by-file**, bypassing server-side zip compression that leads to corrupted archives, download timeouts, and the restrictive 250 GB / 10,000 file caps.
 - In **v2.0**, OSDD introduced a native **Drive-to-Drive / Disk-to-Disk Sync & Deep Audit Engine** with chunked streaming SHA-256 verification (< 5MB RAM even for 100GB+ files), live dashboard indicators (speed, downloaded vs. remaining volume, remaining files), 1-click silent background execution, and automatic process termination when the browser closes.
-- In **v3.0**, OSDD introduces **Google Drive Direct Streaming & Cloud-to-Cloud Bridge**: file-by-file direct download of Google Drive shared links (bypassing the 2GB zip limit and download timeouts), direct stream piping between cloud providers (e.g. SharePoint to Google Drive / OneDrive), top-positioned live dashboard, and a built-in 8-language localization engine.
+- In **v3.0**, OSDD introduced **Google Drive Direct Streaming & Cloud-to-Cloud Bridge**: file-by-file direct download of Google Drive shared links (bypassing the 2GB zip limit and download timeouts), direct stream piping between cloud providers (e.g. SharePoint to Google Drive / OneDrive), top-positioned live dashboard, and a built-in 8-language localization engine.
+- In **v4.0**, OSDD introduces the **Universal Media & Social Streamer & 1-Click Auto-Installer**: direct video, audio, and playlist streaming from YouTube (including Shorts), TikTok, Instagram (Reels & Posts), Facebook, X (Twitter), Reddit, Vimeo, SoundCloud and more with custom quality selection (4K/1080p/720p/480p) or instant MP3 audio extraction, unified real-time dashboard telemetry, and a zero-config 1-Click **`install.bat`** script that automatically downloads Python 3 and installs all dependencies and browser drivers silently with an automated completion dialog in English.
 
 ---
 
-### ✨ Features (v3.0)
+### ✨ Features (v4.0)
 
-#### 🌐 Google Drive Direct Streaming & Cloud-to-Cloud Bridge (New in v3.0)
+#### 🎬 Universal Media & Social Downloader (New in v4.0)
+- **Universal Multi-Platform Support:** Download high-resolution media from YouTube, Shorts, Playlists, TikTok, Instagram, Reels, Facebook, X (Twitter), Reddit, Vimeo, SoundCloud, and Pinterest.
+- **Smart Quality & Format Presets:** Choose from Best MP4, Full HD (1080p), HD (720p), SD (480p), or direct audio extraction to MP3 / M4A.
+- **Playlist Streaming:** Automatically detect, enumerate, and download entire playlists file-by-file.
+- **Integrated Live Dashboard Telemetry:** Media downloads pipe live speed, progress, remaining bytes, and ETA straight into the top telemetry dashboard.
+
+#### ⚙️ 1-Click Automatic Setup & Dependency Installer (`install.bat`) (New in v4.0)
+- **Zero-Manual-Setup:** Double-click **`install.bat`** to get everything ready automatically.
+- **Automatic Python 3 Detection & Silent Download:** If Python 3 is missing, the script automatically downloads the official 64-bit installer from python.org, installs it silently, and configures PATH.
+- **Full Library & Driver Installation:** Automatically upgrades pip, installs all packages from `requirements.txt`, and configures Playwright Chromium drivers.
+- **Ready Notification in English:** Shows clear English console output and an instant Windows GUI dialog notifying that the application is ready and directing the user to click `start.bat`.
+
+#### 🌐 Google Drive Direct Streaming & Cloud-to-Cloud Bridge (v3.0)
 - **Google Drive File-by-File Streaming:** Download large Google Drive shared folders and files directly without waiting for Google to zip them (no 2GB zip splitting, no archive corruption).
 - **Virus Scan Warning Bypass:** Automatic token handling for large files that trigger Google's antivirus warning page.
 - **Direct Cloud-to-Cloud Bridge:** Stream-pipe files directly between cloud sources (SharePoint, OneDrive, Google Drive) without needing full intermediate disk caching.
@@ -45,13 +58,13 @@
 - **Safe Atomic Copying:** Uses `.sync_part` and atomic rename with original timestamp preservation (`shutil.copystat`).
 - **Live Transfer Telemetry:** Real-time speedometer (MB/s), copied vs. remaining bytes, remaining files, current active file, and full pause/resume/cancel controls.
 
-#### 📊 Live Download Dashboard KPIs (New in v2.0)
+#### 📊 Live Download Dashboard KPIs (v2.0)
 - **⚡ Live Transfer Speedometer:** Instantaneous download and sync transfer speed in KB/s and MB/s.
 - **💾 Explicit Remaining Bytes:** Shows downloaded volume alongside remaining volume clearly (e.g., `14.2 GB / 50.0 GB (Remaining: 35.8 GB)`).
 - **📄 Remaining Files Counter:** Shows completed files vs. remaining files (e.g., `120 / 500 (Remaining: 380)`).
 - **⏱️ Dynamic ETA & Progress:** Accurate estimated completion time based on live transfer speed.
 
-#### 🚀 1-Click Silent Background Launch & Smart Auto-Close (New in v2.0)
+#### 🚀 1-Click Silent Background Launch & Smart Auto-Close (v2.0)
 - **`start.bat` & `start.vbs`:** 1-Click launch directly into the background without popping any black CMD console window.
 - **Automatic Browser Launch:** Directly opens `http://127.0.0.1:8765` in your default browser.
 - **Intelligent Auto-Shutdown:** Automatically stops the Python background server and cleans RAM when the browser window/tab is closed (Heartbeat + `pagehide` beacon).
@@ -68,22 +81,17 @@
 
 ### 🚀 Quick Start
 
-#### Prerequisites
-- **Python 3.10+** installed and added to `PATH`.
-
-#### 1. Clone & Install
+#### 1. Clone or Download
 ```bash
 git clone https://github.com/esgindy/OmniSync-Downloader-OSDD.git
 cd OmniSync-Downloader-OSDD
-
-# Install dependencies
-pip install -r requirements.txt
-
-# (Optional) Install Playwright browser drivers for automatic login
-playwright install chromium
 ```
 
-#### 2. Run the Application
+#### 2. Automatic 1-Click Setup (New in v4.0 - Recommended)
+- Double-click **`install.bat`**.
+- It will automatically check Python 3 (downloading & installing it silently if missing), install all dependencies, configure browser drivers, and display a popup confirming that the app is ready to use.
+
+#### 3. Run the Application
 - **Windows (1-Click Silent Start - Recommended):** Double-click **`start.bat`** (or `start.vbs`).
   - Launches silently in the background (no black CMD window).
   - Automatically opens the web interface in your default browser.
@@ -101,66 +109,40 @@ playwright install chromium
 
 - في **الإصدار v1.0**، ركز البرنامج على حل مشاكل تحميل مجلدات **Microsoft SharePoint** و **OneDrive** عبر سحب الملفات مباشرة **ملفاً بملف** دون تجميعها في ملف مضغوط (Zip)، مما يمنع تلف الملفات ويتجاوز حدود شيربوينت الصارمة (250GB أو 10,000 ملف).
 - في **الإصدار v2.0**، قدم البرنامج ميزة **مزامنة وتدقيق الملفات بين هاردين أو جهازين (Drive-to-Drive Sync & Deep Audit)** بفحص الهاش المتدفق (SHA-256) للملفات العملاقة (+100GB) باستهلاك رام أقل من 5 ميجابايت، مع مؤشرات حية في الداش بورد لحجم وعدد الملفات المتبقية والسرعة اللحظية، وتشغيل صامت بالكامل وإيقاف تلقائي عند إغلاق المتصفح.
-- في **الإصدار v3.0**، يضيف البرنامج دعم **التحميل المباشر من Google Drive وجسر النقل السحابي (Cloud-to-Cloud Bridge)**: تحميل ملفات ومجلدات جوجل درايف ملفاً بملف متجاوزاً قيود الضغط (حد الـ 2GB وتجزئة الملفات المضغوطة)، ونقل مباشر من سحابة إلى سحابة (مثل SharePoint إلى Google Drive أو OneDrive)، مع تثبيت لوحة المتابعة الحية في أعلى الواجهة، ومبدل لغات فوري يدعم أشهر 8 لغات عالمية.
+- في **الإصدار v3.0**، أضاف البرنامج دعم **التحميل المباشر من Google Drive وجسر النقل السحابي (Cloud-to-Cloud Bridge)**: تحميل ملفات ومجلدات جوجل درايف ملفاً بملف متجاوزاً قيود الضغط (حد الـ 2GB وتجزئة الملفات المضغوطة)، ونقل مباشر من سحابة إلى سحابة، مع تثبيت لوحة المتابعة الحية في أعلى الواجهة، ومبدل لغات فوري يدعم 8 لغات عالمية.
+- في **الإصدار v4.0**، يقدم البرنامج **محرك التحميل الشامل للوسائط وشبكات التواصل الاجتماعي ومثبت المتطلبات التلقائي بنقرة واحدة (1-Click Auto-Installer)**: تنزيل الفيديوهات والصوتيات وقوائم التشغيل مباشرة من YouTube و TikTok و Instagram و Facebook و X و Reddit و Vimeo بأعلى جودة أو استخراج الصوت MP3، مع تكامل كامل مع لوحة المتابعة اللحظية، وملف **`install.bat`** الذي يقوم بفحص وتثبيت Python 3 تلقائياً وتحميل كافة المكتبات بدون أي تدخل يدوي مع إظهار رسالة جاهزية البرنامج بالإنجليزية.
 
 ---
 
-### ✨ أبرز مميزات الإصدار v3.0
+### ✨ أبرز مميزات الإصدار v4.0
 
-#### 🌐 التحميل المباشر من Google Drive وجسر السحاب (جديد في v3.0)
-- **سحب ملفات ومجلدات جوجل درايف مباشرة:** تحميل المجلدات والملفات الضخمة بدون انتظار جوجل لضغطها، متجاوزاً تجزئة ملفات Zip وتلف الأرشيف.
-- **تخطي تحذير فحص الفيروسات تلقائياً:** التعامل الذكي مع صفحات تأكيد التحميل للملفات الكبيرة في جوجل درايف دون توقف.
-- **جسر النقل من سحابة لسحابة (Cloud-to-Cloud Bridge):** تدفق مباشر للملفات بين المنصات السحابية (SharePoint, OneDrive, Google Drive) دون الحاجة لمساحة تخزين وسيطة كاملة على القرص المحلي.
-- **لوحة متابعة حية في قمة الصفحة:** عرض عداد السرعة وحجم وعدد الملفات المتبقية والوقت المتوقع في مكان بارز بأعلى الشاشة.
-- **مبدل لغات فوري (8 لغات):** دعم كامل للغة العربية والإنجليزية والإسبانية والفرنسية والألمانية والصينية والروسية والبرتغالية.
+#### 🎬 محرك التحميل الشامل للوسائط واليوتيوب (جديد في v4.0)
+- **دعم شامل للمنصات وشبكات التواصل:** تحميل مباشر من YouTube (الفيديوهات العادية، Shorts، وقوائم التشغيل Playlists)، TikTok، Instagram (Reels & Posts)، Facebook، X (Twitter)، Reddit، Vimeo، SoundCloud، و Pinterest.
+- **خيارات الجودة والصيغ المتنوعة:** تحميل بأعلى جودة متوفرة (Best MP4) أو 1080p أو 720p أو 480p، أو استخراج الصوت فقط بصيغة MP3 و M4A.
+- **تحميل قوائم التشغيل (Playlists):** فحص تلقائي لعدد الفيديوهات وتحميلها ملفاً بملف بهيكلية منتظمة.
+- **متابعة حية عبر الداش بورد الموحدة:** ربط سرعة ونسبة وتقدم تحميل الوسائط مباشرة مع عداد السرعة ومؤشرات الداش بورد في أعلى الواجهة.
 
-#### 💽 مزامنة وتدقيق هارد لهارد (v2.0)
-- **مقارنة شجرة المجلدات:** فحص ومقارنة محتويات مجلدين على هاردين مختلفين أو عبر الشبكة (NAS / SMB).
-- **مزامنة ذكية بالنسخ (Delta Sync Copy):** نقل ونسخ **الملفات الجديدة والمعدلة فقط** مع الحفاظ على ملفات المصدر الأصلية بنسبة 100% دون مساس بها.
-- **فحص التطابق العميق (Streaming SHA-256):** فحص رقمي متدفق بقطع 1 ميجابايت يستهلك **أقل من 5 ميجابايت رام** حتى مع الملفات الضخمة جداً (+100GB).
-- **أمان النسخ الفعلي:** نسخ مؤقت بصيغة `.sync_part` مع استبدال ذري آمن ونقل تواريخ التعديل الأصلية (`copystat`).
-
-#### 📊 مؤشرات تفاعلية حية في الداش بورد (جديد في v2.0)
-- **⚡ عداد سرعة التحميل اللحظية:** قياس مستمر لمعدل النقل المباشر بوحدة KB/s و MB/s.
-- **💾 إحصائيات الحجم المحمل والمتبقي:** عرض الحجم المنجز بجانب **الحجم المتبقي الصافي بشكل صريح** (مثال: `المتبقي: 35.8 GB`).
-- **📄 إحصائيات عدد الملفات المكتملة والمتبقية:** عرض عدد الملفات المنجزة والمتبقية بدقة.
-- **⏱️ الوقت المتبقي المتوقع (ETA):** احتساب الزمن المتبقي بناءً على سرعة النقل الحية.
-
-#### 🚀 التشغيل الصامت والإيقاف التلقائي الذكي (جديد في v2.0)
-- **`start.bat` و `start.vbs`:** تشغيل صامت بنقرة واحدة في الخلفية بدون ظهور نافذة موجه الأوامر السوداء.
-- **فتح المتصفح تلقائياً:** يتوجه المتصفح الافتراضي فوراً لواجهة البرنامج على المنفذ `8765`.
-- **إيقاف تلقائي عند إغلاق المتصفح:** محرك نبضات (Heartbeat) يكتشف إغلاق نافذة المتصفح ويوقف خادم البايثون تلقائياً ويفرغ الذاكرة.
-- **ملف `stop.bat` وزر إغلاق في الواجهة:** لإيقاف كافة العمليات في أي وقت بنقرة واحدة.
-
-#### ☁️ مميزات الإصدار الأساسي v1.0 (شيربوينت وون درايف)
-- **تحميل مباشر بدون ضغط (No Zip Limits):** سحب المجلدات والملفات بهيكليتها الأصلية بدقة، وتفادي تلف ملفات الـ Zip الناتجة عن خوادم مايكروسوفت.
-- **استئناف حقيقي للتنزيل (HTTP Range Resume):** استكمال الملفات المنقطعة من آخر بايت تم تحميله عبر إدارة ملفات `.part`.
-- **تسجيل دخول ذكي وسلس:** التقاط تلقائي لكوكيز المصادقة (FedAuth / rtFa) من خلال متصفح تفاعلي (Edge أو Chrome).
-- **فحص سلامة واكتمال التحميل (Verification Audit):** تدقيق شامل بعد انتهاء التحميل وتصدير تقارير CSV و JSON.
-- **دعم المسارات الطويلة واللغة العربية:** دعم مسارات ويندوز (`\\?\`) والتعامل السليم مع الأسماء العربية.
+#### ⚙️ التثبيت التلقائي الذكي بنقرة واحدة (`install.bat`) (جديد في v4.0)
+- **تشغيل فوري بدون إعداد يدوي:** يكفي الضغط مرتين على ملف **`install.bat`**.
+- **الكشف عن Python وتثبيته تلقائياً:** في حال عدم وجود بايثون 3 على الجهاز، يقوم السكريبت بتحميل النسخة الرسمية المناسبة لويندوز وتثبيتها في الخلفية وضبط المسارات (PATH) دون أي عناء.
+- **تثبيت الحزم ومحركات المتصفح:** ترقية pip وتثبيت مكتبات `requirements.txt` وتحميل مشغل Chromium لـ Playwright.
+- **رسالة جاهزية باللغة الإنجليزية:** ظهور إشعار ونافذة منبثقة رسمية باللغة الإنجليزية تؤكد اكتمال التثبيت وتوجيه المستخدم لتشغيل `start.bat`.
 
 ---
 
 ### 💻 خطوات التشغيل السريع
 
-1. تأكد من تثبيت **Python 3.10+**.
-2. قم باستنساخ المستودع:
+1. قم باستنساخ أو تنزيل المستودع:
    ```bash
    git clone https://github.com/esgindy/OmniSync-Downloader-OSDD.git
    cd OmniSync-Downloader-OSDD
    ```
-3. تثبيت المكتبات المطلوبة:
-   ```bash
-   pip install -r requirements.txt
-   playwright install chromium
-   ```
-4. تشغيل البرنامج:
-   - **التشغيل الصامت بنقرة واحدة (مستحسن):** اضغط مرتين على ملف **`start.bat`** (أو `start.vbs`).
-     - يعمل البرنامج في الخلفية بدون شاشة سوداء.
-     - يفتح المتصفح الافتراضي تلقائياً على واجهة الأداة.
-     - يتوقف تلقائياً عند إغلاق نافذة المتصفح، أو بالضغط على ملف **`stop.bat`**.
-   - **وضع السجلات المباشرة:** اضغط مرتين على ملف **`run.bat`** لمتابعة تفاصيل السيرفر في شاشة موجه الأوامر.
-5. توجه في المتصفح إلى: **`http://127.0.0.1:8765`**
+2. **التثبيت التلقائي بنقرة واحدة (جديد في v4.0 - مستحسن):**
+   - اضغط مرتين على ملف **`install.bat`**.
+   - سيقوم السكريبت بتثبيت بايثون والمكتبات والمتطلبات بالكامل، وستظهر رسالة تؤكد أن البرنامج جاهز للعمل.
+3. **تشغيل البرنامج:**
+   - اضغط مرتين على ملف **`start.bat`** (أو `start.vbs`) لبدء البرنامج في الخلفية وفتح المتصفح فوراً على الرابط:
+     **`http://127.0.0.1:8765`**
 
 ---
 

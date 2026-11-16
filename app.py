@@ -39,6 +39,7 @@ from gdrive_client import (  # noqa: E402
     extract_gdrive_id,
     get_gdrive_direct_download_url,
 )
+from media_downloader import MediaDownloadManager  # noqa: E402
 from sync_engine import (  # noqa: E402
     DiskSyncManager,
     build_sync_completion_report,
@@ -72,6 +73,7 @@ class AppState:
         self.current_disk_compare_result: Optional[dict[str, Any]] = None
         self.gdrive_client = GDriveClient()
         self.cloud_bridge = CloudToCloudBridge()
+        self.media_manager = MediaDownloadManager()
         self.scan_lock = asyncio.Lock()
         self.scan_state: dict[str, Any] = self._empty_scan_state()
 
@@ -655,12 +657,25 @@ async def api_download_pause(request: Request) -> JSONResponse:
     return JSONResponse({"ok": True, "snapshot": state.download_manager.get_snapshot()})
 
 
+def get_active_download_snapshot() -> dict[str, Any]:
+    media_snap = state.media_manager.get_snapshot()
+    if media_snap.get("status") == "running" or (
+        media_snap.get("status") in ("completed", "failed", "cancelled")
+        and state.download_manager.get_snapshot().get("status") == "idle"
+    ):
+        return media_snap
+    return state.download_manager.get_snapshot()
+
+
 async def api_download_resume(request: Request) -> JSONResponse:
     await state.download_manager.resume()
     return JSONResponse({"ok": True, "snapshot": state.download_manager.get_snapshot()})
 
 
 async def api_download_cancel(request: Request) -> JSONResponse:
+    if state.media_manager.get_snapshot().get("status") == "running":
+        state.media_manager.cancel()
+        return JSONResponse({"ok": True, "snapshot": state.media_manager.get_snapshot()})
     await state.download_manager.cancel()
     return JSONResponse({"ok": True, "snapshot": state.download_manager.get_snapshot()})
 
@@ -671,11 +686,12 @@ async def api_download_retry_failed(request: Request) -> JSONResponse:
 
 
 async def api_download_status(request: Request) -> JSONResponse:
-    return JSONResponse(state.download_manager.get_snapshot())
+    return JSONResponse(get_active_download_snapshot())
 
 
 async def api_download_events(request: Request) -> EventSourceResponse:
-    queue = state.download_manager.subscribe()
+    queue_sp = state.download_manager.subscribe()
+    queue_media = state.media_manager.subscribe()
 
     async def event_generator():
         last_idle_emit = 0.0
@@ -684,31 +700,104 @@ async def api_download_events(request: Request) -> EventSourceResponse:
                 if await request.is_disconnected():
                     break
                 try:
-                    snap = await asyncio.wait_for(queue.get(), timeout=0.4)
-                    yield {
-                        "event": "snapshot",
-                        "data": json.dumps(snap, ensure_ascii=False),
-                    }
-                    last_idle_emit = time.monotonic()
-                except asyncio.TimeoutError:
-                    snap = state.download_manager.get_snapshot()
-                    now = time.monotonic()
-                    if snap.get("status") == "running" or (now - last_idle_emit) >= 4.0:
+                    # Check if either queue has an update
+                    snap = None
+                    try:
+                        snap = queue_media.get_nowait()
+                    except asyncio.QueueEmpty:
+                        try:
+                            snap = queue_sp.get_nowait()
+                        except asyncio.QueueEmpty:
+                            pass
+
+                    if snap is not None:
                         yield {
                             "event": "snapshot",
                             "data": json.dumps(snap, ensure_ascii=False),
                         }
-                        last_idle_emit = now
-        except asyncio.CancelledError:
-            return
+                        last_idle_emit = time.monotonic()
+                    else:
+                        await asyncio.sleep(0.35)
+                        snap = get_active_download_snapshot()
+                        now = time.monotonic()
+                        if snap.get("status") == "running" or (now - last_idle_emit) >= 3.5:
+                            yield {
+                                "event": "snapshot",
+                                "data": json.dumps(snap, ensure_ascii=False),
+                            }
+                            last_idle_emit = now
+                except asyncio.CancelledError:
+                    return
+                except Exception:
+                    await asyncio.sleep(0.5)
         finally:
-            state.download_manager.unsubscribe(queue)
+            state.download_manager.unsubscribe(queue_sp)
+            state.media_manager.unsubscribe(queue_media)
 
     return EventSourceResponse(
         event_generator(),
         ping=15,
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ---------------------------------------------------------------------------
+# Routes: Universal Media Downloader (v4.0)
+# ---------------------------------------------------------------------------
+
+
+async def api_media_info(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    url = (body.get("url") or "").strip()
+    if not url:
+        return JSONResponse({"error": "يرجى إدخال رابط الوسائط"}, status_code=400)
+
+    try:
+        info = await state.media_manager.extract_info(url)
+        return JSONResponse({"ok": True, "info": info})
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+async def api_media_download(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    url = (body.get("url") or "").strip()
+    dest_dir = (body.get("dest_dir") or "").strip()
+    format_id = (body.get("format_id") or "best").strip()
+    audio_only = bool(body.get("audio_only", False))
+
+    if not url:
+        return JSONResponse({"error": "يرجى إدخال رابط الوسائط"}, status_code=400)
+    if not dest_dir:
+        return JSONResponse({"error": "يرجى تحديد مجلد الحفظ المحلي"}, status_code=400)
+
+    try:
+        snap = state.media_manager.start_download(
+            url=url,
+            dest_dir=dest_dir,
+            format_id=format_id,
+            audio_only=audio_only,
+        )
+        return JSONResponse({"ok": True, "snapshot": snap})
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+async def api_media_status(request: Request) -> JSONResponse:
+    return JSONResponse(state.media_manager.get_snapshot())
+
+
+async def api_media_cancel(request: Request) -> JSONResponse:
+    state.media_manager.cancel()
+    return JSONResponse({"ok": True, "snapshot": state.media_manager.get_snapshot()})
 
 
 # ---------------------------------------------------------------------------
@@ -1170,6 +1259,10 @@ routes = [
     Route("/api/download/retry-failed", api_download_retry_failed, methods=["POST"]),
     Route("/api/download/status", api_download_status, methods=["GET"]),
     Route("/api/download/events", api_download_events, methods=["GET"]),
+    Route("/api/media/info", api_media_info, methods=["POST"]),
+    Route("/api/media/download", api_media_download, methods=["POST"]),
+    Route("/api/media/status", api_media_status, methods=["GET"]),
+    Route("/api/media/cancel", api_media_cancel, methods=["POST"]),
     Route("/api/verify", api_verify, methods=["POST"]),
     Route("/api/verify/export", api_verify_export, methods=["GET"]),
     Route("/api/sync/compare", api_sync_compare, methods=["POST"]),

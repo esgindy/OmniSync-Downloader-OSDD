@@ -6,15 +6,17 @@ cd /d "%~dp0"
 where python >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Python is not installed or not in PATH.
-    echo Please install Python 3.10+ from https://www.python.org/downloads/
+    echo Please run install.bat to automatically install Python and all requirements.
     pause
     exit /b 1
 )
 
-python -c "import starlette, uvicorn, sse_starlette, httpx, playwright" >nul 2>&1
+python -c "import starlette, uvicorn, sse_starlette, httpx, playwright, yt_dlp" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [WARNING] Some required Python packages may be missing.
-    echo If launch fails, run: pip install starlette uvicorn sse-starlette httpx playwright
+    echo [WARNING] Some required Python packages are missing.
+    echo Please run install.bat to install all required dependencies.
+    echo Attempting to launch install.bat now...
+    call "%~dp0install.bat"
 )
 
 echo Starting OmniSync Downloader (OSDD)...
