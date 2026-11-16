@@ -721,17 +721,31 @@
           </svg>
         </div>
         <div>
-          <h1>تنزيل ومزامنة SharePoint المباشر (ملف بملف بدون ضغط)</h1>
-          <p>استعراض المجلدات، التحميل المتوازي مع الاستئناف، مقارنة المزامنة، والتحقق الشامل</p>
+          <h1 data-i18n="app_title">تنزيل ومزامنة SharePoint المباشر (ملف بملف بدون ضغط)</h1>
+          <p data-i18n="app_subtitle">استعراض المجلدات، التحميل المتوازي مع الاستئناف، مقارنة المزامنة، والتحقق الشامل</p>
         </div>
       </div>
       <div class="top-badges">
-        <span class="top-pill" id="topAuthBadge"><span class="dot" id="topAuthDot"></span><span id="topAuthText">غير متصل</span></span>
-        <span class="top-pill" id="topSseBadge"><span class="dot" id="topSseDot"></span><span id="topSseText">SSE: في الانتظار</span></span>
-        <span class="top-pill" id="topJobBadge">الحالة: خامل</span>
+        <!-- Language Switcher (8 Languages) -->
+        <div class="lang-selector-wrap" style="display:inline-flex; align-items:center;">
+          <select id="langSelect" class="top-pill" aria-label="Language" style="background:rgba(255, 255, 255, 0.16); color:#fff; border:1px solid rgba(255,255,255,0.35); font-weight:600; cursor:pointer; padding:6px 12px; border-radius:999px; outline:none; font-family:inherit;">
+            <option value="ar" style="color:#0f172a;">🇸🇦 العربية</option>
+            <option value="en" style="color:#0f172a;">🇺🇸 English</option>
+            <option value="es" style="color:#0f172a;">🇪🇸 Español</option>
+            <option value="fr" style="color:#0f172a;">🇫🇷 Français</option>
+            <option value="de" style="color:#0f172a;">🇩🇪 Deutsch</option>
+            <option value="zh" style="color:#0f172a;">🇨🇳 中文</option>
+            <option value="ru" style="color:#0f172a;">🇷🇺 Русский</option>
+            <option value="pt" style="color:#0f172a;">🇧🇷 Português</option>
+          </select>
+        </div>
+
+        <span class="top-pill" id="topAuthBadge"><span class="dot" id="topAuthDot"></span><span id="topAuthText" data-i18n="status_offline">غير متصل</span></span>
+        <span class="top-pill" id="topSseBadge"><span class="dot" id="topSseDot"></span><span id="topSseText" data-i18n="sse_waiting">SSE: في الانتظار</span></span>
+        <span class="top-pill" id="topJobBadge" data-i18n="job_idle">الحالة: خامل</span>
         <button class="top-pill" id="topShutdownBtn" title="إيقاف البرنامج وإنهاء خدمة الخلفية بالكامل" style="background:rgba(239, 68, 68, 0.2); border:1px solid #ef4444; color:#fca5a5; cursor:pointer; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)';this.style.color='#fca5a5';">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-          <span>إيقاف البرنامج</span>
+          <span data-i18n="btn_shutdown">إيقاف البرنامج</span>
         </button>
       </div>
     </div>
@@ -740,22 +754,140 @@
   <main class="container">
     <!-- Stepper -->
     <nav class="stepper" aria-label="خطوات العمل">
-      <a class="step-chip active" href="#step1Card" id="navStep1"><span class="num">1</span><span>تسجيل الدخول والرابط</span></a>
-      <a class="step-chip" href="#step2Card" id="navStep2"><span class="num">2</span><span>تحديد مجلدات SharePoint</span></a>
-      <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span>المجلد المحلي والتشغيل</span></a>
-      <a class="step-chip" href="#step4Card" id="navStep4"><span class="num">4</span><span>داش بورد التحميل الحية</span></a>
-      <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">5</span><span>التحقق وتقرير المزامنة</span></a>
-      <a class="step-chip" href="#diskSyncCard" id="navDiskSync" style="border:1.5px solid var(--accent); background:rgba(29, 78, 216, 0.06);"><span class="num" style="background:var(--accent); color:#fff; font-weight:700;">v2</span><span>مزامنة وتدقيق هارد لهارد (Drive-to-Drive)</span></a>
+      <a class="step-chip active" href="#step4Card" id="navStep4" style="background:linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(29, 78, 216, 0.12) 100%); border:1.5px solid var(--primary);"><span class="num" style="background:var(--primary); color:#fff; font-weight:700;">⚡</span><span data-i18n="nav_dashboard">الداش بورد الحية</span></a>
+      <a class="step-chip" href="#step1Card" id="navStep1"><span class="num">1</span><span data-i18n="nav_auth">تسجيل الدخول والرابط</span></a>
+      <a class="step-chip" href="#step2Card" id="navStep2"><span class="num">2</span><span data-i18n="nav_sp_folders">تحديد مجلدات SharePoint</span></a>
+      <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span data-i18n="nav_local_dir">المجلد المحلي والتشغيل</span></a>
+      <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">4</span><span data-i18n="nav_verify">التحقق وتقرير المزامنة</span></a>
+      <a class="step-chip" href="#diskSyncCard" id="navDiskSync" style="border:1.5px solid var(--accent); background:rgba(29, 78, 216, 0.06);"><span class="num" style="background:var(--accent); color:#fff; font-weight:700;">v2</span><span data-i18n="nav_disk_sync">مزامنة هارد لهارد (Drive-to-Drive)</span></a>
     </nav>
+
+    <!-- LIVE DOWNLOAD DASHBOARD (Always at the top) -->
+    <section class="card" id="step4Card" style="border:2px solid var(--primary); box-shadow:0 6px 22px rgba(15, 118, 110, 0.12);">
+      <div class="card-header" style="background:linear-gradient(135deg, rgba(15, 118, 110, 0.08) 0%, rgba(29, 78, 216, 0.06) 100%);">
+        <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
+          <span class="step-badge" style="background:var(--primary); font-size:13px;">⚡ LIVE</span>
+          <span data-i18n="card_dash_title">داش بورد التحميل الحية المباشرة</span>
+        </h2>
+        <div class="row">
+          <span class="badge badge-neutral" id="dashModeBadge">الوضع: -</span>
+          <span class="badge badge-neutral" id="dashStatusBadge">خامل</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi_overall_progress">إجمالي التقدم</div>
+            <div class="kpi-val" id="dashPct">0.0%</div>
+            <div class="kpi-sub" id="dashFilesSummary">0 / 0 ملف</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi_live_speed">سرعة التحميل الحية ⚡</div>
+            <div class="kpi-val ltr" id="dashSpeed" style="color:var(--primary); font-weight:700;">0 KB/s</div>
+            <div class="kpi-sub" id="dashSpeedSub" data-i18n="kpi_live_speed_sub">بث حي كل ~400ms</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi_volume_title">حجم الملفات (المحمل والمتبقي) 💾</div>
+            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
+              <span id="dashDownloadedBytes" style="font-weight:700; color:var(--primary);">0 B</span>
+              <span style="font-size:12px; color:var(--text-soft);"> / </span>
+              <span id="dashTotalBytes">0 B</span>
+            </div>
+            <div class="kpi-sub" style="font-size:12.5px;">
+              <span data-i18n="label_remaining">المتبقي:</span> <strong id="dashRemainingBytes" style="color:#d97706; font-weight:700;">0 B</strong>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi_files_title">عدد الملفات (المكتمل والمتبقي) 📄</div>
+            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
+              <span id="dashDoneFiles" style="font-weight:700; color:var(--accent);">0</span>
+              <span style="font-size:12px; color:var(--text-soft);"> / </span>
+              <span id="dashTotalFilesCount">0</span>
+            </div>
+            <div class="kpi-sub" style="font-size:12.5px;">
+              <span data-i18n="label_remaining">المتبقي:</span> <strong id="dashRemainingFiles" style="color:#b45309; font-weight:700;">0 ملف</strong>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi_eta_title">الوقت المتبقي المتوقع (ETA) ⏱️</div>
+            <div class="kpi-val" id="dashEta">--</div>
+            <div class="kpi-sub" id="dashCountsDetail">مكتمل: 0 | متخطى: 0 | فشل: 0</div>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar" id="dashProgressBar"></div>
+        </div>
+
+        <div class="row">
+          <button class="btn btn-warning btn-sm" id="pauseBtn" type="button" disabled data-i18n="btn_pause">إيقاف مؤقت</button>
+          <button class="btn btn-primary btn-sm" id="resumeBtn" type="button" disabled data-i18n="btn_resume">استئناف</button>
+          <button class="btn btn-accent btn-sm" id="retryFailedBtn" type="button" disabled data-i18n="btn_retry_failed">إعادة محاولة الفاشل</button>
+          <button class="btn btn-danger btn-sm" id="cancelBtn" type="button" disabled data-i18n="btn_cancel">إلغاء التحميل</button>
+        </div>
+
+        <div>
+          <h3 style="margin:4px 0 8px; font-size:14.5px;" data-i18n="title_active_workers">العاملون النشطون (مين شغال على إيه الآن)</h3>
+          <div class="workers-grid" id="workersGrid">
+            <div class="banner" style="grid-column:1/-1; color:var(--text-soft);" data-i18n="msg_no_active_job">لا توجد عملية تحميل نشطة حالياً.</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+            <div class="filter-bar" id="queueFilterBar">
+              <button class="chip active" type="button" data-filter="all"><span data-i18n="filter_all">الكل</span> (<span id="cntAll">0</span>)</button>
+              <button class="chip" type="button" data-filter="downloading"><span data-i18n="filter_downloading">قيد التحميل</span> (<span id="cntDownloading">0</span>)</button>
+              <button class="chip" type="button" data-filter="queued"><span data-i18n="filter_queued">في الانتظار</span> (<span id="cntQueued">0</span>)</button>
+              <button class="chip" type="button" data-filter="completed"><span data-i18n="filter_completed">مكتمل</span> (<span id="cntCompleted">0</span>)</button>
+              <button class="chip" type="button" data-filter="skipped"><span data-i18n="filter_skipped">متخطى</span> (<span id="cntSkipped">0</span>)</button>
+              <button class="chip" type="button" data-filter="failed"><span data-i18n="filter_failed">فشل</span> (<span id="cntFailed">0</span>)</button>
+              <button class="chip" type="button" data-filter="sync_new"><span data-i18n="filter_new">جديد</span> (<span id="cntNew">0</span>)</button>
+              <button class="chip" type="button" data-filter="sync_updated"><span data-i18n="filter_updated">محدث</span> (<span id="cntUpdated">0</span>)</button>
+            </div>
+            <div style="min-width:250px;">
+              <input type="text" id="queueSearchInput" placeholder="بحث في جدول الملفات..." data-i18n-ph="ph_search_queue" />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px;">#</th>
+                  <th data-i18n="th_file_path">الملف والمسار النسبي</th>
+                  <th style="width:110px;" data-i18n="th_size">الحجم</th>
+                  <th style="width:150px;" data-i18n="th_progress">التقدم</th>
+                  <th style="width:105px;" data-i18n="th_status">الحالة</th>
+                  <th style="width:70px;" data-i18n="th_attempts">محاولات</th>
+                  <th data-i18n="th_notes">ملاحظات / خطأ</th>
+                </tr>
+              </thead>
+              <tbody id="queueTableBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--text-soft); padding:22px;" data-i18n="msg_no_files_queue">لا توجد ملفات في قائمة الانتظار بعد.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <span id="queuePageInfo">عرض 0 من 0</span>
+            <div class="row">
+              <button class="btn btn-secondary btn-sm" id="queuePrevBtn" type="button" disabled data-i18n="btn_prev">السابق</button>
+              <button class="btn btn-secondary btn-sm" id="queueNextBtn" type="button" disabled data-i18n="btn_next">التالي</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- STEP 1: Auth -->
     <section class="card" id="step1Card">
       <div class="card-header">
-        <h2 class="card-title"><span class="step-badge">الخطوة 1</span>رابط SharePoint وتسجيل الدخول</h2>
+        <h2 class="card-title"><span class="step-badge">1</span><span data-i18n="card_step1_title">رابط SharePoint وتسجيل الدخول</span></h2>
         <div class="row">
-          <button class="btn btn-secondary btn-sm" id="refreshAuthBtn" type="button">تحديث الحالة</button>
-          <button class="btn btn-secondary btn-sm" id="closeBrowserBtn" type="button">إغلاق نافذة المتصفح</button>
-          <button class="btn btn-danger btn-sm" id="clearSessionBtn" type="button">مسح الجلسة</button>
+          <button class="btn btn-secondary btn-sm" id="refreshAuthBtn" type="button" data-i18n="btn_refresh_status">تحديث الحالة</button>
+          <button class="btn btn-secondary btn-sm" id="closeBrowserBtn" type="button" data-i18n="btn_close_browser">إغلاق نافذة المتصفح</button>
+          <button class="btn btn-danger btn-sm" id="clearSessionBtn" type="button" data-i18n="btn_clear_session">مسح الجلسة</button>
         </div>
       </div>
       <div class="card-body">
@@ -938,121 +1070,6 @@
         </div>
 
         <div id="syncDiffBreakdown"></div>
-      </div>
-    </section>
-
-    <!-- STEP 4: Live Download Dashboard -->
-    <section class="card" id="step4Card">
-      <div class="card-header">
-        <h2 class="card-title"><span class="step-badge">الخطوة 4</span>داش بورد التحميل الحية</h2>
-        <div class="row">
-          <span class="badge badge-neutral" id="dashModeBadge">الوضع: -</span>
-          <span class="badge badge-neutral" id="dashStatusBadge">خامل</span>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-label">إجمالي التقدم</div>
-            <div class="kpi-val" id="dashPct">0.0%</div>
-            <div class="kpi-sub" id="dashFilesSummary">0 / 0 ملف</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">سرعة التحميل الحية ⚡</div>
-            <div class="kpi-val ltr" id="dashSpeed" style="color:var(--primary); font-weight:700;">0 KB/s</div>
-            <div class="kpi-sub" id="dashSpeedSub">بث حي كل ~400ms</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">حجم الملفات (المحمل والمتبقي) 💾</div>
-            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
-              <span id="dashDownloadedBytes" style="font-weight:700; color:var(--primary);">0 B</span>
-              <span style="font-size:12px; color:var(--text-soft);"> / </span>
-              <span id="dashTotalBytes">0 B</span>
-            </div>
-            <div class="kpi-sub" style="font-size:12.5px;">
-              المتبقي: <strong id="dashRemainingBytes" style="color:#d97706; font-weight:700;">0 B</strong>
-            </div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">عدد الملفات (المكتمل والمتبقي) 📄</div>
-            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
-              <span id="dashDoneFiles" style="font-weight:700; color:var(--accent);">0</span>
-              <span style="font-size:12px; color:var(--text-soft);"> / </span>
-              <span id="dashTotalFilesCount">0</span>
-            </div>
-            <div class="kpi-sub" style="font-size:12.5px;">
-              المتبقي: <strong id="dashRemainingFiles" style="color:#b45309; font-weight:700;">0 ملف</strong>
-            </div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">الوقت المتبقي المتوقع (ETA) ⏱️</div>
-            <div class="kpi-val" id="dashEta">--</div>
-            <div class="kpi-sub" id="dashCountsDetail">مكتمل: 0 | متخطى: 0 | فشل: 0</div>
-          </div>
-        </div>
-
-        <div class="progress-wrap">
-          <div class="progress-bar" id="dashProgressBar"></div>
-        </div>
-
-        <div class="row">
-          <button class="btn btn-warning btn-sm" id="pauseBtn" type="button" disabled>إيقاف مؤقت</button>
-          <button class="btn btn-primary btn-sm" id="resumeBtn" type="button" disabled>استئناف</button>
-          <button class="btn btn-accent btn-sm" id="retryFailedBtn" type="button" disabled>إعادة محاولة الفاشل</button>
-          <button class="btn btn-danger btn-sm" id="cancelBtn" type="button" disabled>إلغاء التحميل</button>
-        </div>
-
-        <div>
-          <h3 style="margin:4px 0 8px; font-size:14.5px;">العاملون النشطون (مين شغال على إيه الآن)</h3>
-          <div class="workers-grid" id="workersGrid">
-            <div class="banner" style="grid-column:1/-1; color:var(--text-soft);">لا توجد عملية تحميل نشطة حالياً.</div>
-          </div>
-        </div>
-
-        <div>
-          <div class="row" style="justify-content:space-between; margin-bottom:10px;">
-            <div class="filter-bar" id="queueFilterBar">
-              <button class="chip active" type="button" data-filter="all">الكل (<span id="cntAll">0</span>)</button>
-              <button class="chip" type="button" data-filter="downloading">قيد التحميل (<span id="cntDownloading">0</span>)</button>
-              <button class="chip" type="button" data-filter="queued">في الانتظار (<span id="cntQueued">0</span>)</button>
-              <button class="chip" type="button" data-filter="completed">مكتمل (<span id="cntCompleted">0</span>)</button>
-              <button class="chip" type="button" data-filter="skipped">متخطى (<span id="cntSkipped">0</span>)</button>
-              <button class="chip" type="button" data-filter="failed">فشل (<span id="cntFailed">0</span>)</button>
-              <button class="chip" type="button" data-filter="sync_new">جديد (<span id="cntNew">0</span>)</button>
-              <button class="chip" type="button" data-filter="sync_updated">محدث (<span id="cntUpdated">0</span>)</button>
-            </div>
-            <div style="min-width:250px;">
-              <input type="text" id="queueSearchInput" placeholder="بحث في جدول الملفات..." />
-            </div>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:48px;">#</th>
-                  <th>الملف والمسار النسبي</th>
-                  <th style="width:110px;">الحجم</th>
-                  <th style="width:150px;">التقدم</th>
-                  <th style="width:105px;">الحالة</th>
-                  <th style="width:70px;">محاولات</th>
-                  <th>ملاحظات / خطأ</th>
-                </tr>
-              </thead>
-              <tbody id="queueTableBody">
-                <tr><td colspan="7" style="text-align:center; color:var(--text-soft); padding:22px;">لا توجد ملفات في قائمة الانتظار بعد.</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="pagination">
-            <span id="queuePageInfo">عرض 0 من 0</span>
-            <div class="row">
-              <button class="btn btn-secondary btn-sm" id="queuePrevBtn" type="button" disabled>السابق</button>
-              <button class="btn btn-secondary btn-sm" id="queueNextBtn" type="button" disabled>التالي</button>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1339,6 +1356,440 @@
   <script>
     (() => {
       "use strict";
+
+      // ------------------------------------------------------------------
+      // Multi-Language Localization Engine (Top 8 Global Languages)
+      // ------------------------------------------------------------------
+      const I18N = {
+        ar: {
+          app_title: "تنزيل ومزامنة SharePoint المباشر (ملف بملف بدون ضغط)",
+          app_subtitle: "استعراض المجلدات، التحميل المتوازي مع الاستئناف، مقارنة المزامنة، والتحقق الشامل",
+          status_offline: "غير متصل",
+          sse_waiting: "SSE: في الانتظار",
+          job_idle: "الحالة: خامل",
+          btn_shutdown: "إيقاف البرنامج",
+          nav_dashboard: "الداش بورد الحية",
+          nav_auth: "تسجيل الدخول والرابط",
+          nav_sp_folders: "تحديد مجلدات SharePoint",
+          nav_local_dir: "المجلد المحلي والتشغيل",
+          nav_verify: "التحقق وتقرير المزامنة",
+          nav_disk_sync: "مزامنة هارد لهارد (Drive-to-Drive)",
+          card_dash_title: "داش بورد التحميل الحية المباشرة",
+          kpi_overall_progress: "إجمالي التقدم",
+          kpi_live_speed: "سرعة التحميل الحية ⚡",
+          kpi_live_speed_sub: "بث حي كل ~400ms",
+          kpi_volume_title: "حجم الملفات (المحمل والمتبقي) 💾",
+          kpi_files_title: "عدد الملفات (المكتمل والمتبقي) 📄",
+          kpi_eta_title: "الوقت المتبقي المتوقع (ETA) ⏱️",
+          label_remaining: "المتبقي:",
+          btn_pause: "إيقاف مؤقت",
+          btn_resume: "استئناف",
+          btn_retry_failed: "إعادة محاولة الفاشل",
+          btn_cancel: "إلغاء التحميل",
+          title_active_workers: "العاملون النشطون (مين شغال على إيه الآن)",
+          msg_no_active_job: "لا توجد عملية تحميل نشطة حالياً.",
+          filter_all: "الكل",
+          filter_downloading: "قيد التحميل",
+          filter_queued: "في الانتظار",
+          filter_completed: "مكتمل",
+          filter_skipped: "متخطى",
+          filter_failed: "فشل",
+          filter_new: "جديد",
+          filter_updated: "محدث",
+          th_file_path: "الملف والمسار النسبي",
+          th_size: "الحجم",
+          th_progress: "التقدم",
+          th_status: "الحالة",
+          th_attempts: "محاولات",
+          th_notes: "ملاحظات / خطأ",
+          msg_no_files_queue: "لا توجد ملفات في قائمة الانتظار بعد.",
+          btn_prev: "السابق",
+          btn_next: "التالي",
+          ph_search_queue: "بحث في جدول الملفات...",
+          card_step1_title: "رابط SharePoint وتسجيل الدخول",
+          btn_refresh_status: "تحديث الحالة",
+          btn_close_browser: "إغلاق نافذة المتصفح",
+          btn_clear_session: "مسح الجلسة"
+        },
+        en: {
+          app_title: "SharePoint Direct Downloader & Multi-Source Sync",
+          app_subtitle: "Folder browser, parallel streaming with Range resume, delta sync & integrity audit",
+          status_offline: "Offline",
+          sse_waiting: "SSE: Standby",
+          job_idle: "Status: Idle",
+          btn_shutdown: "Exit App",
+          nav_dashboard: "Live Dashboard",
+          nav_auth: "Login & URL",
+          nav_sp_folders: "SharePoint Folders",
+          nav_local_dir: "Local Path & Run",
+          nav_verify: "Verification & Audit",
+          nav_disk_sync: "Drive-to-Drive Sync",
+          card_dash_title: "Live Download Telemetry Dashboard",
+          kpi_overall_progress: "Overall Progress",
+          kpi_live_speed: "Live Download Speed ⚡",
+          kpi_live_speed_sub: "Real-time stream ~400ms",
+          kpi_volume_title: "Data Volume (Downloaded & Remaining) 💾",
+          kpi_files_title: "Files Count (Done & Remaining) 📄",
+          kpi_eta_title: "Estimated Time Left (ETA) ⏱️",
+          label_remaining: "Remaining:",
+          btn_pause: "Pause",
+          btn_resume: "Resume",
+          btn_retry_failed: "Retry Failed",
+          btn_cancel: "Cancel Download",
+          title_active_workers: "Active Workers (Live Telemetry)",
+          msg_no_active_job: "No active download currently running.",
+          filter_all: "All",
+          filter_downloading: "Downloading",
+          filter_queued: "Queued",
+          filter_completed: "Completed",
+          filter_skipped: "Skipped",
+          filter_failed: "Failed",
+          filter_new: "New",
+          filter_updated: "Updated",
+          th_file_path: "File & Relative Path",
+          th_size: "Size",
+          th_progress: "Progress",
+          th_status: "Status",
+          th_attempts: "Attempts",
+          th_notes: "Notes / Error",
+          msg_no_files_queue: "No files queued yet.",
+          btn_prev: "Previous",
+          btn_next: "Next",
+          ph_search_queue: "Search files queue...",
+          card_step1_title: "SharePoint URL & Authentication",
+          btn_refresh_status: "Refresh Status",
+          btn_close_browser: "Close Browser",
+          btn_clear_session: "Clear Session"
+        },
+        es: {
+          app_title: "Descargador Directo de SharePoint y Sincronizador",
+          app_subtitle: "Explorador de carpetas, transmisión en paralelo con reanudación y auditoría",
+          status_offline: "Desconectado",
+          sse_waiting: "SSE: En espera",
+          job_idle: "Estado: Inactivo",
+          btn_shutdown: "Salir de la App",
+          nav_dashboard: "Panel en Vivo",
+          nav_auth: "Acceso y URL",
+          nav_sp_folders: "Carpetas SharePoint",
+          nav_local_dir: "Ruta Local y Ejecutar",
+          nav_verify: "Verificación y Auditoría",
+          nav_disk_sync: "Sincronizar Disco a Disco",
+          card_dash_title: "Panel de Descarga en Tiempo Real",
+          kpi_overall_progress: "Progreso Total",
+          kpi_live_speed: "Velocidad en Vivo ⚡",
+          kpi_live_speed_sub: "Transmisión en vivo ~400ms",
+          kpi_volume_title: "Volumen (Descargado y Restante) 💾",
+          kpi_files_title: "Archivos (Completados y Restantes) 📄",
+          kpi_eta_title: "Tiempo Estimado Restante (ETA) ⏱️",
+          label_remaining: "Restante:",
+          btn_pause: "Pausar",
+          btn_resume: "Reanudar",
+          btn_retry_failed: "Reintentar Fallidos",
+          btn_cancel: "Cancelar Descarga",
+          title_active_workers: "Hilos de Trabajo Activos",
+          msg_no_active_job: "No hay descargas activas en este momento.",
+          filter_all: "Todos",
+          filter_downloading: "Descargando",
+          filter_queued: "En Cola",
+          filter_completed: "Completado",
+          filter_skipped: "Omitido",
+          filter_failed: "Fallido",
+          filter_new: "Nuevo",
+          filter_updated: "Actualizado",
+          th_file_path: "Archivo y Ruta",
+          th_size: "Tamaño",
+          th_progress: "Progreso",
+          th_status: "Estado",
+          th_attempts: "Intentos",
+          th_notes: "Notas / Error",
+          msg_no_files_queue: "No hay archivos en cola todavía.",
+          btn_prev: "Anterior",
+          btn_next: "Siguiente",
+          ph_search_queue: "Buscar en cola...",
+          card_step1_title: "URL de SharePoint e Inicio de Sesión",
+          btn_refresh_status: "Actualizar Estado",
+          btn_close_browser: "Cerrar Navegador",
+          btn_clear_session: "Borrar Sesión"
+        },
+        fr: {
+          app_title: "Téléchargeur Direct SharePoint & Moteur de Synchronisation",
+          app_subtitle: "Explorateur de dossiers, téléchargement parallèle avec reprise et audit complet",
+          status_offline: "Hors ligne",
+          sse_waiting: "SSE: En attente",
+          job_idle: "Statut: Inactif",
+          btn_shutdown: "Quitter l'App",
+          nav_dashboard: "Tableau de Bord",
+          nav_auth: "Connexion & URL",
+          nav_sp_folders: "Dossiers SharePoint",
+          nav_local_dir: "Chemin Local & Lancement",
+          nav_verify: "Vérification & Audit",
+          nav_disk_sync: "Synchro Disque à Disque",
+          card_dash_title: "Tableau de Bord de Téléchargement en Direct",
+          kpi_overall_progress: "Progression Globale",
+          kpi_live_speed: "Vitesse en Direct ⚡",
+          kpi_live_speed_sub: "Flux direct ~400ms",
+          kpi_volume_title: "Volume (Téléchargé & Restant) 💾",
+          kpi_files_title: "Fichiers (Terminés & Restants) 📄",
+          kpi_eta_title: "Temps Restant Estimé (ETA) ⏱️",
+          label_remaining: "Restant:",
+          btn_pause: "Pause",
+          btn_resume: "Reprendre",
+          btn_retry_failed: "Réessayer Échoués",
+          btn_cancel: "Annuler Téléchargement",
+          title_active_workers: "Processus Actifs en Direct",
+          msg_no_active_job: "Aucun téléchargement en cours actuellement.",
+          filter_all: "Tous",
+          filter_downloading: "En cours",
+          filter_queued: "En attente",
+          filter_completed: "Terminé",
+          filter_skipped: "Ignoré",
+          filter_failed: "Échoué",
+          filter_new: "Nouveau",
+          filter_updated: "Mis à jour",
+          th_file_path: "Fichier & Chemin Relatif",
+          th_size: "Taille",
+          th_progress: "Progression",
+          th_status: "Statut",
+          th_attempts: "Essais",
+          th_notes: "Notes / Erreur",
+          msg_no_files_queue: "Aucun fichier dans la file d'attente pour le moment.",
+          btn_prev: "Précédent",
+          btn_next: "Suivant",
+          ph_search_queue: "Rechercher dans la file...",
+          card_step1_title: "URL SharePoint & Authentification",
+          btn_refresh_status: "Actualiser Statut",
+          btn_close_browser: "Fermer Navigateur",
+          btn_clear_session: "Effacer Session"
+        },
+        de: {
+          app_title: "SharePoint Direkt-Downloader & Multi-Quellen Synchronisierer",
+          app_subtitle: "Ordner-Browser, paralleles Streaming mit Fortsetzungsfunktion und Audit",
+          status_offline: "Offline",
+          sse_waiting: "SSE: Bereitschaft",
+          job_idle: "Status: Leerlauf",
+          btn_shutdown: "App Beenden",
+          nav_dashboard: "Live-Dashboard",
+          nav_auth: "Anmeldung & URL",
+          nav_sp_folders: "SharePoint Ordner",
+          nav_local_dir: "Lokaler Pfad & Start",
+          nav_verify: "Überprüfung & Bericht",
+          nav_disk_sync: "Laufwerk-zu-Laufwerk Sync",
+          card_dash_title: "Live-Download Telemetrie Dashboard",
+          kpi_overall_progress: "Gesamtfortschritt",
+          kpi_live_speed: "Live-Geschwindigkeit ⚡",
+          kpi_live_speed_sub: "Echtzeit-Stream ~400ms",
+          kpi_volume_title: "Datenvolumen (Geladen & Verbleibend) 💾",
+          kpi_files_title: "Dateien (Fertig & Verbleibend) 📄",
+          kpi_eta_title: "Geschätzte Restzeit (ETA) ⏱️",
+          label_remaining: "Verbleibend:",
+          btn_pause: "Pausieren",
+          btn_resume: "Fortsetzen",
+          btn_retry_failed: "Fehlgeschlagene Wiederholen",
+          btn_cancel: "Abbrechen",
+          title_active_workers: "Aktive Download-Worker",
+          msg_no_active_job: "Derzeit läuft kein Download.",
+          filter_all: "Alle",
+          filter_downloading: "Lädt",
+          filter_queued: "Warteschlange",
+          filter_completed: "Abgeschlossen",
+          filter_skipped: "Übersprungen",
+          filter_failed: "Fehlgeschlagen",
+          filter_new: "Neu",
+          filter_updated: "Aktualisiert",
+          th_file_path: "Datei & Relativer Pfad",
+          th_size: "Größe",
+          th_progress: "Fortschritt",
+          th_status: "Status",
+          th_attempts: "Versuche",
+          th_notes: "Hinweise / Fehler",
+          msg_no_files_queue: "Noch keine Dateien in der Warteschlange.",
+          btn_prev: "Zurück",
+          btn_next: "Weiter",
+          ph_search_queue: "Warteschlange durchsuchen...",
+          card_step1_title: "SharePoint-URL & Authentifizierung",
+          btn_refresh_status: "Status Aktualisieren",
+          btn_close_browser: "Browser Schließen",
+          btn_clear_session: "Sitzung Löschen"
+        },
+        zh: {
+          app_title: "SharePoint 直链下载与多源同步引擎",
+          app_subtitle: "文件夹浏览器、支持断点续传的并行流传输及增量同步审核",
+          status_offline: "离线",
+          sse_waiting: "SSE: 待机",
+          job_idle: "状态: 空闲",
+          btn_shutdown: "退出程序",
+          nav_dashboard: "实时仪表盘",
+          nav_auth: "登录与链接",
+          nav_sp_folders: "选择文件夹",
+          nav_local_dir: "本地路径与运行",
+          nav_verify: "完整性核查",
+          nav_disk_sync: "磁盘间同步 (v2)",
+          card_dash_title: "实时下载遥测仪表盘",
+          kpi_overall_progress: "总进度",
+          kpi_live_speed: "实时下载速度 ⚡",
+          kpi_live_speed_sub: "实时流推送 ~400ms",
+          kpi_volume_title: "数据体积 (已下载与剩余) 💾",
+          kpi_files_title: "文件数量 (已完成与剩余) 📄",
+          kpi_eta_title: "预计剩余时间 (ETA) ⏱️",
+          label_remaining: "剩余:",
+          btn_pause: "暂停",
+          btn_resume: "继续",
+          btn_retry_failed: "重试失败项",
+          btn_cancel: "取消下载",
+          title_active_workers: "活动工作进程 (实时遥测)",
+          msg_no_active_job: "当前没有正在运行的下载任务。",
+          filter_all: "全部",
+          filter_downloading: "正在下载",
+          filter_queued: "队列中",
+          filter_completed: "已完成",
+          filter_skipped: "已跳过",
+          filter_failed: "失败",
+          filter_new: "新增",
+          filter_updated: "已更新",
+          th_file_path: "文件与相对路径",
+          th_size: "大小",
+          th_progress: "进度",
+          th_status: "状态",
+          th_attempts: "尝试次数",
+          th_notes: "备注 / 错误",
+          msg_no_files_queue: "队列中暂无文件。",
+          btn_prev: "上一页",
+          btn_next: "下一页",
+          ph_search_queue: "搜索文件队列...",
+          card_step1_title: "SharePoint 链接与身份验证",
+          btn_refresh_status: "刷新状态",
+          btn_close_browser: "关闭浏览器",
+          btn_clear_session: "清除会话"
+        },
+        ru: {
+          app_title: "Прямой загрузчик SharePoint и Движок Синхронизации",
+          app_subtitle: "Обзор папок, параллельная потоковая загрузка с докачкой и проверка целостности",
+          status_offline: "Не в сети",
+          sse_waiting: "SSE: Ожидание",
+          job_idle: "Статус: Простой",
+          btn_shutdown: "Закрыть Приложение",
+          nav_dashboard: "Панель Управления",
+          nav_auth: "Вход и URL",
+          nav_sp_folders: "Папки SharePoint",
+          nav_local_dir: "Локальный Путь и Пуск",
+          nav_verify: "Проверка и Отчет",
+          nav_disk_sync: "Синхронизация Дисков",
+          card_dash_title: "Телеметрия Загрузки в Реальном Времени",
+          kpi_overall_progress: "Общий Прогресс",
+          kpi_live_speed: "Скорость Загрузки ⚡",
+          kpi_live_speed_sub: "Поток обновлений ~400мс",
+          kpi_volume_title: "Объем (Загружено и Осталось) 💾",
+          kpi_files_title: "Файлы (Готово и Осталось) 📄",
+          kpi_eta_title: "Оставшееся Время (ETA) ⏱️",
+          label_remaining: "Осталось:",
+          btn_pause: "Пауза",
+          btn_resume: "Возобновить",
+          btn_retry_failed: "Повторить Ошибки",
+          btn_cancel: "Отменить Загрузку",
+          title_active_workers: "Активные Потоки (Телеметрия)",
+          msg_no_active_job: "В данный момент активных загрузок нет.",
+          filter_all: "Все",
+          filter_downloading: "Загрузка",
+          filter_queued: "В очереди",
+          filter_completed: "Готово",
+          filter_skipped: "Пропущено",
+          filter_failed: "Ошибка",
+          filter_new: "Новые",
+          filter_updated: "Обновлено",
+          th_file_path: "Файл и Путь",
+          th_size: "Размер",
+          th_progress: "Прогресс",
+          th_status: "Статус",
+          th_attempts: "Попытки",
+          th_notes: "Заметки / Ошибка",
+          msg_no_files_queue: "Файлов в очереди пока нет.",
+          btn_prev: "Назад",
+          btn_next: "Вперед",
+          ph_search_queue: "Поиск по очереди...",
+          card_step1_title: "URL SharePoint и Авторизация",
+          btn_refresh_status: "Обновить Статус",
+          btn_close_browser: "Закрыть Браузер",
+          btn_clear_session: "Очистить Сессию"
+        },
+        pt: {
+          app_title: "Downloader Direto do SharePoint & Motor de Sincronização",
+          app_subtitle: "Navegador de pastas, streaming paralelo com retomada e auditoria de integridade",
+          status_offline: "Offline",
+          sse_waiting: "SSE: Aguardando",
+          job_idle: "Status: Ocioso",
+          btn_shutdown: "Encerrar App",
+          nav_dashboard: "Painel ao Vivo",
+          nav_auth: "Login & URL",
+          nav_sp_folders: "Pastas SharePoint",
+          nav_local_dir: "Destino Local & Execução",
+          nav_verify: "Verificação & Auditoria",
+          nav_disk_sync: "Sincronização Disco a Disco",
+          card_dash_title: "Painel de Telemetria de Download ao Vivo",
+          kpi_overall_progress: "Progresso Geral",
+          kpi_live_speed: "Velocidade em Tempo Real ⚡",
+          kpi_live_speed_sub: "Atualização ao vivo ~400ms",
+          kpi_volume_title: "Volume (Baixado e Restante) 💾",
+          kpi_files_title: "Arquivos (Concluídos e Restantes) 📄",
+          kpi_eta_title: "Tempo Estimado Restante (ETA) ⏱️",
+          label_remaining: "Restante:",
+          btn_pause: "Pausar",
+          btn_resume: "Retomar",
+          btn_retry_failed: "Repetir Falhas",
+          btn_cancel: "Cancelar Download",
+          title_active_workers: "Processos Ativos em Tempo Real",
+          msg_no_active_job: "Nenhum download em andamento no momento.",
+          filter_all: "Todos",
+          filter_downloading: "Baixando",
+          filter_queued: "Na Fila",
+          filter_completed: "Concluído",
+          filter_skipped: "Ignorado",
+          filter_failed: "Falhou",
+          filter_new: "Novo",
+          filter_updated: "Atualizado",
+          th_file_path: "Arquivo & Caminho Relativo",
+          th_size: "Tamanho",
+          th_progress: "Progresso",
+          th_status: "Status",
+          th_attempts: "Tentativas",
+          th_notes: "Notas / Erro",
+          msg_no_files_queue: "Nenhum arquivo na fila ainda.",
+          btn_prev: "Anterior",
+          btn_next: "Próximo",
+          ph_search_queue: "Pesquisar na fila...",
+          card_step1_title: "URL do SharePoint & Autenticação",
+          btn_refresh_status: "Atualizar Status",
+          btn_close_browser: "Fechar Navegador",
+          btn_clear_session: "Limpar Sessão"
+        }
+      };
+
+      function applyLanguage(lang) {
+        if (!I18N[lang]) lang = "ar";
+        document.documentElement.lang = lang;
+        document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+        localStorage.setItem("osdd_lang", lang);
+        const dict = I18N[lang];
+
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+          const key = el.getAttribute("data-i18n");
+          if (dict[key]) el.textContent = dict[key];
+        });
+
+        document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+          const key = el.getAttribute("data-i18n-ph");
+          if (dict[key]) el.placeholder = dict[key];
+        });
+
+        const select = document.getElementById("langSelect");
+        if (select && select.value !== lang) select.value = lang;
+      }
+
+      const langSelect = document.getElementById("langSelect");
+      if (langSelect) {
+        langSelect.addEventListener("change", (e) => {
+          applyLanguage(e.target.value);
+        });
+      }
 
       const PAGE_SIZE = 100;
 
@@ -3192,6 +3643,8 @@
       // Boot
       // ------------------------------------------------------------------
       async function boot() {
+        const savedLang = localStorage.getItem("osdd_lang") || "ar";
+        applyLanguage(savedLang);
         initHeartbeat();
         await refreshAuthStatus(false);
         try {
