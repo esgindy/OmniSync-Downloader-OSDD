@@ -502,11 +502,12 @@ class DownloadManager:
 
             files_out.append(rec.to_status_dict())
 
+        remaining_files = max(0, total_files - completed_files - skipped_files)
+        remaining_bytes = max(0, total_bytes - downloaded_bytes)
         overall_speed = self._compute_overall_speed()
         eta_seconds: Optional[float] = None
         if self._status == "running" and overall_speed > 1.0:
-            remaining = max(0, total_bytes - downloaded_bytes)
-            eta_seconds = round(remaining / overall_speed, 1)
+            eta_seconds = round(remaining_bytes / overall_speed, 1)
 
         return {
             "job_id": self._job_id,
@@ -517,8 +518,10 @@ class DownloadManager:
             "completed_files": completed_files,
             "skipped_files": skipped_files,
             "failed_files": failed_files,
+            "remaining_files": remaining_files,
             "total_bytes": total_bytes,
             "downloaded_bytes": downloaded_bytes,
+            "remaining_bytes": remaining_bytes,
             "overall_speed_bps": round(overall_speed, 2),
             "eta_seconds": eta_seconds,
             "workers": [w.to_dict() for w in self._workers],

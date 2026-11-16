@@ -34,6 +34,7 @@ from downloader import DownloadManager, MANIFEST_FILENAME  # noqa: E402
 from sp_auth import BrowserAuthManager  # noqa: E402
 from sp_client import SPItem, SharePointClient  # noqa: E402
 from sync_engine import (  # noqa: E402
+    DiskSyncManager,
     build_sync_completion_report,
     compare_sharepoint_with_local,
     compare_two_local_directories,
@@ -61,6 +62,8 @@ class AppState:
         self.current_manifest: Optional[dict[str, Any]] = None
         self.current_verification_report: Optional[dict[str, Any]] = None
         self.current_sync_plan: Optional[dict[str, Any]] = None
+        self.disk_sync_manager = DiskSyncManager()
+        self.current_disk_compare_result: Optional[dict[str, Any]] = None
         self.scan_lock = asyncio.Lock()
         self.scan_state: dict[str, Any] = self._empty_scan_state()
 
@@ -236,6 +239,13 @@ async def index_page(request: Request) -> Response:
     )
 
 
+async def favicon_page(request: Request) -> Response:
+    fav = STATIC_DIR / "favicon.svg"
+    if fav.is_file():
+        return FileResponse(fav, media_type="image/svg+xml")
+    return Response(status_code=404)
+
+
 async def api_health(request: Request) -> JSONResponse:
     return JSONResponse({"ok": True})
 
@@ -328,6 +338,60 @@ async def api_auth_clear(request: Request) -> JSONResponse:
             "session": state.auth_manager.session.to_public_dict(),
         }
     )
+
+
+# ---------------------------------------------------------------------------
+# Routes: System Lifecycle (Heartbeat & Auto-Shutdown)
+# ---------------------------------------------------------------------------
+
+_last_heartbeat_time: float = time.time()
+_heartbeat_active: bool = False
+_pending_shutdown: bool = False
+_shutdown_deadline: float = 0.0
+
+
+async def api_system_heartbeat(request: Request) -> JSONResponse:
+    global _last_heartbeat_time, _heartbeat_active, _pending_shutdown
+    _last_heartbeat_time = time.time()
+    _heartbeat_active = True
+    _pending_shutdown = False
+    return JSONResponse({"status": "ok", "time": _last_heartbeat_time})
+
+
+async def api_system_client_leaving(request: Request) -> JSONResponse:
+    """Triggered on pagehide / beforeunload. Gives a 4-second grace period in case of F5 refresh."""
+    global _pending_shutdown, _shutdown_deadline
+    if _heartbeat_active:
+        _pending_shutdown = True
+        _shutdown_deadline = time.time() + 4.0
+    return JSONResponse({"status": "acknowledged"})
+
+
+async def api_system_shutdown(request: Request) -> JSONResponse:
+    """Gracefully terminate the server process."""
+    def _delayed_exit():
+        time.sleep(0.3)
+        os._exit(0)
+
+    threading.Thread(target=_delayed_exit, daemon=True).start()
+    return JSONResponse({"status": "shutting_down", "message": "تم إيقاف البرنامج بنجاح"})
+
+
+def _start_heartbeat_watchdog() -> None:
+    def _watchdog_loop():
+        time.sleep(25)  # Initial grace period for browser to launch and connect
+        while True:
+            time.sleep(1.5)
+            now = time.time()
+            if _pending_shutdown and now >= _shutdown_deadline:
+                print("OmniSync: Browser window closed. Shutting down background service...")
+                os._exit(0)
+            if _heartbeat_active and (now - _last_heartbeat_time) > 8.0:
+                print("OmniSync: Heartbeat timeout (window closed). Shutting down background service...")
+                os._exit(0)
+
+    t = threading.Thread(target=_watchdog_loop, daemon=True)
+    t.start()
 
 
 # ---------------------------------------------------------------------------
@@ -894,7 +958,51 @@ async def api_disk_compare(request: Request) -> Response:
         None,
         lambda: compare_two_local_directories(src, dst, compare_hash=compare_hash),
     )
+    state.current_disk_compare_result = result
     return JSONResponse(result)
+
+
+async def api_disk_sync_start(request: Request) -> JSONResponse:
+    """Start copying new/modified files from source to destination."""
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    src = (body.get("source_dir") or "").strip()
+    dst = (body.get("dest_dir") or "").strip()
+    items = body.get("files") or []
+
+    if not src or not dst:
+        return JSONResponse({"error": "يرجى تحديد مسار المجلد المصدر والهدف"}, status_code=400)
+    if not items:
+        return JSONResponse({"error": "لا توجد ملفات محددة للمزامنة"}, status_code=400)
+
+    try:
+        state.disk_sync_manager.start_sync(src, dst, items)
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    return JSONResponse({"status": "started", "snapshot": state.disk_sync_manager.get_snapshot()})
+
+
+async def api_disk_sync_pause(request: Request) -> JSONResponse:
+    state.disk_sync_manager.pause()
+    return JSONResponse({"status": "paused", "snapshot": state.disk_sync_manager.get_snapshot()})
+
+
+async def api_disk_sync_resume(request: Request) -> JSONResponse:
+    state.disk_sync_manager.resume()
+    return JSONResponse({"status": "resumed", "snapshot": state.disk_sync_manager.get_snapshot()})
+
+
+async def api_disk_sync_cancel(request: Request) -> JSONResponse:
+    state.disk_sync_manager.cancel()
+    return JSONResponse({"status": "cancelled", "snapshot": state.disk_sync_manager.get_snapshot()})
+
+
+async def api_disk_sync_status(request: Request) -> JSONResponse:
+    return JSONResponse(state.disk_sync_manager.get_snapshot())
 
 
 # ---------------------------------------------------------------------------
@@ -921,6 +1029,8 @@ async def lifespan(app: Starlette):
 
 routes = [
     Route("/", index_page, methods=["GET"]),
+    Route("/favicon.ico", favicon_page, methods=["GET"]),
+    Route("/favicon.svg", favicon_page, methods=["GET"]),
     Route("/api/health", api_health, methods=["GET"]),
     Route("/api/auth/open-browser", api_auth_open_browser, methods=["POST"]),
     Route("/api/auth/status", api_auth_status, methods=["GET"]),
@@ -928,6 +1038,15 @@ routes = [
     Route("/api/auth/import-cookies", api_auth_import_cookies, methods=["POST"]),
     Route("/api/auth/clear", api_auth_clear, methods=["POST"]),
     Route("/api/system/pick-folder", api_system_pick_folder, methods=["POST"]),
+    Route("/api/system/heartbeat", api_system_heartbeat, methods=["POST"]),
+    Route("/api/system/client-leaving", api_system_client_leaving, methods=["POST"]),
+    Route("/api/system/shutdown", api_system_shutdown, methods=["POST"]),
+    Route("/api/disk/compare", api_disk_compare, methods=["POST"]),
+    Route("/api/disk/sync/start", api_disk_sync_start, methods=["POST"]),
+    Route("/api/disk/sync/pause", api_disk_sync_pause, methods=["POST"]),
+    Route("/api/disk/sync/resume", api_disk_sync_resume, methods=["POST"]),
+    Route("/api/disk/sync/cancel", api_disk_sync_cancel, methods=["POST"]),
+    Route("/api/disk/sync/status", api_disk_sync_status, methods=["GET"]),
     Route("/api/sp/set-url", api_sp_set_url, methods=["POST"]),
     Route("/api/sp/root", api_sp_root, methods=["GET"]),
     Route("/api/sp/children", api_sp_children, methods=["POST"]),
@@ -968,6 +1087,8 @@ def find_free_port(start_port: int = 8765, host: str = "127.0.0.1", max_tries: i
 def main() -> None:
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+    _start_heartbeat_watchdog()
 
     host = "127.0.0.1"
     port = find_free_port(start_port=8765, host=host)

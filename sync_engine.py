@@ -8,6 +8,9 @@ import io
 import json
 import os
 import re
+import shutil
+import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -671,4 +674,226 @@ def compare_two_local_directories(
         "modified_files": modified,
         "extra_in_dest_files": extra_in_dest,
     }
+
+
+class DiskSyncManager:
+    """High-performance Drive-to-Drive / Disk-to-Disk sync engine with streaming chunked copy."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._stop_event = threading.Event()
+        self._pause_event = threading.Event()
+        self._pause_event.set()
+        self._worker_thread: Optional[threading.Thread] = None
+
+        self._status: str = "idle"  # idle, running, paused, completed, cancelled, error
+        self._error: Optional[str] = None
+        self._source_dir: str = ""
+        self._dest_dir: str = ""
+        self._total_files: int = 0
+        self._copied_files: int = 0
+        self._total_bytes: int = 0
+        self._copied_bytes: int = 0
+        self._current_file: str = ""
+        self._speed_bps: float = 0.0
+        self._eta_seconds: Optional[float] = None
+        self._last_sample_time: float = 0.0
+        self._last_sample_bytes: int = 0
+        self._sync_log: list[dict[str, Any]] = []
+
+    def get_snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            pct = (
+                (self._copied_bytes / self._total_bytes * 100.0)
+                if self._total_bytes > 0
+                else (self._copied_files / self._total_files * 100.0 if self._total_files > 0 else 0.0)
+            )
+            return {
+                "status": self._status,
+                "error": self._error,
+                "source_dir": self._source_dir,
+                "dest_dir": self._dest_dir,
+                "total_files": self._total_files,
+                "copied_files": self._copied_files,
+                "remaining_files": max(0, self._total_files - self._copied_files),
+                "total_bytes": self._total_bytes,
+                "copied_bytes": self._copied_bytes,
+                "remaining_bytes": max(0, self._total_bytes - self._copied_bytes),
+                "current_file": self._current_file,
+                "speed_bps": round(self._speed_bps, 2),
+                "eta_seconds": self._eta_seconds,
+                "progress_pct": round(min(100.0, pct), 2),
+                "recent_files": self._sync_log[-30:],
+            }
+
+    def start_sync(
+        self,
+        source_dir: str | Path,
+        dest_dir: str | Path,
+        files_to_sync: list[dict[str, Any]],
+    ) -> None:
+        with self._lock:
+            if self._status == "running":
+                raise RuntimeError("توجد عملية مزامنة قيد التشغيل بالفعل")
+
+            self._source_dir = str(source_dir)
+            self._dest_dir = str(dest_dir)
+            self._total_files = len(files_to_sync)
+            self._copied_files = 0
+            self._total_bytes = sum(f.get("size", 0) for f in files_to_sync)
+            self._copied_bytes = 0
+            self._current_file = ""
+            self._speed_bps = 0.0
+            self._eta_seconds = None
+            self._status = "running"
+            self._error = None
+            self._sync_log = []
+            self._stop_event.clear()
+            self._pause_event.set()
+
+            self._worker_thread = threading.Thread(
+                target=self._run_copy_loop,
+                args=(source_dir, dest_dir, files_to_sync),
+                daemon=True,
+            )
+            self._worker_thread.start()
+
+    def pause(self) -> None:
+        with self._lock:
+            if self._status == "running":
+                self._pause_event.clear()
+                self._status = "paused"
+
+    def resume(self) -> None:
+        with self._lock:
+            if self._status == "paused":
+                self._pause_event.set()
+                self._status = "running"
+
+    def cancel(self) -> None:
+        with self._lock:
+            self._stop_event.set()
+            self._pause_event.set()
+            if self._status in ("running", "paused"):
+                self._status = "cancelled"
+
+    def _run_copy_loop(
+        self,
+        source_dir: str | Path,
+        dest_dir: str | Path,
+        items: list[dict[str, Any]],
+        chunk_size: int = 1024 * 1024,
+    ) -> None:
+        src_base = Path(source_dir)
+        dst_base = Path(dest_dir)
+        self._last_sample_time = time.monotonic()
+        self._last_sample_bytes = 0
+
+        for item in items:
+            if self._stop_event.is_set():
+                with self._lock:
+                    self._status = "cancelled"
+                return
+
+            while not self._pause_event.is_set():
+                time.sleep(0.2)
+                if self._stop_event.is_set():
+                    with self._lock:
+                        self._status = "cancelled"
+                    return
+
+            rel_path = item.get("relative_path") or item.get("name") or ""
+            with self._lock:
+                self._current_file = rel_path
+
+            src_file = win_long_path(build_local_path(src_base, rel_path))
+            dst_file = win_long_path(build_local_path(dst_base, rel_path))
+
+            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            dst_part = dst_file + ".sync_part"
+
+            try:
+                with open(src_file, "rb") as fsrc, open(dst_part, "wb") as fdst:
+                    while True:
+                        if self._stop_event.is_set():
+                            try:
+                                os.remove(dst_part)
+                            except OSError:
+                                pass
+                            with self._lock:
+                                self._status = "cancelled"
+                            return
+
+                        while not self._pause_event.is_set():
+                            time.sleep(0.2)
+                            if self._stop_event.is_set():
+                                try:
+                                    os.remove(dst_part)
+                                except OSError:
+                                    pass
+                                with self._lock:
+                                    self._status = "cancelled"
+                                return
+
+                        buf = fsrc.read(chunk_size)
+                        if not buf:
+                            break
+                        fdst.write(buf)
+
+                        chunk_len = len(buf)
+                        with self._lock:
+                            self._copied_bytes += chunk_len
+
+                        now = time.monotonic()
+                        dt = now - self._last_sample_time
+                        if dt >= 0.35:
+                            bytes_diff = self._copied_bytes - self._last_sample_bytes
+                            speed = bytes_diff / dt if dt > 0 else 0.0
+                            self._speed_bps = speed
+                            self._last_sample_time = now
+                            self._last_sample_bytes = self._copied_bytes
+                            rem = max(0, self._total_bytes - self._copied_bytes)
+                            if speed > 10.0:
+                                self._eta_seconds = round(rem / speed, 1)
+
+                try:
+                    shutil.copystat(src_file, dst_part)
+                except OSError:
+                    pass
+
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                os.replace(dst_part, dst_file)
+
+                with self._lock:
+                    self._copied_files += 1
+                    self._sync_log.append({
+                        "relative_path": rel_path,
+                        "size": item.get("size", 0),
+                        "status": "success",
+                        "time": datetime.now(timezone.utc).isoformat(),
+                    })
+
+            except Exception as exc:
+                try:
+                    if os.path.exists(dst_part):
+                        os.remove(dst_part)
+                except OSError:
+                    pass
+                with self._lock:
+                    self._sync_log.append({
+                        "relative_path": rel_path,
+                        "size": item.get("size", 0),
+                        "status": "error",
+                        "error": str(exc),
+                        "time": datetime.now(timezone.utc).isoformat(),
+                    })
+
+        with self._lock:
+            if not self._stop_event.is_set():
+                self._status = "completed"
+                self._speed_bps = 0.0
+                self._eta_seconds = 0.0
+                self._current_file = ""
+
 

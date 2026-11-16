@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>أداة تنزيل ومزامنة SharePoint المباشر</title>
+  <title>OmniSync-Downloader (OSDD)</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
     :root {
       --bg: #f1f5f9;
@@ -728,6 +729,10 @@
         <span class="top-pill" id="topAuthBadge"><span class="dot" id="topAuthDot"></span><span id="topAuthText">غير متصل</span></span>
         <span class="top-pill" id="topSseBadge"><span class="dot" id="topSseDot"></span><span id="topSseText">SSE: في الانتظار</span></span>
         <span class="top-pill" id="topJobBadge">الحالة: خامل</span>
+        <button class="top-pill" id="topShutdownBtn" title="إيقاف البرنامج وإنهاء خدمة الخلفية بالكامل" style="background:rgba(239, 68, 68, 0.2); border:1px solid #ef4444; color:#fca5a5; cursor:pointer; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)';this.style.color='#fca5a5';">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+          <span>إيقاف البرنامج</span>
+        </button>
       </div>
     </div>
   </header>
@@ -740,6 +745,7 @@
       <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span>المجلد المحلي والتشغيل</span></a>
       <a class="step-chip" href="#step4Card" id="navStep4"><span class="num">4</span><span>داش بورد التحميل الحية</span></a>
       <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">5</span><span>التحقق وتقرير المزامنة</span></a>
+      <a class="step-chip" href="#diskSyncCard" id="navDiskSync" style="border:1.5px solid var(--accent); background:rgba(29, 78, 216, 0.06);"><span class="num" style="background:var(--accent); color:#fff; font-weight:700;">v2</span><span>مزامنة وتدقيق هارد لهارد (Drive-to-Drive)</span></a>
     </nav>
 
     <!-- STEP 1: Auth -->
@@ -952,19 +958,36 @@
             <div class="kpi-sub" id="dashFilesSummary">0 / 0 ملف</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">الحجم المنزّل</div>
-            <div class="kpi-val ltr" id="dashBytesSummary">0 B / 0 B</div>
-            <div class="kpi-sub" id="dashCountsDetail">مكتمل: 0 | متخطى: 0 | فشل: 0</div>
+            <div class="kpi-label">سرعة التحميل الحية ⚡</div>
+            <div class="kpi-val ltr" id="dashSpeed" style="color:var(--primary); font-weight:700;">0 KB/s</div>
+            <div class="kpi-sub" id="dashSpeedSub">بث حي كل ~400ms</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">السرعة الكلية</div>
-            <div class="kpi-val ltr" id="dashSpeed">0 B/s</div>
-            <div class="kpi-sub">بث حي كل ~400ms</div>
+            <div class="kpi-label">حجم الملفات (المحمل والمتبقي) 💾</div>
+            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
+              <span id="dashDownloadedBytes" style="font-weight:700; color:var(--primary);">0 B</span>
+              <span style="font-size:12px; color:var(--text-soft);"> / </span>
+              <span id="dashTotalBytes">0 B</span>
+            </div>
+            <div class="kpi-sub" style="font-size:12.5px;">
+              المتبقي: <strong id="dashRemainingBytes" style="color:#d97706; font-weight:700;">0 B</strong>
+            </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">الوقت المتبقي المتوقع (ETA)</div>
+            <div class="kpi-label">عدد الملفات (المكتمل والمتبقي) 📄</div>
+            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
+              <span id="dashDoneFiles" style="font-weight:700; color:var(--accent);">0</span>
+              <span style="font-size:12px; color:var(--text-soft);"> / </span>
+              <span id="dashTotalFilesCount">0</span>
+            </div>
+            <div class="kpi-sub" style="font-size:12.5px;">
+              المتبقي: <strong id="dashRemainingFiles" style="color:#b45309; font-weight:700;">0 ملف</strong>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">الوقت المتبقي المتوقع (ETA) ⏱️</div>
             <div class="kpi-val" id="dashEta">--</div>
-            <div class="kpi-sub ltr mono" id="dashDestDir">-</div>
+            <div class="kpi-sub" id="dashCountsDetail">مكتمل: 0 | متخطى: 0 | فشل: 0</div>
           </div>
         </div>
 
@@ -1095,6 +1118,204 @@
               <button class="btn btn-secondary btn-sm" id="verifyPrevBtn" type="button" disabled>السابق</button>
               <button class="btn btn-secondary btn-sm" id="verifyNextBtn" type="button" disabled>التالي</button>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 6: Drive-to-Drive / Disk-to-Disk Sync & Deep Audit (v2.0) -->
+    <section class="card" id="diskSyncCard" style="border:1.5px solid var(--accent-light); box-shadow:0 6px 20px rgba(29, 78, 216, 0.08);">
+      <div class="card-header" style="background:linear-gradient(135deg, rgba(29, 78, 216, 0.06) 0%, rgba(15, 118, 110, 0.06) 100%);">
+        <div>
+          <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
+            <span class="step-badge" style="background:var(--accent);">v2.0</span>
+            <span>مزامنة وتدقيق الملفات بين هاردين أو جهازين (Drive-to-Drive Sync & Deep Audit)</span>
+          </h2>
+          <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-soft);">
+            مقارنة شجرة المجلدات بين وحدتي تخزين (هارد داخلي / خارجي / NAS)، فحص التطابق العميق للهاش متدفقاً (Streaming SHA-256)، ونقل الملفات الجديدة والمعدلة فقط.
+          </p>
+        </div>
+        <div class="row">
+          <span class="badge badge-neutral" id="diskSyncStatusBadge">خامل</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Folders Selection -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+          <div>
+            <label class="field-label" for="diskSourceDirInput">
+              <strong>مجلد المصدر (Source Folder على هارد 1 أو شبكة):</strong>
+            </label>
+            <div class="row">
+              <div class="grow">
+                <input type="text" id="diskSourceDirInput" class="ltr" placeholder="مثال: D:\Projects\Archive أو \\NAS\Share\Source" />
+              </div>
+              <button class="btn btn-secondary btn-sm" id="pickDiskSourceBtn" type="button">اختيار المجلد</button>
+            </div>
+          </div>
+          <div>
+            <label class="field-label" for="diskDestDirInput">
+              <strong>مجلد الهدف (Destination Folder على هارد 2 أو NAS):</strong>
+            </label>
+            <div class="row">
+              <div class="grow">
+                <input type="text" id="diskDestDirInput" class="ltr" placeholder="مثال: E:\Backup\Archive أو \\NAS\Backup\Dest" />
+              </div>
+              <button class="btn btn-secondary btn-sm" id="pickDiskDestBtn" type="button">اختيار المجلد</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Options & Compare Button -->
+        <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-top:12px;">
+          <div class="row" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px; user-select:none;">
+              <input type="checkbox" id="diskCompareHashCheckbox" />
+              <span><strong>فحص الهاش العميق المتدفق (Streaming SHA-256)</strong> للملفات المتطابقة في الحجم (استهلاك رام &lt; 5MB حتى لملفات 100GB+)</span>
+            </label>
+            <div class="row">
+              <button class="btn btn-primary" id="diskRunCompareBtn" type="button" style="display:flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>بدء الفحص والمقارنة (Audit)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Summary KPIs (Hidden initially) -->
+        <div id="diskAuditResultsArea" class="hidden" style="margin-top:16px;">
+          <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">نتائج فحص وتدقيق الشجرة:</h3>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">ملفات المصدر</div>
+              <div class="kpi-val" id="diskKpiSrcFiles">0</div>
+              <div class="kpi-sub ltr" id="diskKpiSrcBytes">0 B</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">ملفات الهدف</div>
+              <div class="kpi-val" id="diskKpiDstFiles">0</div>
+              <div class="kpi-sub ltr" id="diskKpiDstBytes">0 B</div>
+            </div>
+            <div class="kpi-card" style="border-right:3px solid var(--success);">
+              <div class="kpi-label">متطابقة 100%</div>
+              <div class="kpi-val" id="diskKpiMatched" style="color:var(--success);">0</div>
+              <div class="kpi-sub">لا تحتاج لنقل</div>
+            </div>
+            <div class="kpi-card" style="border-right:3px solid var(--accent);">
+              <div class="kpi-label">جديدة في المصدر (للنقل)</div>
+              <div class="kpi-val" id="diskKpiMissing" style="color:var(--accent);">0</div>
+              <div class="kpi-sub">غير موجودة في الهدف</div>
+            </div>
+            <div class="kpi-card" style="border-right:3px solid #d97706;">
+              <div class="kpi-label">معدلة (للتحديث)</div>
+              <div class="kpi-val" id="diskKpiModified" style="color:#d97706;">0</div>
+              <div class="kpi-sub">اختلاف حجم أو هاش</div>
+            </div>
+            <div class="kpi-card" style="border-right:3px solid var(--text-soft);">
+              <div class="kpi-label">ملفات زائدة بالهدف</div>
+              <div class="kpi-val" id="diskKpiExtra" style="color:var(--text-soft);">0</div>
+              <div class="kpi-sub">موجودة بالهدف فقط</div>
+            </div>
+          </div>
+
+          <!-- Sync Trigger Banner -->
+          <div style="background:rgba(29, 78, 216, 0.07); border:1px solid rgba(29, 78, 216, 0.2); border-radius:var(--radius-sm); padding:14px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <strong style="color:var(--accent); font-size:14.5px;">جاهز للمزامنة:</strong>
+              <span id="diskSyncReadySummary" style="margin-right:6px; font-size:13.5px; color:var(--text);"></span>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary" id="diskStartSyncBtn" type="button" style="font-weight:700;">
+                بدء النقل والمزامنة الفعلي (Sync Now)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Disk Sync Progress Dashboard (Shown during/after sync) -->
+        <div id="diskSyncDashboardArea" class="hidden" style="margin-top:18px; border:1px solid var(--border); border-radius:var(--radius); padding:16px; background:var(--surface);">
+          <div class="row" style="justify-content:space-between; margin-bottom:12px;">
+            <h3 style="margin:0; font-size:15px; color:var(--primary); display:flex; align-items:center; gap:6px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              <span>لوحة تقدم نقل ومزامنة الهارد المباشرة</span>
+            </h3>
+            <div class="row">
+              <button class="btn btn-warning btn-sm" id="diskPauseBtn" type="button">إيقاف مؤقت</button>
+              <button class="btn btn-primary btn-sm" id="diskResumeBtn" type="button" disabled>استئناف</button>
+              <button class="btn btn-danger btn-sm" id="diskCancelBtn" type="button">إلغاء النقل</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">نسبة التقدم</div>
+              <div class="kpi-val" id="diskSyncPct">0.0%</div>
+              <div class="kpi-sub" id="diskSyncFilesSub">0 / 0 ملف</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">سرعة النقل الحية ⚡</div>
+              <div class="kpi-val ltr" id="diskSyncSpeed" style="color:var(--primary); font-weight:700;">0 KB/s</div>
+              <div class="kpi-sub">معدل نقل الديسك المباشر</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">حجم المنقول والمتبقي 💾</div>
+              <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
+                <span id="diskSyncCopiedBytes" style="font-weight:700; color:var(--primary);">0 B</span>
+                <span style="font-size:12px; color:var(--text-soft);"> / </span>
+                <span id="diskSyncTotalBytes">0 B</span>
+              </div>
+              <div class="kpi-sub">المتبقي: <strong id="diskSyncRemBytes" style="color:#d97706; font-weight:700;">0 B</strong></div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">عدد المنقول والمتبقي 📄</div>
+              <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
+                <span id="diskSyncCopiedFiles" style="font-weight:700; color:var(--accent);">0</span>
+                <span style="font-size:12px; color:var(--text-soft);"> / </span>
+                <span id="diskSyncTotalFiles">0</span>
+              </div>
+              <div class="kpi-sub">المتبقي: <strong id="diskSyncRemFiles" style="color:#b45309; font-weight:700;">0 ملف</strong></div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">الوقت المتبقي المتوقع ⏱️</div>
+              <div class="kpi-val" id="diskSyncEta">--</div>
+              <div class="kpi-sub ltr mono" id="diskSyncCurrentFile" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</div>
+            </div>
+          </div>
+
+          <div class="progress-wrap" style="margin-top:12px;">
+            <div class="progress-bar" id="diskSyncProgressBar" style="width:0%;"></div>
+          </div>
+        </div>
+
+        <!-- Files Breakdown Table -->
+        <div id="diskTableWrapArea" class="hidden" style="margin-top:18px;">
+          <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+            <div class="filter-bar" id="diskFilterBar">
+              <button class="chip active" type="button" data-disk-filter="all">الكل (<span id="diskCntAll">0</span>)</button>
+              <button class="chip" type="button" data-disk-filter="missing">جديدة للنقل (<span id="diskCntMissing">0</span>)</button>
+              <button class="chip" type="button" data-disk-filter="modified">معدلة للتحديث (<span id="diskCntModified">0</span>)</button>
+              <button class="chip" type="button" data-disk-filter="matched">متطابقة (<span id="diskCntMatched">0</span>)</button>
+              <button class="chip" type="button" data-disk-filter="extra">زائدة بالهدف (<span id="diskCntExtra">0</span>)</button>
+            </div>
+            <div style="min-width:240px;">
+              <input type="text" id="diskSearchInput" placeholder="بحث في ملفات المقارنة..." />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px;">#</th>
+                  <th>المسار النسبي للملف</th>
+                  <th style="width:110px;">حجم المصدر</th>
+                  <th style="width:110px;">حجم الهدف</th>
+                  <th style="width:130px;">حالة التطابق</th>
+                  <th style="width:180px;">الهاش / سبب الاختلاف</th>
+                </tr>
+              </thead>
+              <tbody id="diskTableBody"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -2112,9 +2333,16 @@
         $("dashModeBadge").className = `badge ${snap.mode === "sync" ? "badge-info" : "badge-neutral"}`;
 
         const totalFiles = snap.total_files || 0;
-        const doneFiles = (snap.completed_files || 0) + (snap.skipped_files || 0);
+        const completedFiles = snap.completed_files || 0;
+        const skippedFiles = snap.skipped_files || 0;
+        const failedFiles = snap.failed_files || 0;
+        const doneFiles = completedFiles + skippedFiles;
+        const remFiles = snap.remaining_files != null ? snap.remaining_files : Math.max(0, totalFiles - doneFiles);
+
         const totalBytes = snap.total_bytes || 0;
         const dlBytes = snap.downloaded_bytes || 0;
+        const remBytes = snap.remaining_bytes != null ? snap.remaining_bytes : Math.max(0, totalBytes - dlBytes);
+
         const pct = totalBytes > 0
           ? Math.min(100, (dlBytes / totalBytes) * 100)
           : totalFiles > 0
@@ -2122,10 +2350,19 @@
           : 0;
 
         $("dashPct").textContent = `${pct.toFixed(1)}%`;
-        $("dashFilesSummary").textContent = `${doneFiles} / ${totalFiles} ملف`;
-        $("dashBytesSummary").textContent = `${formatBytes(dlBytes)} / ${formatBytes(totalBytes)}`;
-        $("dashCountsDetail").textContent =
-          `مكتمل: ${snap.completed_files || 0} | متخطى: ${snap.skipped_files || 0} | فشل: ${snap.failed_files || 0}`;
+        $("dashFilesSummary").textContent = `تم إنجاز ${doneFiles} من ${totalFiles} ملف`;
+
+        if ($("dashDownloadedBytes")) $("dashDownloadedBytes").textContent = formatBytes(dlBytes);
+        if ($("dashTotalBytes")) $("dashTotalBytes").textContent = formatBytes(totalBytes);
+        if ($("dashRemainingBytes")) $("dashRemainingBytes").textContent = formatBytes(remBytes);
+
+        if ($("dashDoneFiles")) $("dashDoneFiles").textContent = doneFiles;
+        if ($("dashTotalFilesCount")) $("dashTotalFilesCount").textContent = totalFiles;
+        if ($("dashRemainingFiles")) $("dashRemainingFiles").textContent = `${remFiles} ملف`;
+
+        if ($("dashCountsDetail")) {
+          $("dashCountsDetail").textContent = `مكتمل: ${completedFiles} | متخطى: ${skippedFiles} | فشل: ${failedFiles}`;
+        }
         $("dashSpeed").textContent = snap.status === "running" ? formatSpeed(snap.overall_speed_bps) : "0 KB/s";
         $("dashEta").textContent = snap.status === "running" ? formatEta(snap.eta_seconds) : "--";
         $("dashDestDir").textContent = snap.dest_dir || "-";
@@ -2646,9 +2883,304 @@
       });
 
       // ------------------------------------------------------------------
+      // STEP 6: Drive-to-Drive / Disk-to-Disk Sync & Deep Audit (v2.0)
+      // ------------------------------------------------------------------
+      let diskCompareData = null;
+      let diskFilter = "all";
+      let diskSearch = "";
+      let diskPollInterval = null;
+
+      $("pickDiskSourceBtn").addEventListener("click", async () => {
+        try {
+          const res = await apiJson("/api/system/pick-folder", {
+            method: "POST",
+            body: JSON.stringify({ initial_dir: $("diskSourceDirInput").value.trim() }),
+          });
+          if (res.path) $("diskSourceDirInput").value = res.path;
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("pickDiskDestBtn").addEventListener("click", async () => {
+        try {
+          const res = await apiJson("/api/system/pick-folder", {
+            method: "POST",
+            body: JSON.stringify({ initial_dir: $("diskDestDirInput").value.trim() }),
+          });
+          if (res.path) $("diskDestDirInput").value = res.path;
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("diskRunCompareBtn").addEventListener("click", async () => {
+        const src = $("diskSourceDirInput").value.trim();
+        const dst = $("diskDestDirInput").value.trim();
+        const compare_hash = $("diskCompareHashCheckbox").checked;
+
+        if (!src || !dst) {
+          showToast("يرجى تحديد مسار مجلد المصدر ومجلد الهدف أولاً", "warning");
+          return;
+        }
+
+        const btn = $("diskRunCompareBtn");
+        btn.disabled = true;
+        btn.innerHTML = `<span>جاري فحص وتدقيق شجرة المجلدات...</span>`;
+        $("diskSyncStatusBadge").className = "badge badge-info";
+        $("diskSyncStatusBadge").textContent = "جاري الفحص والتدقيق...";
+
+        try {
+          const res = await apiJson("/api/disk/compare", {
+            method: "POST",
+            body: JSON.stringify({ source_dir: src, dest_dir: dst, compare_hash }),
+          });
+          diskCompareData = res;
+          renderDiskAuditResults(res);
+          showToast("تم الانتهاء من فحص وتدقيق المجلدات بنجاح", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>بدء الفحص والمقارنة (Audit)</span>
+          `;
+          $("diskSyncStatusBadge").className = "badge badge-neutral";
+          $("diskSyncStatusBadge").textContent = "تم التدقيق";
+        }
+      });
+
+      function renderDiskAuditResults(res) {
+        if (!res) return;
+        $("diskAuditResultsArea").classList.remove("hidden");
+        $("diskTableWrapArea").classList.remove("hidden");
+
+        $("diskKpiSrcFiles").textContent = res.total_source_files;
+        $("diskKpiSrcBytes").textContent = formatBytes(res.total_source_bytes);
+        $("diskKpiDstFiles").textContent = res.total_dest_files;
+        $("diskKpiDstBytes").textContent = formatBytes(res.total_dest_bytes);
+        $("diskKpiMatched").textContent = res.matched_count;
+        $("diskKpiMissing").textContent = res.missing_in_dest_count;
+        $("diskKpiModified").textContent = res.modified_count;
+        $("diskKpiExtra").textContent = res.extra_in_dest_count;
+
+        const syncNeededCount = res.missing_in_dest_count + res.modified_count;
+        const missingBytes = (res.missing_in_dest_files || []).reduce((a, b) => a + (b.size || 0), 0);
+        const modBytes = (res.modified_files || []).reduce((a, b) => a + (b.size || 0), 0);
+        const syncTotalBytes = missingBytes + modBytes;
+
+        $("diskSyncReadySummary").textContent = syncNeededCount > 0
+          ? `${syncNeededCount} ملف جديد/معدل بحجم إجمالي ${formatBytes(syncTotalBytes)} جاهز للنقل إلى الهدف.`
+          : `المجلدان متطابقان تماماً! لا توجد ملفات تحتاج لنقل.`;
+
+        $("diskStartSyncBtn").disabled = syncNeededCount === 0;
+
+        $("diskCntAll").textContent = (res.matched_count + res.missing_in_dest_count + res.modified_count + res.extra_in_dest_count);
+        $("diskCntMissing").textContent = res.missing_in_dest_count;
+        $("diskCntModified").textContent = res.modified_count;
+        $("diskCntMatched").textContent = res.matched_count;
+        $("diskCntExtra").textContent = res.extra_in_dest_count;
+
+        renderDiskTable();
+      }
+
+      function renderDiskTable() {
+        if (!diskCompareData) return;
+        const tbody = $("diskTableBody");
+        const q = (diskSearch || "").toLowerCase();
+
+        let list = [];
+        if (diskFilter === "missing" || diskFilter === "all") {
+          list = list.concat((diskCompareData.missing_in_dest_files || []).map(f => ({ ...f, _type: "missing" })));
+        }
+        if (diskFilter === "modified" || diskFilter === "all") {
+          list = list.concat((diskCompareData.modified_files || []).map(f => ({ ...f, _type: "modified" })));
+        }
+        if (diskFilter === "matched" || diskFilter === "all") {
+          list = list.concat((diskCompareData.matched_files || []).map(f => ({ ...f, _type: "matched" })));
+        }
+        if (diskFilter === "extra" || diskFilter === "all") {
+          list = list.concat((diskCompareData.extra_in_dest_files || []).map(f => ({ ...f, _type: "extra" })));
+        }
+
+        if (q) {
+          list = list.filter(f => (f.relative_path || f.name || "").toLowerCase().includes(q));
+        }
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:18px; color:var(--text-soft);">لا توجد ملفات مطابقة لهذا الفلتر أو البحث.</td></tr>`;
+          return;
+        }
+
+        const typeLabels = {
+          missing: ["جديد للنقل", "badge-info"],
+          modified: ["معدل للتحديث", "badge-warn"],
+          matched: ["متطابق 100%", "badge-ok"],
+          extra: ["زائد بالهدف", "badge-neutral"],
+        };
+
+        const slice = list.slice(0, 200);
+        tbody.innerHTML = slice.map((item, idx) => {
+          const [lbl, cls] = typeLabels[item._type] || [item._type, "badge-neutral"];
+          const srcSize = item.size != null ? formatBytes(item.size) : "-";
+          const dstSize = item.dest_size != null ? formatBytes(item.dest_size) : (item._type === "extra" ? formatBytes(item.size) : "-");
+          const reason = item.diff_reason === "size_mismatch" ? "اختلاف حجم الملف" : (item.diff_reason === "hash_mismatch" ? "اختلاف بصمة SHA-256" : (item.hash ? `SHA: ${item.hash.substring(0, 10)}...` : "-"));
+
+          return `
+            <tr>
+              <td>${idx + 1}</td>
+              <td class="ltr mono" style="font-size:12px;">${escapeHtml(item.relative_path || item.name)}</td>
+              <td class="ltr mono">${srcSize}</td>
+              <td class="ltr mono">${dstSize}</td>
+              <td><span class="badge ${cls}">${lbl}</span></td>
+              <td class="ltr mono" style="font-size:11.5px; color:var(--text-soft);">${escapeHtml(reason)}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      document.querySelectorAll("[data-disk-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          diskFilter = btn.dataset.diskFilter;
+          document.querySelectorAll("[data-disk-filter]").forEach(b => b.classList.toggle("active", b === btn));
+          renderDiskTable();
+        });
+      });
+
+      $("diskSearchInput").addEventListener("input", (e) => {
+        diskSearch = e.target.value;
+        renderDiskTable();
+      });
+
+      // Disk Sync Execution
+      $("diskStartSyncBtn").addEventListener("click", async () => {
+        if (!diskCompareData) return;
+        const src = $("diskSourceDirInput").value.trim();
+        const dst = $("diskDestDirInput").value.trim();
+        const filesToSync = [
+          ...(diskCompareData.missing_in_dest_files || []),
+          ...(diskCompareData.modified_files || []),
+        ];
+
+        if (!filesToSync.length) {
+          showToast("لا توجد ملفات جديدة أو معدلة لنقلها", "info");
+          return;
+        }
+
+        try {
+          const res = await apiJson("/api/disk/sync/start", {
+            method: "POST",
+            body: JSON.stringify({ source_dir: src, dest_dir: dst, files: filesToSync }),
+          });
+          $("diskSyncDashboardArea").classList.remove("hidden");
+          $("diskSyncDashboardArea").scrollIntoView({ behavior: "smooth", block: "start" });
+          startDiskPolling();
+          showToast("بدأت عملية مزامنة ونقل الملفات", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      function startDiskPolling() {
+        if (diskPollInterval) clearInterval(diskPollInterval);
+        const poll = async () => {
+          try {
+            const snap = await apiJson("/api/disk/sync/status");
+            handleDiskSyncSnapshot(snap);
+          } catch (_) {}
+        };
+        poll();
+        diskPollInterval = setInterval(poll, 400);
+      }
+
+      function handleDiskSyncSnapshot(snap) {
+        if (!snap) return;
+        const [stText, stClass] = translateJobStatus(snap.status);
+        $("diskSyncStatusBadge").className = `badge ${stClass}`;
+        $("diskSyncStatusBadge").textContent = `المزامنة: ${stText}`;
+
+        $("diskSyncPct").textContent = `${snap.progress_pct}%`;
+        $("diskSyncFilesSub").textContent = `${snap.copied_files} / ${snap.total_files} ملف`;
+
+        $("diskSyncSpeed").textContent = snap.status === "running" ? formatSpeed(snap.speed_bps) : "0 KB/s";
+        $("diskSyncCopiedBytes").textContent = formatBytes(snap.copied_bytes);
+        $("diskSyncTotalBytes").textContent = formatBytes(snap.total_bytes);
+        $("diskSyncRemBytes").textContent = formatBytes(snap.remaining_bytes);
+
+        $("diskSyncCopiedFiles").textContent = snap.copied_files;
+        $("diskSyncTotalFiles").textContent = snap.total_files;
+        $("diskSyncRemFiles").textContent = `${snap.remaining_files} ملف`;
+
+        $("diskSyncEta").textContent = snap.status === "running" ? formatEta(snap.eta_seconds) : "--";
+        $("diskSyncCurrentFile").textContent = snap.current_file ? `الملف: ${snap.current_file}` : "-";
+
+        $("diskSyncProgressBar").style.width = `${snap.progress_pct}%`;
+        $("diskSyncProgressBar").className = "progress-bar" + (snap.status === "completed" ? " done" : snap.status === "paused" ? " paused" : "");
+
+        $("diskPauseBtn").disabled = snap.status !== "running";
+        $("diskResumeBtn").disabled = snap.status !== "paused";
+        $("diskCancelBtn").disabled = !(snap.status === "running" || snap.status === "paused");
+
+        if (snap.status === "completed") {
+          clearInterval(diskPollInterval);
+          diskPollInterval = null;
+          showToast("اكتملت مزامنة ونقل الملفات بنجاح!", "success");
+        } else if (snap.status === "cancelled" || snap.status === "error") {
+          clearInterval(diskPollInterval);
+          diskPollInterval = null;
+        }
+      }
+
+      $("diskPauseBtn").addEventListener("click", () => apiJson("/api/disk/sync/pause", { method: "POST" }));
+      $("diskResumeBtn").addEventListener("click", () => apiJson("/api/disk/sync/resume", { method: "POST" }));
+      $("diskCancelBtn").addEventListener("click", () => apiJson("/api/disk/sync/cancel", { method: "POST" }));
+
+      // ------------------------------------------------------------------
+      // Heartbeat & Auto-Shutdown on Window Close
+      // ------------------------------------------------------------------
+      function initHeartbeat() {
+        const ping = () => {
+          fetch("/api/system/heartbeat", { method: "POST" }).catch(() => {});
+        };
+        ping();
+        setInterval(ping, 2500);
+      }
+
+      window.addEventListener("pagehide", () => {
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon("/api/system/client-leaving");
+        }
+      });
+
+      const topShutdownBtn = $("topShutdownBtn");
+      if (topShutdownBtn) {
+        topShutdownBtn.addEventListener("click", async () => {
+          if (!confirm("هل أنت متأكد من رغبتك في إيقاف البرنامج بالكامل وإغلاق خدمة الخلفية؟")) return;
+          try {
+            await fetch("/api/system/shutdown", { method: "POST" });
+          } catch (_) {}
+          document.body.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#0f172a; color:#f8fafc; font-family:sans-serif; text-align:center; padding:24px;">
+              <div style="background:#1e293b; border:1px solid #334155; padding:36px 48px; border-radius:18px; box-shadow:0 12px 30px rgba(0,0,0,0.5); max-width:480px; width:100%;">
+                <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:50%; background:rgba(34,197,94,0.15); display:flex; align-items:center; justify-content:center; color:#22c55e;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h2 style="margin:0 0 10px; font-size:20px; color:#22c55e;">تم إيقاف البرنامج بنجاح</h2>
+                <p style="margin:0 0 18px; color:#94a3b8; font-size:14px; line-height:1.6;">تم إنهاء خدمة OmniSync Downloader في الخلفية وإفراغ الذاكرة بالكامل.</p>
+                <div style="font-size:13px; color:#64748b; background:#0f172a; padding:10px; border-radius:8px;">يمكنك الآن إغلاق هذه النافذة بأمان.</div>
+              </div>
+            </div>
+          `;
+          setTimeout(() => { try { window.close(); } catch(_) {} }, 1200);
+        });
+      }
+
+      // ------------------------------------------------------------------
       // Boot
       // ------------------------------------------------------------------
       async function boot() {
+        initHeartbeat();
         await refreshAuthStatus(false);
         try {
           const snap = await apiJson("/api/download/status");
