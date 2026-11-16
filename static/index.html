@@ -1,0 +1,2670 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أداة تنزيل ومزامنة SharePoint المباشر</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --primary: #0f766e;
+      --primary-hover: #0d5f59;
+      --primary-light: #ccfbf1;
+      --accent: #1d4ed8;
+      --accent-hover: #1e40af;
+      --accent-light: #dbeafe;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --warning: #b45309;
+      --warning-bg: #fef3c7;
+      --danger: #b91c1c;
+      --danger-bg: #fee2e2;
+      --info: #0369a1;
+      --info-bg: #e0f2fe;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-sans: "Segoe UI", Tahoma, "Noto Sans Arabic", Arial, sans-serif;
+      --font-mono: "Cascadia Code", Consolas, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .ltr {
+      direction: ltr;
+      unicode-bidi: plaintext;
+      text-align: left;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+    }
+
+    /* Header */
+    .topbar {
+      background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
+      color: #fff;
+      padding: 16px 24px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .topbar-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+
+    .top-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #94a3b8;
+    }
+
+    .dot.ok { background: #4ade80; box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25); }
+    .dot.warn { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25); }
+    .dot.busy { background: #38bdf8; animation: pulse 1.2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Main container */
+    .container {
+      max-width: 1360px;
+      margin: 20px auto 48px;
+      padding: 0 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Step Nav */
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .step-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .step-chip:hover { border-color: var(--primary); color: var(--text); }
+    .step-chip .num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--bg);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-chip.done .num { background: var(--success-bg); color: var(--success); }
+    .step-chip.active { border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
+    .step-chip.active .num { background: var(--primary); color: #fff; }
+
+    @media (max-width: 900px) {
+      .stepper { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-alt);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .step-badge {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .card-body {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Form Controls & Buttons */
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .grow { flex: 1 1 280px; }
+
+    label.field-label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13.5px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+
+    textarea { resize: vertical; min-height: 86px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 15px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover:not(:disabled) { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .btn-secondary:hover:not(:disabled) { background: var(--surface-alt); border-color: #94a3b8; }
+
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-warning:hover:not(:disabled) { background: #b45309; }
+
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover:not(:disabled) { background: #991b1b; }
+
+    .btn-sm { padding: 6px 11px; font-size: 12.5px; }
+    .btn-lg { padding: 11px 20px; font-size: 14.5px; }
+
+    /* Pills & Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-ok { background: var(--success-bg); color: var(--success); }
+    .badge-warn { background: var(--warning-bg); color: var(--warning); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+    .badge-info { background: var(--info-bg); color: var(--info); }
+    .badge-neutral { background: #e2e8f0; color: #334155; }
+
+    /* Alerts & Toasts */
+    #toastContainer {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 420px;
+    }
+
+    .toast {
+      padding: 11px 15px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #0f172a;
+      color: #fff;
+      border-right: 4px solid #38bdf8;
+    }
+    .toast.error { border-right-color: #f87171; background: #450a0a; }
+    .toast.success { border-right-color: #4ade80; background: #052e16; }
+    .toast.warning { border-right-color: #fbbf24; background: #451a03; }
+
+    .banner {
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      font-size: 13px;
+    }
+    .banner.info { background: var(--info-bg); border-color: #bae6fd; color: #0c4a6e; }
+    .banner.ok { background: var(--success-bg); border-color: #bbf7d0; color: #14532d; }
+    .banner.warn { background: var(--warning-bg); border-color: #fde68a; color: #78350f; }
+    .banner.danger { background: var(--danger-bg); border-color: #fecaca; color: #7f1d1d; }
+
+    /* Session Info Box */
+    .session-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    details.alt-box {
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      background: var(--surface-alt);
+    }
+    details.alt-box summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* SharePoint Tree */
+    .tree-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      max-height: 410px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .tree-empty {
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--text-soft);
+    }
+
+    .tree-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: background 0.1s;
+    }
+    .tree-node:hover { background: #f1f5f9; }
+
+    .tree-toggle {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 4px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .tree-toggle:hover { background: #e2e8f0; }
+
+    .tree-children {
+      padding-right: 22px;
+      border-right: 1px dashed #cbd5e1;
+      margin-right: 11px;
+    }
+
+    .tree-name {
+      font-weight: 500;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .tree-meta {
+      margin-right: auto;
+      font-size: 12px;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .preview-path {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 9px 13px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      overflow-x: auto;
+    }
+
+    /* Settings grid */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .check-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-alt);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .check-card input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Action CTA row */
+    .cta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+
+    .kpi-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      background: var(--surface-alt);
+    }
+    .kpi-label { font-size: 12px; color: var(--text-soft); font-weight: 600; }
+    .kpi-val { font-size: 20px; font-weight: 700; margin-top: 2px; color: var(--text); }
+    .kpi-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Progress Bar */
+    .progress-wrap {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+    .progress-wrap.sm { height: 7px; }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #0d9488, #2563eb);
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+    .progress-bar.done { background: #16a34a; }
+    .progress-bar.paused { background: #d97706; }
+
+    /* Workers Grid */
+    .workers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 10px;
+    }
+
+    .worker-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px;
+      background: var(--surface-alt);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .worker-card.active {
+      border-color: #7dd3fc;
+      background: #f0f9ff;
+    }
+    .worker-card.retrying {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+    .worker-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+    .worker-file {
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .worker-folder {
+      font-size: 11.5px;
+      color: var(--text-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Filter chips */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .chip {
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: #fff;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Tables */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+      vertical-align: middle;
+    }
+    th {
+      background: var(--surface-alt);
+      font-weight: 700;
+      color: var(--text-muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 4px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Sync Folder Breakdown Cards */
+    .folder-diff-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .folder-diff-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: #fff;
+    }
+    .folder-diff-head {
+      padding: 10px 14px;
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .folder-diff-files {
+      padding: 8px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 12.5px;
+    }
+    .diff-file-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+    .diff-file-row:last-child { border-bottom: none; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div>
+          <h1>تنزيل ومزامنة SharePoint المباشر (ملف بملف بدون ضغط)</h1>
+          <p>استعراض المجلدات، التحميل المتوازي مع الاستئناف، مقارنة المزامنة، والتحقق الشامل</p>
+        </div>
+      </div>
+      <div class="top-badges">
+        <span class="top-pill" id="topAuthBadge"><span class="dot" id="topAuthDot"></span><span id="topAuthText">غير متصل</span></span>
+        <span class="top-pill" id="topSseBadge"><span class="dot" id="topSseDot"></span><span id="topSseText">SSE: في الانتظار</span></span>
+        <span class="top-pill" id="topJobBadge">الحالة: خامل</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Stepper -->
+    <nav class="stepper" aria-label="خطوات العمل">
+      <a class="step-chip active" href="#step1Card" id="navStep1"><span class="num">1</span><span>تسجيل الدخول والرابط</span></a>
+      <a class="step-chip" href="#step2Card" id="navStep2"><span class="num">2</span><span>تحديد مجلدات SharePoint</span></a>
+      <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span>المجلد المحلي والتشغيل</span></a>
+      <a class="step-chip" href="#step4Card" id="navStep4"><span class="num">4</span><span>داش بورد التحميل الحية</span></a>
+      <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">5</span><span>التحقق وتقرير المزامنة</span></a>
+    </nav>
+
+    <!-- STEP 1: Auth -->
+    <section class="card" id="step1Card">
+      <div class="card-header">
+        <h2 class="card-title"><span class="step-badge">الخطوة 1</span>رابط SharePoint وتسجيل الدخول</h2>
+        <div class="row">
+          <button class="btn btn-secondary btn-sm" id="refreshAuthBtn" type="button">تحديث الحالة</button>
+          <button class="btn btn-secondary btn-sm" id="closeBrowserBtn" type="button">إغلاق نافذة المتصفح</button>
+          <button class="btn btn-danger btn-sm" id="clearSessionBtn" type="button">مسح الجلسة</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div>
+          <label class="field-label" for="spUrlInput">رابط مجلد أو مكتبة SharePoint</label>
+          <div class="row">
+            <div class="grow">
+              <input type="url" id="spUrlInput" class="ltr" placeholder="https://company.sharepoint.com/:f:/s/Project/..." />
+            </div>
+            <button class="btn btn-primary" id="openBrowserBtn" type="button">فتح متصفح الدخول</button>
+            <button class="btn btn-secondary" id="setUrlBtn" type="button" title="تغيير الرابط مع الاحتفاظ بالكوكيز لنفس الموقع">تبديل الرابط فقط</button>
+          </div>
+        </div>
+
+        <div class="session-box" id="sessionStatusBox">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div class="row" style="gap:8px;">
+              <span class="badge badge-neutral" id="authStatusBadge">غير متصل</span>
+              <strong id="authStatusMessage">أدخل رابط SharePoint ثم اضغط «فتح متصفح الدخول»</strong>
+            </div>
+            <div style="font-size:12px; color:var(--text-soft);" id="authDetailsLine">
+              الكوكيز: 0 | Auth Cookie: لا | Bearer Token: لا
+            </div>
+          </div>
+          <div id="authRootHint" class="mono ltr" style="font-size:12px; color:var(--text-muted);"></div>
+        </div>
+
+        <details class="alt-box">
+          <summary>بديل: لصق Cookie أو Copy as cURL (في حال تعذر تسجيل الدخول من المتصفح)</summary>
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+            <textarea id="rawCookieInput" class="ltr mono" placeholder="الصق هنا Cookie header (مثال: FedAuth=...; rtFa=...) أو أمر curl الكامل من أدوات المطورين"></textarea>
+            <div class="row">
+              <button class="btn btn-accent btn-sm" id="importCookiesBtn" type="button">استيراد الكوكيز / cURL</button>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- STEP 2: Explorer Tree -->
+    <section class="card" id="step2Card">
+      <div class="card-header">
+        <h2 class="card-title"><span class="step-badge">الخطوة 2</span>استعراض وتحديد مجلدات SharePoint</h2>
+        <div class="row">
+          <button class="btn btn-primary btn-sm" id="loadTreeBtn" type="button">جلب / تحديث شجرة المجلدات</button>
+          <button class="btn btn-secondary btn-sm" id="selectAllBtn" type="button">تحديد الكل</button>
+          <button class="btn btn-secondary btn-sm" id="clearSelectBtn" type="button">إلغاء التحديد</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row" style="justify-content:space-between;">
+          <label class="check-card" style="padding:7px 12px;">
+            <input type="checkbox" id="includeRootNameToggle" checked />
+            <span>تضمين اسم المجلد الرئيسي للرابط في المسار المحلي</span>
+          </label>
+          <div class="badge badge-info" id="selectedCountBadge">المحدد: 0 عنصر</div>
+        </div>
+
+        <div class="tree-box" id="spTreeContainer">
+          <div class="tree-empty">اضغط «جلب / تحديث شجرة المجلدات» بعد تسجيل الدخول لعرض محتويات SharePoint.</div>
+        </div>
+
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">معاينة مسار الحفظ الناتج:</div>
+          <div class="preview-path ltr" id="pathPreview">اختر المجلدات والمجلد المحلي لمعاينة المسار النهائي...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Local Folder, Settings & Launch -->
+    <section class="card" id="step3Card">
+      <div class="card-header">
+        <h2 class="card-title"><span class="step-badge">الخطوة 3</span>مجلد الحفظ المحلي وإعدادات التشغيل</h2>
+      </div>
+      <div class="card-body">
+        <div>
+          <label class="field-label" for="localDirInput">مجلد الحفظ أو المزامنة المحلي على جهازك</label>
+          <div class="row">
+            <div class="grow">
+              <input type="text" id="localDirInput" class="ltr" placeholder="D:\Projects\SharePoint_Sync" />
+            </div>
+            <button class="btn btn-secondary" id="pickFolderBtn" type="button">استعراض...</button>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div>
+            <label class="field-label" for="concurrencyInput">عدد التنزيلات المتوازية (Workers: 1-6)</label>
+            <select id="concurrencyInput">
+              <option value="1">1 (آمن وهادئ)</option>
+              <option value="2">2</option>
+              <option value="3" selected>3 (موصى به)</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6 (سريع)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="maxRetriesInput">الحد الأقصى لإعادة المحاولة لكل ملف</label>
+            <input type="number" id="maxRetriesInput" min="0" max="50" value="10" />
+          </div>
+          <label class="check-card">
+            <input type="checkbox" id="skipVerifiedInput" checked />
+            <span>تخطي الملفات المطابقة في الحجم مسبقاً</span>
+          </label>
+          <label class="check-card">
+            <input type="checkbox" id="createEmptyFoldersInput" checked />
+            <span>إنشاء المجلدات الفارغة أيضاً</span>
+          </label>
+        </div>
+
+        <div class="row" style="gap:12px;">
+          <label class="check-card">
+            <input type="checkbox" id="includeUpdatedInput" />
+            <span>تحديث الملفات المختلفة في الحجم/التعديل أيضاً (أثناء المزامنة)</span>
+          </label>
+          <label class="check-card">
+            <input type="checkbox" id="compareMtimeInput" />
+            <span>مقارنة تاريخ التعديل (last_modified) عند المزامنة</span>
+          </label>
+        </div>
+
+        <div class="cta-grid">
+          <button class="btn btn-primary btn-lg" id="scanAndDownloadBtn" type="button">
+            فحص وتحميل مباشر (ملف بملف بدون ضغط)
+          </button>
+          <button class="btn btn-accent btn-lg" id="syncCompareBtn" type="button">
+            مزامنة ومقارنة مع ملفي المحلي (Sync)
+          </button>
+        </div>
+
+        <div class="row">
+          <button class="btn btn-secondary btn-sm" id="scanOnlyBtn" type="button">فحص المجلدات المحددة للمعاينة فقط</button>
+          <button class="btn btn-secondary btn-sm hidden" id="startScannedBtn" type="button">بدء تحميل القائمة الممسوحة حالياً</button>
+        </div>
+
+        <!-- Live Scan Progress -->
+        <div class="banner info hidden" id="scanProgressBanner">
+          <div class="row" style="justify-content:space-between;">
+            <strong id="scanProgressTitle">جاري فحص شجرة SharePoint...</strong>
+            <span id="scanProgressMetrics">المجلدات: 0 | الملفات: 0 | الحجم: 0 B</span>
+          </div>
+          <div class="ltr mono" id="scanCurrentFolder" style="font-size:12px; margin-top:4px; opacity:0.85;"></div>
+        </div>
+
+        <!-- Scanned Manifest Summary -->
+        <div class="banner ok hidden" id="scanSummaryBanner"></div>
+      </div>
+    </section>
+
+    <!-- SYNC DIFF PANEL -->
+    <section class="card hidden" id="syncDiffCard">
+      <div class="card-header">
+        <h2 class="card-title"><span class="step-badge" style="background:var(--accent);">مقارنة المزامنة</span>الفروقات بين SharePoint والمجلد المحلي</h2>
+        <div class="row">
+          <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=csv&scope=plan" target="_blank">تصدير المقارنة CSV</a>
+          <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=json&scope=plan" target="_blank">تصدير المقارنة JSON</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="kpi-grid" id="syncDiffKpis"></div>
+
+        <div class="banner info" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
+          <label style="display:flex; align-items:center; gap:8px; font-weight:700; cursor:pointer;">
+            <input type="checkbox" id="syncDiffIncludeUpdated" style="width:16px; height:16px; accent-color:var(--accent);" />
+            <span>إعادة تحميل الملفات المحدثة/المختلفة في الحجم أو التعديل أيضاً</span>
+          </label>
+          <button class="btn btn-accent btn-lg" id="startSyncDownloadBtn" type="button">بدء تحميل الجديد فقط</button>
+        </div>
+
+        <div class="row" style="justify-content:space-between;">
+          <div class="filter-bar" id="syncDiffTabs">
+            <button class="chip active" type="button" data-sync-tab="changes">المجلدات ذات التغييرات</button>
+            <button class="chip" type="button" data-sync-tab="all">كل المجلدات</button>
+            <button class="chip" type="button" data-sync-tab="local_only">ملفات محلية فقط</button>
+          </div>
+          <div style="min-width:240px;">
+            <input type="text" id="syncDiffSearch" placeholder="بحث باسم مجلد أو ملف..." />
+          </div>
+        </div>
+
+        <div id="syncDiffBreakdown"></div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Live Download Dashboard -->
+    <section class="card" id="step4Card">
+      <div class="card-header">
+        <h2 class="card-title"><span class="step-badge">الخطوة 4</span>داش بورد التحميل الحية</h2>
+        <div class="row">
+          <span class="badge badge-neutral" id="dashModeBadge">الوضع: -</span>
+          <span class="badge badge-neutral" id="dashStatusBadge">خامل</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">إجمالي التقدم</div>
+            <div class="kpi-val" id="dashPct">0.0%</div>
+            <div class="kpi-sub" id="dashFilesSummary">0 / 0 ملف</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">الحجم المنزّل</div>
+            <div class="kpi-val ltr" id="dashBytesSummary">0 B / 0 B</div>
+            <div class="kpi-sub" id="dashCountsDetail">مكتمل: 0 | متخطى: 0 | فشل: 0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">السرعة الكلية</div>
+            <div class="kpi-val ltr" id="dashSpeed">0 B/s</div>
+            <div class="kpi-sub">بث حي كل ~400ms</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">الوقت المتبقي المتوقع (ETA)</div>
+            <div class="kpi-val" id="dashEta">--</div>
+            <div class="kpi-sub ltr mono" id="dashDestDir">-</div>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar" id="dashProgressBar"></div>
+        </div>
+
+        <div class="row">
+          <button class="btn btn-warning btn-sm" id="pauseBtn" type="button" disabled>إيقاف مؤقت</button>
+          <button class="btn btn-primary btn-sm" id="resumeBtn" type="button" disabled>استئناف</button>
+          <button class="btn btn-accent btn-sm" id="retryFailedBtn" type="button" disabled>إعادة محاولة الفاشل</button>
+          <button class="btn btn-danger btn-sm" id="cancelBtn" type="button" disabled>إلغاء التحميل</button>
+        </div>
+
+        <div>
+          <h3 style="margin:4px 0 8px; font-size:14.5px;">العاملون النشطون (مين شغال على إيه الآن)</h3>
+          <div class="workers-grid" id="workersGrid">
+            <div class="banner" style="grid-column:1/-1; color:var(--text-soft);">لا توجد عملية تحميل نشطة حالياً.</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+            <div class="filter-bar" id="queueFilterBar">
+              <button class="chip active" type="button" data-filter="all">الكل (<span id="cntAll">0</span>)</button>
+              <button class="chip" type="button" data-filter="downloading">قيد التحميل (<span id="cntDownloading">0</span>)</button>
+              <button class="chip" type="button" data-filter="queued">في الانتظار (<span id="cntQueued">0</span>)</button>
+              <button class="chip" type="button" data-filter="completed">مكتمل (<span id="cntCompleted">0</span>)</button>
+              <button class="chip" type="button" data-filter="skipped">متخطى (<span id="cntSkipped">0</span>)</button>
+              <button class="chip" type="button" data-filter="failed">فشل (<span id="cntFailed">0</span>)</button>
+              <button class="chip" type="button" data-filter="sync_new">جديد (<span id="cntNew">0</span>)</button>
+              <button class="chip" type="button" data-filter="sync_updated">محدث (<span id="cntUpdated">0</span>)</button>
+            </div>
+            <div style="min-width:250px;">
+              <input type="text" id="queueSearchInput" placeholder="بحث في جدول الملفات..." />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px;">#</th>
+                  <th>الملف والمسار النسبي</th>
+                  <th style="width:110px;">الحجم</th>
+                  <th style="width:150px;">التقدم</th>
+                  <th style="width:105px;">الحالة</th>
+                  <th style="width:70px;">محاولات</th>
+                  <th>ملاحظات / خطأ</th>
+                </tr>
+              </thead>
+              <tbody id="queueTableBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--text-soft); padding:22px;">لا توجد ملفات في قائمة الانتظار بعد.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <span id="queuePageInfo">عرض 0 من 0</span>
+            <div class="row">
+              <button class="btn btn-secondary btn-sm" id="queuePrevBtn" type="button" disabled>السابق</button>
+              <button class="btn btn-secondary btn-sm" id="queueNextBtn" type="button" disabled>التالي</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: Verification & Sync Completion Report -->
+    <section class="card" id="step5Card">
+      <div class="card-header">
+        <h2 class="card-title"><span class="step-badge">الخطوة 5</span>التحقق بعد التحميل وتقرير المزامنة</h2>
+        <div class="row">
+          <button class="btn btn-primary btn-sm" id="runVerifyBtn" type="button">إعادة الفحص والمطابقة</button>
+          <button class="btn btn-warning btn-sm hidden" id="fixMissingBtn" type="button">إصلاح الناقص فقط</button>
+          <a class="btn btn-secondary btn-sm" id="verifyCsvLink" href="/api/verify/export?format=csv" target="_blank">تصدير التحقق CSV</a>
+          <a class="btn btn-secondary btn-sm" id="verifyJsonLink" href="/api/verify/export?format=json" target="_blank">تصدير التحقق JSON</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Post-Sync Completion Report -->
+        <div id="syncCompletionSection" class="hidden" style="display:flex; flex-direction:column; gap:12px; padding-bottom:14px; border-bottom:2px solid var(--border);">
+          <div class="row" style="justify-content:space-between;">
+            <h3 style="margin:0; font-size:15.5px; color:var(--accent);">تقرير المزامنة: الملفات الجديدة التي نزلت وفي أي مجلد</h3>
+            <div class="row">
+              <button class="btn btn-secondary btn-sm" id="refreshSyncReportBtn" type="button">تحديث تقرير المزامنة</button>
+              <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=csv&scope=report" target="_blank">تصدير المزامنة CSV</a>
+              <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=json&scope=report" target="_blank">تصدير المزامنة JSON</a>
+            </div>
+          </div>
+          <div class="kpi-grid" id="syncReportKpis"></div>
+          <div id="syncReportByFolder" class="folder-diff-list"></div>
+        </div>
+
+        <!-- Post-Download Verification -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="row" style="justify-content:space-between;">
+            <h3 style="margin:0; font-size:15px;">تقرير المطابقة والتحقق على القرص المحلي</h3>
+            <div class="filter-bar">
+              <button class="chip active" type="button" data-verify-filter="issues">غير المطابق فقط</button>
+              <button class="chip" type="button" data-verify-filter="all">جميع الملفات</button>
+            </div>
+          </div>
+
+          <div id="verifyBanner" class="banner" style="color:var(--text-soft);">
+            اضغط «إعادة الفحص والمطابقة» لفحص المجلد المحلي مقابل قائمة SharePoint أو ملف <code>.sp_downloader_manifest.json</code> المحفوظ.
+          </div>
+
+          <div class="kpi-grid hidden" id="verifyKpis"></div>
+
+          <div class="table-wrap hidden" id="verifyTableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الملف والمجلد</th>
+                  <th style="width:110px;">الحجم المتوقع</th>
+                  <th style="width:110px;">الحجم المحلي</th>
+                  <th style="width:130px;">الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="verifyTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination hidden" id="verifyPagination">
+            <span id="verifyPageInfo"></span>
+            <div class="row">
+              <button class="btn btn-secondary btn-sm" id="verifyPrevBtn" type="button" disabled>السابق</button>
+              <button class="btn btn-secondary btn-sm" id="verifyNextBtn" type="button" disabled>التالي</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastContainer" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const PAGE_SIZE = 100;
+
+      const state = {
+        session: null,
+        browserOpen: false,
+        authPollTimer: null,
+        scanPollTimer: null,
+        autoLoadedRootForUrl: "",
+        rootNode: null,
+        lastSnapshot: null,
+        lastJobTransitionHandled: "",
+        queueFilter: "all",
+        queueSearch: "",
+        queuePage: 1,
+        syncPlan: null,
+        syncTab: "changes",
+        syncSearch: "",
+        verifyReport: null,
+        verifyFilter: "issues",
+        verifyPage: 1,
+        eventSource: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function formatBytes(bytes) {
+        if (bytes === null || bytes === undefined || bytes < 0) return "غير معروف";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let v = Number(bytes);
+        let idx = 0;
+        while (v >= 1024 && idx < units.length - 1) {
+          v /= 1024;
+          idx++;
+        }
+        return idx === 0 ? `${Math.round(v)} B` : `${v.toFixed(2)} ${units[idx]}`;
+      }
+
+      function formatSpeed(bps) {
+        if (!bps || bps <= 0) return "0 KB/s";
+        return `${formatBytes(bps)}/s`;
+      }
+
+      function formatEta(secs) {
+        if (secs === null || secs === undefined || !isFinite(secs) || secs < 0) return "--";
+        const s = Math.round(secs);
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const r = s % 60;
+        if (h > 0) return `${h}س ${m}د`;
+        if (m > 0) return `${m}د ${r}ث`;
+        return `${r}ث`;
+      }
+
+      function parentFolderOf(relPath) {
+        const clean = String(relPath || "").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+        const idx = clean.lastIndexOf("/");
+        return idx > 0 ? clean.slice(0, idx) : "(المجلد الرئيسي)";
+      }
+
+      function showToast(message, type = "info") {
+        const box = $("toastContainer");
+        const el = document.createElement("div");
+        el.className = `toast ${type}`;
+        el.innerHTML = `<span>${escapeHtml(message)}</span>`;
+        box.appendChild(el);
+        setTimeout(() => {
+          el.remove();
+        }, 4500);
+      }
+
+      async function apiJson(url, options = {}) {
+        const opts = {
+          headers: { "Content-Type": "application/json" },
+          ...options,
+        };
+        const resp = await fetch(url, opts);
+        let data = null;
+        try {
+          data = await resp.json();
+        } catch {
+          data = {};
+        }
+        if (!resp.ok) {
+          throw new Error(data.error || `خطأ HTTP ${resp.status}`);
+        }
+        return data;
+      }
+
+      // ------------------------------------------------------------------
+      // Step 1: Auth & Session
+      // ------------------------------------------------------------------
+      function renderSession(session, browserOpen) {
+        state.session = session || {};
+        state.browserOpen = Boolean(browserOpen);
+
+        const s = state.session;
+        const urlInput = $("spUrlInput");
+        if (!urlInput.value && s.original_url) {
+          urlInput.value = s.original_url;
+        }
+
+        const badge = $("authStatusBadge");
+        const topDot = $("topAuthDot");
+        const topText = $("topAuthText");
+        const msgEl = $("authStatusMessage");
+        const detailsEl = $("authDetailsLine");
+        const rootHint = $("authRootHint");
+
+        if (s.authenticated) {
+          badge.className = "badge badge-ok";
+          badge.textContent = "متصل وجاهز";
+          topDot.className = "dot ok";
+          topText.textContent = state.browserOpen ? "متصل (المتصفح مفتوح)" : "متصل وموثّق";
+          $("navStep1").classList.add("done");
+        } else if (state.browserOpen) {
+          badge.className = "badge badge-warn";
+          badge.textContent = "بانتظار الدخول";
+          topDot.className = "dot warn";
+          topText.textContent = "نافذة الدخول مفتوحة";
+          $("navStep1").classList.remove("done");
+        } else {
+          badge.className = "badge badge-neutral";
+          badge.textContent = "غير متصل";
+          topDot.className = "dot";
+          topText.textContent = "غير متصل";
+          $("navStep1").classList.remove("done");
+        }
+
+        msgEl.textContent = s.status_message || "أدخل رابط SharePoint لبدء الجلسة";
+        const apis = Array.isArray(s.detected_apis) && s.detected_apis.length ? s.detected_apis.join(", ") : "-";
+        detailsEl.textContent = `الكوكيز: ${s.cookie_count || 0} | Auth Cookie: ${s.has_auth_cookie ? "نعم" : "لا"} | Bearer: ${s.has_bearer ? "نعم" : "لا"} | APIs: ${apis}`;
+        rootHint.textContent = s.web_url || s.origin || "";
+        $("closeBrowserBtn").disabled = !state.browserOpen;
+
+        if (state.browserOpen) {
+          startAuthPolling();
+        } else {
+          stopAuthPolling();
+        }
+      }
+
+      async function refreshAuthStatus(autoLoadTreeIfReady = false) {
+        try {
+          const data = await apiJson("/api/auth/status");
+          renderSession(data.session, data.browser_open);
+          if (
+            autoLoadTreeIfReady &&
+            data.session?.authenticated &&
+            !state.rootNode &&
+            data.session.original_url &&
+            state.autoLoadedRootForUrl !== data.session.original_url
+          ) {
+            state.autoLoadedRootForUrl = data.session.original_url;
+            loadRootTree(true);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function startAuthPolling() {
+        if (state.authPollTimer) return;
+        state.authPollTimer = setInterval(() => refreshAuthStatus(true), 1500);
+      }
+
+      function stopAuthPolling() {
+        if (state.authPollTimer) {
+          clearInterval(state.authPollTimer);
+          state.authPollTimer = null;
+        }
+      }
+
+      $("openBrowserBtn").addEventListener("click", async () => {
+        const url = $("spUrlInput").value.trim();
+        if (!url) {
+          showToast("يرجى إدخال رابط SharePoint أولاً", "warning");
+          return;
+        }
+        $("openBrowserBtn").disabled = true;
+        try {
+          state.autoLoadedRootForUrl = "";
+          state.rootNode = null;
+          renderTree();
+          const data = await apiJson("/api/auth/open-browser", {
+            method: "POST",
+            body: JSON.stringify({ url }),
+          });
+          renderSession(data.session, data.browser_open);
+          showToast("تم فتح نافذة المتصفح — أكمل تسجيل الدخول هناك", "info");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("openBrowserBtn").disabled = false;
+        }
+      });
+
+      $("setUrlBtn").addEventListener("click", async () => {
+        const url = $("spUrlInput").value.trim();
+        if (!url) {
+          showToast("يرجى إدخال رابط SharePoint", "warning");
+          return;
+        }
+        try {
+          const data = await apiJson("/api/sp/set-url", {
+            method: "POST",
+            body: JSON.stringify({ url }),
+          });
+          state.rootNode = null;
+          state.autoLoadedRootForUrl = "";
+          renderTree();
+          renderSession(data.session, state.browserOpen);
+          showToast(
+            data.same_host ? "تم تبديل الرابط مع الاحتفاظ بالجلسة" : "تم تحديث الرابط — يرجى تسجيل الدخول للموقع الجديد",
+            "success"
+          );
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("refreshAuthBtn").addEventListener("click", () => refreshAuthStatus(false));
+
+      $("closeBrowserBtn").addEventListener("click", async () => {
+        try {
+          const data = await apiJson("/api/auth/close-browser", { method: "POST" });
+          renderSession(data.session, data.browser_open);
+          showToast("تم حفظ الكوكيز وإغلاق نافذة المتصفح", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("importCookiesBtn").addEventListener("click", async () => {
+        const url = $("spUrlInput").value.trim();
+        const raw_text = $("rawCookieInput").value.trim();
+        if (!raw_text) {
+          showToast("يرجى لصق Cookie أو أمر cURL أولاً", "warning");
+          return;
+        }
+        try {
+          const data = await apiJson("/api/auth/import-cookies", {
+            method: "POST",
+            body: JSON.stringify({ url, raw_text }),
+          });
+          if (data.session?.original_url && !$("spUrlInput").value.trim()) {
+            $("spUrlInput").value = data.session.original_url;
+          }
+          renderSession(data.session, data.browser_open);
+          showToast("تم استيراد الجلسة بنجاح", "success");
+          state.rootNode = null;
+          loadRootTree(true);
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("clearSessionBtn").addEventListener("click", async () => {
+        try {
+          const data = await apiJson("/api/auth/clear", { method: "POST" });
+          state.rootNode = null;
+          state.autoLoadedRootForUrl = "";
+          state.syncPlan = null;
+          $("syncDiffCard").classList.add("hidden");
+          $("scanSummaryBanner").classList.add("hidden");
+          $("startScannedBtn").classList.add("hidden");
+          renderTree();
+          renderSession(data.session, false);
+          showToast("تم مسح الجلسة وبيانات المتصفح", "info");
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      // ------------------------------------------------------------------
+      // Step 2: SharePoint Tree Explorer
+      // ------------------------------------------------------------------
+      function makeTreeNode(item, parent = null, checked = false) {
+        return {
+          item,
+          parent,
+          children: null,
+          loading: false,
+          expanded: false,
+          checked,
+          indeterminate: false,
+        };
+      }
+
+      async function loadRootTree(silentOnError = false) {
+        const inputUrl = $("spUrlInput").value.trim();
+        if (inputUrl && state.session && inputUrl !== state.session.original_url) {
+          try {
+            const setRes = await apiJson("/api/sp/set-url", {
+              method: "POST",
+              body: JSON.stringify({ url: inputUrl }),
+            });
+            renderSession(setRes.session, state.browserOpen);
+          } catch (err) {
+            if (!silentOnError) showToast(err.message, "error");
+            return;
+          }
+        }
+
+        $("loadTreeBtn").disabled = true;
+        $("spTreeContainer").innerHTML = `<div class="tree-empty">جاري جلب بيانات المجلد الرئيسي من SharePoint...</div>`;
+        try {
+          const data = await apiJson("/api/sp/root");
+          if (data.session) renderSession(data.session, state.browserOpen);
+          const root = makeTreeNode(data.root, null, false);
+          state.rootNode = root;
+          $("navStep2").classList.add("done");
+          await expandNode(root);
+          renderTree();
+          updatePathPreview();
+        } catch (err) {
+          $("spTreeContainer").innerHTML = `<div class="tree-empty" style="color:var(--danger);">${escapeHtml(err.message)}</div>`;
+          if (!silentOnError) showToast(err.message, "error");
+        } finally {
+          $("loadTreeBtn").disabled = false;
+        }
+      }
+
+      async function expandNode(node) {
+        if (!node || !node.item.is_folder) return;
+        node.expanded = true;
+        if (Array.isArray(node.children)) {
+          renderTree();
+          return;
+        }
+        node.loading = true;
+        renderTree();
+        try {
+          const data = await apiJson("/api/sp/children", {
+            method: "POST",
+            body: JSON.stringify({ node: node.item }),
+          });
+          node.children = (data.children || []).map((c) => makeTreeNode(c, node, node.checked));
+        } catch (err) {
+          node.expanded = false;
+          showToast(err.message, "error");
+        } finally {
+          node.loading = false;
+          renderTree();
+          updatePathPreview();
+        }
+      }
+
+      function setNodeCheckedRecursive(node, checked) {
+        node.checked = checked;
+        node.indeterminate = false;
+        if (Array.isArray(node.children)) {
+          for (const ch of node.children) {
+            setNodeCheckedRecursive(ch, checked);
+          }
+        }
+      }
+
+      function updateAncestors(parent) {
+        let cur = parent;
+        while (cur) {
+          const kids = cur.children || [];
+          const allChecked = kids.length > 0 && kids.every((k) => k.checked && !k.indeterminate);
+          const anySelected = kids.some((k) => k.checked || k.indeterminate);
+          cur.checked = allChecked;
+          cur.indeterminate = !allChecked && anySelected;
+          cur = cur.parent;
+        }
+      }
+
+      function toggleNodeCheck(node, isChecked) {
+        setNodeCheckedRecursive(node, isChecked);
+        updateAncestors(node.parent);
+        renderTree();
+        updatePathPreview();
+      }
+
+      function collectSelectedItems(node = state.rootNode, out = []) {
+        if (!node) return out;
+        if (node.checked) {
+          out.push(node.item);
+          return out;
+        }
+        if (Array.isArray(node.children)) {
+          for (const ch of node.children) {
+            collectSelectedItems(ch, out);
+          }
+        }
+        return out;
+      }
+
+      function renderTreeNodeElement(node) {
+        const wrapper = document.createElement("div");
+
+        const row = document.createElement("div");
+        row.className = "tree-node";
+
+        const toggleBtn = document.createElement("button");
+        toggleBtn.type = "button";
+        toggleBtn.className = "tree-toggle";
+        if (node.item.is_folder) {
+          toggleBtn.textContent = node.loading ? "…" : node.expanded ? "▾" : "▸";
+          toggleBtn.title = node.expanded ? "طي" : "فتح";
+          toggleBtn.addEventListener("click", () => {
+            if (node.expanded) {
+              node.expanded = false;
+              renderTree();
+            } else {
+              expandNode(node);
+            }
+          });
+        } else {
+          toggleBtn.textContent = "•";
+          toggleBtn.disabled = true;
+          toggleBtn.style.opacity = "0.4";
+        }
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = node.checked;
+        cb.indeterminate = node.indeterminate;
+        cb.style.width = "16px";
+        cb.style.height = "16px";
+        cb.style.accentColor = "var(--primary)";
+        cb.style.cursor = "pointer";
+        cb.addEventListener("change", () => toggleNodeCheck(node, cb.checked));
+
+        const icon = document.createElement("span");
+        icon.textContent = node.item.is_folder ? "📁" : "📄";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "tree-name ltr";
+        nameSpan.textContent = node.item.name;
+        nameSpan.style.cursor = "pointer";
+        nameSpan.addEventListener("click", () => {
+          if (node.item.is_folder) {
+            if (node.expanded) {
+              node.expanded = false;
+              renderTree();
+            } else {
+              expandNode(node);
+            }
+          } else {
+            toggleNodeCheck(node, !node.checked);
+          }
+        });
+
+        const meta = document.createElement("span");
+        meta.className = "tree-meta ltr";
+        if (node.item.is_folder) {
+          const countHint =
+            Array.isArray(node.children)
+              ? `${node.children.length} عنصر`
+              : node.item.child_count !== null && node.item.child_count !== undefined
+              ? `${node.item.child_count} عنصر`
+              : "مجلد";
+          meta.textContent = countHint;
+        } else {
+          meta.textContent = formatBytes(node.item.size);
+        }
+
+        row.append(toggleBtn, cb, icon, nameSpan, meta);
+        wrapper.appendChild(row);
+
+        if (node.item.is_folder && node.expanded && Array.isArray(node.children)) {
+          const childrenBox = document.createElement("div");
+          childrenBox.className = "tree-children";
+          if (node.children.length === 0) {
+            const empty = document.createElement("div");
+            empty.style.cssText = "padding:4px 10px; font-size:12px; color:var(--text-soft);";
+            empty.textContent = "(مجلد فارغ)";
+            childrenBox.appendChild(empty);
+          } else {
+            for (const ch of node.children) {
+              childrenBox.appendChild(renderTreeNodeElement(ch));
+            }
+          }
+          wrapper.appendChild(childrenBox);
+        }
+
+        return wrapper;
+      }
+
+      function renderTree() {
+        const container = $("spTreeContainer");
+        if (!state.rootNode) {
+          container.innerHTML = `<div class="tree-empty">اضغط «جلب / تحديث شجرة المجلدات» بعد تسجيل الدخول لعرض محتويات SharePoint.</div>`;
+          $("selectedCountBadge").textContent = "المحدد: 0 عنصر";
+          return;
+        }
+        container.innerHTML = "";
+        container.appendChild(renderTreeNodeElement(state.rootNode));
+        const selected = collectSelectedItems();
+        if (state.rootNode.checked) {
+          $("selectedCountBadge").textContent = `المحدد: مجلد الجذر بالكامل (${state.rootNode.item.name})`;
+        } else {
+          $("selectedCountBadge").textContent = `المحدد: ${selected.length} عنصر`;
+        }
+      }
+
+      function updatePathPreview() {
+        const localDir = ($("localDirInput").value.trim() || "D:\\SharePoint_Downloads").replace(/[\\/]+$/, "");
+        const includeRoot = $("includeRootNameToggle").checked;
+        const rootName = state.rootNode?.item?.name || state.session?.root_name || "";
+        const selected = collectSelectedItems();
+
+        let sampleRel = "<SelectedFolder>/<File.ext>";
+        if (state.rootNode && state.rootNode.checked) {
+          sampleRel = "<SubFolder>/<File.ext>";
+        } else if (selected.length > 0) {
+          const first = selected[0];
+          const base = (first.relative_path || first.name || "").replace(/^\/+|\/+$/g, "");
+          sampleRel = first.is_folder ? `${base}/<File.ext>` : base;
+        }
+
+        if (includeRoot && rootName && sampleRel !== rootName && !sampleRel.startsWith(rootName + "/")) {
+          sampleRel = `${rootName}/${sampleRel}`;
+        }
+        const winSample = sampleRel.replace(/\//g, "\\");
+        $("pathPreview").textContent = `${localDir}\\${winSample}`;
+      }
+
+      $("loadTreeBtn").addEventListener("click", () => loadRootTree(false));
+      $("selectAllBtn").addEventListener("click", () => {
+        if (!state.rootNode) return;
+        toggleNodeCheck(state.rootNode, true);
+      });
+      $("clearSelectBtn").addEventListener("click", () => {
+        if (!state.rootNode) return;
+        toggleNodeCheck(state.rootNode, false);
+      });
+      $("includeRootNameToggle").addEventListener("change", updatePathPreview);
+      $("localDirInput").addEventListener("input", updatePathPreview);
+
+      // ------------------------------------------------------------------
+      // Step 3: Folder Picker, Scan, Download & Sync Compare
+      // ------------------------------------------------------------------
+      $("pickFolderBtn").addEventListener("click", async () => {
+        $("pickFolderBtn").disabled = true;
+        try {
+          const data = await apiJson("/api/system/pick-folder", {
+            method: "POST",
+            body: JSON.stringify({ initial_dir: $("localDirInput").value.trim() }),
+          });
+          if (data.path) {
+            $("localDirInput").value = data.path;
+            updatePathPreview();
+          }
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("pickFolderBtn").disabled = false;
+        }
+      });
+
+      function syncUpdatedCheckboxes(checked) {
+        $("includeUpdatedInput").checked = checked;
+        $("syncDiffIncludeUpdated").checked = checked;
+        const btn = $("startSyncDownloadBtn");
+        if (btn) {
+          btn.textContent = checked
+            ? "بدء تحميل الجديد والمحدث فقط"
+            : "بدء تحميل الملفات الجديدة فقط";
+          updateSyncStartButtonDisabled();
+        }
+      }
+
+      $("includeUpdatedInput").addEventListener("change", (e) => syncUpdatedCheckboxes(e.target.checked));
+      $("syncDiffIncludeUpdated").addEventListener("change", (e) => syncUpdatedCheckboxes(e.target.checked));
+
+      function startScanPolling() {
+        $("scanProgressBanner").classList.remove("hidden");
+        if (state.scanPollTimer) clearInterval(state.scanPollTimer);
+        const poll = async () => {
+          try {
+            const st = await apiJson("/api/sp/scan-status");
+            $("scanProgressMetrics").textContent =
+              `المجلدات: ${st.scanned_folders || 0} | الملفات: ${st.found_files || 0} | الحجم: ${formatBytes(st.total_bytes || 0)}`;
+            $("scanCurrentFolder").textContent = st.current_folder || "";
+          } catch {}
+        };
+        poll();
+        state.scanPollTimer = setInterval(poll, 400);
+      }
+
+      function stopScanPolling() {
+        if (state.scanPollTimer) {
+          clearInterval(state.scanPollTimer);
+          state.scanPollTimer = null;
+        }
+        $("scanProgressBanner").classList.add("hidden");
+      }
+
+      function renderScanSummary(manifest) {
+        const banner = $("scanSummaryBanner");
+        if (!manifest) {
+          banner.classList.add("hidden");
+          $("startScannedBtn").classList.add("hidden");
+          return;
+        }
+        const errCount = Array.isArray(manifest.scan_errors) ? manifest.scan_errors.length : 0;
+        banner.innerHTML =
+          `تم الفحص بنجاح: <strong>${manifest.total_folders || 0}</strong> مجلد، <strong>${manifest.total_files || 0}</strong> ملف، الحجم الإجمالي <strong class="ltr">${formatBytes(manifest.total_bytes || 0)}</strong>` +
+          (errCount > 0 ? ` — <span style="color:var(--danger); font-weight:700;">تنبيه: ${errCount} مجلد تعذر فحصه</span>` : "");
+        banner.classList.remove("hidden");
+        $("startScannedBtn").classList.remove("hidden");
+      }
+
+      async function runScanOnly() {
+        const selected = collectSelectedItems();
+        if (!selected.length) {
+          showToast("يرجى تحديد مجلد أو ملف واحد على الأقل من شجرة SharePoint", "warning");
+          return null;
+        }
+        startScanPolling();
+        try {
+          const data = await apiJson("/api/sp/scan", {
+            method: "POST",
+            body: JSON.stringify({
+              selected_items: selected,
+              include_root_name: $("includeRootNameToggle").checked,
+              root_name: state.rootNode?.item?.name || state.session?.root_name || "",
+            }),
+          });
+          renderScanSummary(data.manifest);
+          return data.manifest;
+        } catch (err) {
+          showToast(err.message, "error");
+          return null;
+        } finally {
+          stopScanPolling();
+        }
+      }
+
+      async function startDirectDownload(overrideManifest = null, overrideSkipVerified = null) {
+        const dest_dir = $("localDirInput").value.trim();
+        if (!dest_dir) {
+          showToast("يرجى تحديد مجلد الحفظ المحلي أولاً", "warning");
+          return;
+        }
+        const payload = {
+          dest_dir,
+          concurrency: Number($("concurrencyInput").value || 3),
+          max_retries: Number($("maxRetriesInput").value || 10),
+          skip_verified: overrideSkipVerified !== null ? overrideSkipVerified : $("skipVerifiedInput").checked,
+          create_empty_folders: $("createEmptyFoldersInput").checked,
+        };
+        if (overrideManifest) {
+          payload.manifest = overrideManifest;
+        }
+        const data = await apiJson("/api/download/start", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        if (data.snapshot) handleSnapshot(data.snapshot);
+        $("navStep3").classList.add("done");
+        $("step4Card").scrollIntoView({ behavior: "smooth", block: "start" });
+        showToast("بدأ التحميل المباشر ملفاً بملف", "success");
+      }
+
+      $("scanOnlyBtn").addEventListener("click", async () => {
+        $("scanOnlyBtn").disabled = true;
+        try {
+          const manifest = await runScanOnly();
+          if (manifest) showToast("اكتمل الفحص — يمكنك مراجعة الإحصائيات وبدء التحميل", "success");
+        } finally {
+          $("scanOnlyBtn").disabled = false;
+        }
+      });
+
+      $("startScannedBtn").addEventListener("click", async () => {
+        $("startScannedBtn").disabled = true;
+        try {
+          await startDirectDownload();
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("startScannedBtn").disabled = false;
+        }
+      });
+
+      $("scanAndDownloadBtn").addEventListener("click", async () => {
+        const dest_dir = $("localDirInput").value.trim();
+        if (!dest_dir) {
+          showToast("يرجى تحديد مجلد الحفظ المحلي أولاً", "warning");
+          return;
+        }
+        $("scanAndDownloadBtn").disabled = true;
+        try {
+          const manifest = await runScanOnly();
+          if (manifest) {
+            await startDirectDownload();
+          }
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("scanAndDownloadBtn").disabled = false;
+        }
+      });
+
+      // ------------------------------------------------------------------
+      // Sync Compare & Breakdown
+      // ------------------------------------------------------------------
+      function updateSyncStartButtonDisabled() {
+        const btn = $("startSyncDownloadBtn");
+        if (!state.syncPlan) {
+          btn.disabled = true;
+          return;
+        }
+        const s = state.syncPlan.summary || {};
+        const incUpd = $("syncDiffIncludeUpdated").checked;
+        const count =
+          (s.new_files_count || 0) +
+          (s.new_folders_count || 0) +
+          (incUpd ? (s.updated_files_count || 0) : 0);
+        btn.disabled = count === 0;
+      }
+
+      function renderSyncDiffPanel() {
+        const plan = state.syncPlan;
+        if (!plan) return;
+        $("syncDiffCard").classList.remove("hidden");
+
+        const s = plan.summary || {};
+        $("syncDiffKpis").innerHTML = `
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات جديدة على SharePoint</div>
+            <div class="kpi-val" style="color:var(--accent);">${s.new_files_count || 0}</div>
+            <div class="kpi-sub"><span class="ltr">${formatBytes(s.new_bytes || 0)}</span> • ${s.new_folders_count || 0} مجلد جديد</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات محدثة (تغير الحجم/الوقت)</div>
+            <div class="kpi-val" style="color:var(--warning);">${s.updated_files_count || 0}</div>
+            <div class="kpi-sub ltr">${formatBytes(s.updated_bytes || 0)}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات مطابقة بالفعل</div>
+            <div class="kpi-val" style="color:var(--success);">${s.up_to_date_files_count || 0}</div>
+            <div class="kpi-sub">من أصل ${s.total_sp_files || 0} على SharePoint</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات محلية فقط (لن تُحذف)</div>
+            <div class="kpi-val">${s.local_only_files_count || 0}</div>
+            <div class="kpi-sub">موجودة على جهازك فقط</div>
+          </div>
+        `;
+
+        updateSyncStartButtonDisabled();
+        renderSyncBreakdown();
+      }
+
+      function renderSyncBreakdown() {
+        const plan = state.syncPlan;
+        const host = $("syncDiffBreakdown");
+        if (!plan) {
+          host.innerHTML = "";
+          return;
+        }
+        const q = state.syncSearch.trim().toLowerCase();
+
+        if (state.syncTab === "local_only") {
+          let rows = plan.local_only_files || [];
+          if (q) {
+            rows = rows.filter(
+              (r) =>
+                (r.relative_path || "").toLowerCase().includes(q) ||
+                (r.name || "").toLowerCase().includes(q)
+            );
+          }
+          if (!rows.length) {
+            host.innerHTML = `<div class="banner">لا توجد ملفات محلية إضافية.</div>`;
+            return;
+          }
+          const slice = rows.slice(0, 200);
+          host.innerHTML = `
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>المسار المحلي</th><th>المجلد</th><th>الحجم</th></tr></thead>
+                <tbody>
+                  ${slice
+                    .map(
+                      (r) => `<tr>
+                        <td class="ltr mono">${escapeHtml(r.relative_path)}</td>
+                        <td class="ltr">${escapeHtml(r.folder)}</td>
+                        <td class="ltr">${formatBytes(r.local_size)}</td>
+                      </tr>`
+                    )
+                    .join("")}
+                </tbody>
+              </table>
+            </div>
+            ${rows.length > 200 ? `<div class="banner" style="margin-top:8px;">يتم عرض أول 200 ملف من أصل ${rows.length} (لرؤية القائمة كاملة صدّر التقرير CSV/JSON).</div>` : ""}
+          `;
+          return;
+        }
+
+        const source = state.syncTab === "all" ? (plan.all_folders_summary || []) : (plan.folder_summary || []);
+        const filtered = q
+          ? source.filter((b) => {
+              if ((b.folder || "").toLowerCase().includes(q)) return true;
+              const matchNew = (b.new_files || []).some((f) => (f.name || "").toLowerCase().includes(q));
+              const matchUpd = (b.updated_files || []).some((f) => (f.name || "").toLowerCase().includes(q));
+              return matchNew || matchUpd;
+            })
+          : source;
+
+        if (!filtered.length) {
+          host.innerHTML = `<div class="banner ok">لا توجد فروقات — جميع المجلدات والملفات متطابقة مع النسخة المحلية!</div>`;
+          return;
+        }
+
+        host.innerHTML = "";
+        const list = document.createElement("div");
+        list.className = "folder-diff-list";
+
+        for (const bucket of filtered) {
+          const card = document.createElement("div");
+          card.className = "folder-diff-card";
+
+          const head = document.createElement("div");
+          head.className = "folder-diff-head";
+          head.innerHTML = `
+            <div class="row" style="gap:8px;">
+              <span class="ltr mono" style="font-weight:700;">📁 ${escapeHtml(bucket.folder)}</span>
+              ${bucket.is_new_folder ? `<span class="badge badge-info">مجلد جديد</span>` : ""}
+            </div>
+            <div class="row" style="gap:6px;">
+              ${bucket.new_count ? `<span class="badge badge-info">جديد: ${bucket.new_count} (${formatBytes(bucket.new_bytes)})</span>` : ""}
+              ${bucket.updated_count ? `<span class="badge badge-warn">محدث: ${bucket.updated_count} (${formatBytes(bucket.updated_bytes)})</span>` : ""}
+              <span class="badge badge-ok">مطابق: ${bucket.up_to_date_count || 0}</span>
+            </div>
+          `;
+          card.appendChild(head);
+
+          const items = [
+            ...(bucket.new_files || []).map((f) => ({ type: "new", f })),
+            ...(bucket.updated_files || []).map((f) => ({ type: "updated", f })),
+          ];
+
+          if (items.length > 0) {
+            const filesBox = document.createElement("div");
+            filesBox.className = "folder-diff-files";
+            const maxInitial = 40;
+            const renderItems = (limit) => {
+              filesBox.innerHTML = items
+                .slice(0, limit)
+                .map(({ type, f }) => {
+                  if (type === "new") {
+                    return `<div class="diff-file-row">
+                      <span class="ltr"><strong>+ ${escapeHtml(f.name)}</strong></span>
+                      <span class="row" style="gap:6px;">
+                        <span class="badge badge-info">جديد</span>
+                        <span class="ltr mono">${formatBytes(f.sp_size)}</span>
+                      </span>
+                    </div>`;
+                  }
+                  return `<div class="diff-file-row">
+                    <span class="ltr"><strong>↻ ${escapeHtml(f.name)}</strong></span>
+                    <span class="row" style="gap:6px;">
+                      <span class="badge badge-warn">محدث (${escapeHtml(f.update_reason || "diff")})</span>
+                      <span class="ltr mono">${formatBytes(f.local_size)} → ${formatBytes(f.sp_size)}</span>
+                    </span>
+                  </div>`;
+                })
+                .join("");
+
+              if (items.length > limit) {
+                const moreBtn = document.createElement("button");
+                moreBtn.type = "button";
+                moreBtn.className = "btn btn-secondary btn-sm";
+                moreBtn.style.alignSelf = "flex-start";
+                moreBtn.textContent = `عرض جميع الملفات (+${items.length - limit})`;
+                moreBtn.addEventListener("click", () => renderItems(items.length));
+                filesBox.appendChild(moreBtn);
+              }
+            };
+            renderItems(maxInitial);
+            card.appendChild(filesBox);
+          }
+
+          list.appendChild(card);
+        }
+        host.appendChild(list);
+      }
+
+      $("syncCompareBtn").addEventListener("click", async () => {
+        const local_dir = $("localDirInput").value.trim();
+        if (!local_dir) {
+          showToast("يرجى تحديد المجلد المحلي للمقارنة والمزامنة أولاً", "warning");
+          return;
+        }
+        const selected = collectSelectedItems();
+        if (!selected.length) {
+          showToast("يرجى تحديد مجلد أو ملف واحد على الأقل من شجرة SharePoint", "warning");
+          return;
+        }
+        $("syncCompareBtn").disabled = true;
+        startScanPolling();
+        try {
+          const plan = await apiJson("/api/sync/compare", {
+            method: "POST",
+            body: JSON.stringify({
+              selected_items: selected,
+              local_dir,
+              include_root_name: $("includeRootNameToggle").checked,
+              root_name: state.rootNode?.item?.name || state.session?.root_name || "",
+              compare_mtime: $("compareMtimeInput").checked,
+            }),
+          });
+          state.syncPlan = plan;
+          renderSyncDiffPanel();
+          $("syncDiffCard").scrollIntoView({ behavior: "smooth", block: "start" });
+          showToast("تمت مقارنة SharePoint مع المجلد المحلي بنجاح", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          stopScanPolling();
+          $("syncCompareBtn").disabled = false;
+        }
+      });
+
+      $("startSyncDownloadBtn").addEventListener("click", async () => {
+        if (!state.syncPlan) return;
+        const local_dir = $("localDirInput").value.trim() || state.syncPlan.local_dir;
+        $("startSyncDownloadBtn").disabled = true;
+        try {
+          const data = await apiJson("/api/sync/download", {
+            method: "POST",
+            body: JSON.stringify({
+              local_dir,
+              concurrency: Number($("concurrencyInput").value || 3),
+              max_retries: Number($("maxRetriesInput").value || 10),
+              include_updated: $("syncDiffIncludeUpdated").checked,
+              create_empty_folders: $("createEmptyFoldersInput").checked,
+            }),
+          });
+          if (data.snapshot) handleSnapshot(data.snapshot);
+          $("step4Card").scrollIntoView({ behavior: "smooth", block: "start" });
+          showToast("بدأ تحميل ملفات المزامنة الجديدة", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          updateSyncStartButtonDisabled();
+        }
+      });
+
+      $("syncDiffTabs").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-sync-tab]");
+        if (!btn) return;
+        state.syncTab = btn.dataset.syncTab;
+        for (const b of $("syncDiffTabs").querySelectorAll(".chip")) {
+          b.classList.toggle("active", b === btn);
+        }
+        renderSyncBreakdown();
+      });
+
+      $("syncDiffSearch").addEventListener("input", (e) => {
+        state.syncSearch = e.target.value;
+        renderSyncBreakdown();
+      });
+
+      // ------------------------------------------------------------------
+      // Step 4: Live Download Dashboard + SSE
+      // ------------------------------------------------------------------
+      function translateJobStatus(status) {
+        return {
+          idle: ["خامل", "badge-neutral"],
+          running: ["قيد التحميل", "badge-info"],
+          paused: ["متوقف مؤقتاً", "badge-warn"],
+          completed: ["مكتمل", "badge-ok"],
+          cancelled: ["ملغي", "badge-danger"],
+        }[status] || [status || "-", "badge-neutral"];
+      }
+
+      function translateFileStatus(status) {
+        return {
+          queued: ["في الانتظار", "badge-neutral"],
+          downloading: ["جاري التحميل", "badge-info"],
+          completed: ["مكتمل", "badge-ok"],
+          skipped: ["متخطى", "badge-ok"],
+          failed: ["فشل", "badge-danger"],
+        }[status] || [status || "-", "badge-neutral"];
+      }
+
+      function handleSnapshot(snap) {
+        if (!snap || typeof snap !== "object") return;
+        const prev = state.lastSnapshot;
+        state.lastSnapshot = snap;
+
+        const [statusText, statusClass] = translateJobStatus(snap.status);
+        $("dashStatusBadge").className = `badge ${statusClass}`;
+        $("dashStatusBadge").textContent = statusText;
+        $("topJobBadge").textContent = `التحميل: ${statusText}`;
+        $("dashModeBadge").textContent = `الوضع: ${snap.mode === "sync" ? "مزامنة (Sync)" : "تحميل مباشر"}`;
+        $("dashModeBadge").className = `badge ${snap.mode === "sync" ? "badge-info" : "badge-neutral"}`;
+
+        const totalFiles = snap.total_files || 0;
+        const doneFiles = (snap.completed_files || 0) + (snap.skipped_files || 0);
+        const totalBytes = snap.total_bytes || 0;
+        const dlBytes = snap.downloaded_bytes || 0;
+        const pct = totalBytes > 0
+          ? Math.min(100, (dlBytes / totalBytes) * 100)
+          : totalFiles > 0
+          ? Math.min(100, (doneFiles / totalFiles) * 100)
+          : 0;
+
+        $("dashPct").textContent = `${pct.toFixed(1)}%`;
+        $("dashFilesSummary").textContent = `${doneFiles} / ${totalFiles} ملف`;
+        $("dashBytesSummary").textContent = `${formatBytes(dlBytes)} / ${formatBytes(totalBytes)}`;
+        $("dashCountsDetail").textContent =
+          `مكتمل: ${snap.completed_files || 0} | متخطى: ${snap.skipped_files || 0} | فشل: ${snap.failed_files || 0}`;
+        $("dashSpeed").textContent = snap.status === "running" ? formatSpeed(snap.overall_speed_bps) : "0 KB/s";
+        $("dashEta").textContent = snap.status === "running" ? formatEta(snap.eta_seconds) : "--";
+        $("dashDestDir").textContent = snap.dest_dir || "-";
+
+        const bar = $("dashProgressBar");
+        bar.style.width = `${pct.toFixed(2)}%`;
+        bar.className = "progress-bar" + (snap.status === "completed" ? " done" : snap.status === "paused" ? " paused" : "");
+
+        $("pauseBtn").disabled = snap.status !== "running";
+        $("resumeBtn").disabled = snap.status !== "paused";
+        $("retryFailedBtn").disabled = !(snap.failed_files > 0);
+        $("cancelBtn").disabled = !(snap.status === "running" || snap.status === "paused");
+
+        if (snap.status === "completed") {
+          $("navStep4").classList.add("done");
+        }
+
+        renderWorkers(snap.workers || []);
+        renderQueue(snap.files || []);
+
+        // Auto-run post-download verification or sync completion report once when job completes
+        const transitionKey = `${snap.job_id}:${snap.status}`;
+        if (snap.status === "running" && state.lastJobTransitionHandled === `${snap.job_id}:completed`) {
+          state.lastJobTransitionHandled = "";
+        }
+        const isSameJobFinish =
+          prev &&
+          prev.job_id === snap.job_id &&
+          (prev.status === "running" || prev.status === "paused") &&
+          (snap.status === "completed" || snap.status === "cancelled");
+        const isInstantFinish =
+          Boolean(snap.job_id) &&
+          (!prev || prev.job_id !== snap.job_id) &&
+          snap.status === "completed";
+        if ((isSameJobFinish || isInstantFinish) && state.lastJobTransitionHandled !== transitionKey) {
+          state.lastJobTransitionHandled = transitionKey;
+          if (snap.mode === "sync") {
+            fetchSyncReport();
+          }
+          if (snap.status === "completed" && snap.dest_dir) {
+            runVerify(snap.dest_dir, true);
+          }
+        }
+      }
+
+      function renderWorkers(workers) {
+        const grid = $("workersGrid");
+        if (!workers.length) {
+          grid.innerHTML = `<div class="banner" style="grid-column:1/-1; color:var(--text-soft);">لا توجد عملية تحميل نشطة حالياً.</div>`;
+          return;
+        }
+        grid.innerHTML = workers
+          .map((w) => {
+            const pct =
+              w.total_bytes > 0
+                ? Math.min(100, (w.downloaded_bytes / w.total_bytes) * 100)
+                : 0;
+            const cls =
+              w.status === "downloading"
+                ? "worker-card active"
+                : w.status === "retrying"
+                ? "worker-card retrying"
+                : "worker-card";
+            const statusLabel = {
+              idle: ["خامل", "badge-neutral"],
+              downloading: ["جاري التحميل", "badge-info"],
+              retrying: ["إعادة محاولة", "badge-warn"],
+              paused: ["متوقف مؤقتاً", "badge-warn"],
+            }[w.status] || [w.status, "badge-neutral"];
+
+            const folder = w.relative_path ? parentFolderOf(w.relative_path) : "-";
+            return `
+              <div class="${cls}">
+                <div class="worker-head">
+                  <span>Worker #${w.worker_id}</span>
+                  <span class="badge ${statusLabel[1]}">${statusLabel[0]}</span>
+                </div>
+                <div class="worker-file ltr" title="${escapeHtml(w.file_name || "")}">${escapeHtml(w.file_name || "في الانتظار...")}</div>
+                <div class="worker-folder ltr" title="${escapeHtml(w.relative_path || "")}">${escapeHtml(folder)}</div>
+                <div class="progress-wrap sm"><div class="progress-bar" style="width:${pct.toFixed(1)}%;"></div></div>
+                <div class="row" style="justify-content:space-between; font-size:11.5px; color:var(--text-muted);">
+                  <span class="ltr">${formatBytes(w.downloaded_bytes)} / ${formatBytes(w.total_bytes)} (${pct.toFixed(0)}%)</span>
+                  <span class="ltr">${formatSpeed(w.speed_bps)}</span>
+                </div>
+                <div style="font-size:11.5px; color:var(--text-soft);">
+                  ${w.attempt ? `محاولة ${w.attempt} • ` : ""}${escapeHtml(w.message || "")}
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderQueue(files) {
+        let cDown = 0, cQueue = 0, cDone = 0, cSkip = 0, cFail = 0, cNew = 0, cUpd = 0;
+        for (const f of files) {
+          if (f.status === "downloading") cDown++;
+          else if (f.status === "queued") cQueue++;
+          else if (f.status === "completed") cDone++;
+          else if (f.status === "skipped") cSkip++;
+          else if (f.status === "failed") cFail++;
+          if (f.sync_reason === "new") cNew++;
+          if (f.sync_reason === "updated") cUpd++;
+        }
+        $("cntAll").textContent = files.length;
+        $("cntDownloading").textContent = cDown;
+        $("cntQueued").textContent = cQueue;
+        $("cntCompleted").textContent = cDone;
+        $("cntSkipped").textContent = cSkip;
+        $("cntFailed").textContent = cFail;
+        $("cntNew").textContent = cNew;
+        $("cntUpdated").textContent = cUpd;
+
+        const q = state.queueSearch.trim().toLowerCase();
+        const filtered = files.filter((f) => {
+          if (state.queueFilter === "sync_new" && f.sync_reason !== "new") return false;
+          else if (state.queueFilter === "sync_updated" && f.sync_reason !== "updated") return false;
+          else if (
+            state.queueFilter !== "all" &&
+            state.queueFilter !== "sync_new" &&
+            state.queueFilter !== "sync_updated" &&
+            f.status !== state.queueFilter
+          ) {
+            return false;
+          }
+          if (q) {
+            const hay = `${f.relative_path || ""} ${f.name || ""} ${f.error || ""}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (state.queuePage > totalPages) state.queuePage = totalPages;
+        if (state.queuePage < 1) state.queuePage = 1;
+
+        const start = (state.queuePage - 1) * PAGE_SIZE;
+        const pageRows = filtered.slice(start, start + PAGE_SIZE);
+        const tbody = $("queueTableBody");
+
+        if (!pageRows.length) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-soft); padding:20px;">لا توجد ملفات مطابقة للفلتر الحالي.</td></tr>`;
+        } else {
+          tbody.innerHTML = pageRows
+            .map((f, idx) => {
+              const pct =
+                f.size > 0
+                  ? Math.min(100, ((f.downloaded_bytes || 0) / f.size) * 100)
+                  : f.status === "completed" || f.status === "skipped"
+                  ? 100
+                  : 0;
+              const [stText, stCls] = translateFileStatus(f.status);
+              const syncTag =
+                f.sync_reason === "new"
+                  ? `<span class="badge badge-info">جديد</span>`
+                  : f.sync_reason === "updated"
+                  ? `<span class="badge badge-warn">محدث</span>`
+                  : "";
+              return `
+                <tr>
+                  <td>${start + idx + 1}</td>
+                  <td>
+                    <div class="row" style="gap:6px;">
+                      <strong class="ltr">${escapeHtml(f.name)}</strong>
+                      ${syncTag}
+                    </div>
+                    <div class="ltr mono" style="font-size:11.5px; color:var(--text-soft); overflow-wrap:anywhere;">${escapeHtml(f.relative_path)}</div>
+                  </td>
+                  <td class="ltr mono">${formatBytes(f.size)}</td>
+                  <td>
+                    <div class="progress-wrap sm"><div class="progress-bar ${f.status === "completed" || f.status === "skipped" ? "done" : ""}" style="width:${pct.toFixed(0)}%;"></div></div>
+                    <div class="ltr" style="font-size:11px; color:var(--text-muted); margin-top:2px;">${formatBytes(f.downloaded_bytes || 0)} (${pct.toFixed(0)}%)</div>
+                  </td>
+                  <td><span class="badge ${stCls}">${stText}</span></td>
+                  <td>${f.attempts || 0}</td>
+                  <td style="font-size:12px; color:var(--danger); overflow-wrap:anywhere;">${escapeHtml(f.error || "")}</td>
+                </tr>
+              `;
+            })
+            .join("");
+        }
+
+        const endIdx = Math.min(filtered.length, start + pageRows.length);
+        $("queuePageInfo").textContent = filtered.length
+          ? `صفحة ${state.queuePage} من ${totalPages} (عرض ${start + 1}–${endIdx} من ${filtered.length})`
+          : "عرض 0 من 0";
+        $("queuePrevBtn").disabled = state.queuePage <= 1;
+        $("queueNextBtn").disabled = state.queuePage >= totalPages;
+      }
+
+      $("queueFilterBar").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-filter]");
+        if (!btn) return;
+        state.queueFilter = btn.dataset.filter;
+        state.queuePage = 1;
+        for (const b of $("queueFilterBar").querySelectorAll(".chip")) {
+          b.classList.toggle("active", b === btn);
+        }
+        renderQueue(state.lastSnapshot?.files || []);
+      });
+
+      $("queueSearchInput").addEventListener("input", (e) => {
+        state.queueSearch = e.target.value;
+        state.queuePage = 1;
+        renderQueue(state.lastSnapshot?.files || []);
+      });
+
+      $("queuePrevBtn").addEventListener("click", () => {
+        state.queuePage = Math.max(1, state.queuePage - 1);
+        renderQueue(state.lastSnapshot?.files || []);
+      });
+      $("queueNextBtn").addEventListener("click", () => {
+        state.queuePage += 1;
+        renderQueue(state.lastSnapshot?.files || []);
+      });
+
+      $("pauseBtn").addEventListener("click", async () => {
+        try {
+          const d = await apiJson("/api/download/pause", { method: "POST" });
+          handleSnapshot(d.snapshot);
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+      $("resumeBtn").addEventListener("click", async () => {
+        try {
+          const d = await apiJson("/api/download/resume", { method: "POST" });
+          handleSnapshot(d.snapshot);
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+      $("retryFailedBtn").addEventListener("click", async () => {
+        try {
+          const d = await apiJson("/api/download/retry-failed", { method: "POST" });
+          handleSnapshot(d.snapshot);
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+      $("cancelBtn").addEventListener("click", async () => {
+        try {
+          const d = await apiJson("/api/download/cancel", { method: "POST" });
+          handleSnapshot(d.snapshot);
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      function connectSSE() {
+        if (state.eventSource) {
+          state.eventSource.close();
+        }
+        const es = new EventSource("/api/download/events");
+        state.eventSource = es;
+
+        es.onopen = () => {
+          $("topSseDot").className = "dot busy";
+          $("topSseText").textContent = "SSE: متصل";
+        };
+        es.addEventListener("snapshot", (ev) => {
+          $("topSseDot").className = "dot ok";
+          $("topSseText").textContent = "SSE: بث حي";
+          try {
+            handleSnapshot(JSON.parse(ev.data));
+          } catch {}
+        });
+        es.onerror = () => {
+          $("topSseDot").className = "dot warn";
+          $("topSseText").textContent = "SSE: إعادة اتصال...";
+        };
+      }
+
+      // ------------------------------------------------------------------
+      // Step 5: Verification & Post-Sync Completion Report
+      // ------------------------------------------------------------------
+      async function runVerify(explicitDestDir = null, quiet = false) {
+        const dest_dir = (explicitDestDir || $("localDirInput").value || state.lastSnapshot?.dest_dir || "").trim();
+        if (!dest_dir) {
+          if (!quiet) showToast("يرجى تحديد مجلد التحقق المحلي أولاً", "warning");
+          return;
+        }
+        $("runVerifyBtn").disabled = true;
+        try {
+          const report = await apiJson("/api/verify", {
+            method: "POST",
+            body: JSON.stringify({ dest_dir }),
+          });
+          state.verifyReport = report;
+          state.verifyPage = 1;
+          renderVerifyReport();
+          $("navStep5").classList.add("done");
+          if (!quiet) showToast(report.all_ok ? "التحقق ناجح 100%" : "تم التحقق مع وجود ملفات تحتاج معالجة", report.all_ok ? "success" : "warning");
+        } catch (err) {
+          if (!quiet) showToast(err.message, "error");
+        } finally {
+          $("runVerifyBtn").disabled = false;
+        }
+      }
+
+      function renderVerifyReport() {
+        const r = state.verifyReport;
+        if (!r) return;
+
+        const banner = $("verifyBanner");
+        if (r.all_ok) {
+          banner.className = "banner ok";
+          banner.innerHTML = `<strong>تم التحقق بنجاح 100%:</strong> جميع المجلدات (${r.verified_folders}/${r.total_folders}) وجميع الملفات (${r.verified_files}/${r.total_files}) مطابقة تماماً على القرص المحلي.`;
+          $("fixMissingBtn").classList.add("hidden");
+        } else {
+          banner.className = "banner warn";
+          banner.innerHTML = `<strong>يوجد نواقص أو عدم تطابق:</strong> ناقص ${r.missing_files} | اختلاف حجم ${r.size_mismatch_files} | غير مكتمل (.part) ${r.incomplete_part_files} | مجلدات ناقصة ${r.missing_folders}.`;
+          const retryCount = (r.retry_manifest?.files || []).length + (r.retry_manifest?.folders || []).length;
+          if (retryCount > 0) {
+            $("fixMissingBtn").classList.remove("hidden");
+          } else {
+            $("fixMissingBtn").classList.add("hidden");
+          }
+        }
+
+        const kpis = $("verifyKpis");
+        kpis.classList.remove("hidden");
+        kpis.innerHTML = `
+          <div class="kpi-card">
+            <div class="kpi-label">إجمالي الملفات</div>
+            <div class="kpi-val">${r.total_files}</div>
+            <div class="kpi-sub">المجلدات: ${r.verified_folders} / ${r.total_folders}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">مطابقة ومكتملة</div>
+            <div class="kpi-val" style="color:var(--success);">${r.verified_files}</div>
+            <div class="kpi-sub ltr">${formatBytes(r.total_verified_bytes)} / ${formatBytes(r.total_expected_bytes)}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات ناقصة</div>
+            <div class="kpi-val" style="color:var(--danger);">${r.missing_files}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">اختلاف حجم</div>
+            <div class="kpi-val" style="color:var(--warning);">${r.size_mismatch_files}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">غير مكتملة (.part)</div>
+            <div class="kpi-val" style="color:var(--warning);">${r.incomplete_part_files}</div>
+          </div>
+        `;
+
+        renderVerifyTable();
+      }
+
+      function renderVerifyTable() {
+        const r = state.verifyReport;
+        if (!r) return;
+        const items = r.items || [];
+        const filtered =
+          state.verifyFilter === "issues"
+            ? items.filter((i) => i.status !== "verified")
+            : items;
+
+        $("verifyTableWrap").classList.remove("hidden");
+        $("verifyPagination").classList.remove("hidden");
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (state.verifyPage > totalPages) state.verifyPage = totalPages;
+        if (state.verifyPage < 1) state.verifyPage = 1;
+        const start = (state.verifyPage - 1) * PAGE_SIZE;
+        const slice = filtered.slice(start, start + PAGE_SIZE);
+
+        const tbody = $("verifyTableBody");
+        if (!slice.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--success); padding:18px;">لا توجد ملفات غير مطابقة!</td></tr>`;
+        } else {
+          const labels = {
+            verified: ["مطابق", "badge-ok"],
+            missing: ["مفقود", "badge-danger"],
+            size_mismatch: ["اختلاف حجم", "badge-warn"],
+            incomplete_part: ["ملف .part غير مكتمل", "badge-warn"],
+          };
+          tbody.innerHTML = slice
+            .map((it, idx) => {
+              const [lbl, cls] = labels[it.status] || [it.status, "badge-neutral"];
+              return `
+                <tr>
+                  <td>${start + idx + 1}</td>
+                  <td>
+                    <div class="ltr"><strong>${escapeHtml(it.name)}</strong></div>
+                    <div class="ltr mono" style="font-size:11.5px; color:var(--text-soft);">${escapeHtml(it.relative_path)}</div>
+                  </td>
+                  <td class="ltr mono">${formatBytes(it.expected_size)}</td>
+                  <td class="ltr mono">${formatBytes(it.local_size)}</td>
+                  <td><span class="badge ${cls}">${lbl}</span></td>
+                </tr>
+              `;
+            })
+            .join("");
+        }
+
+        const endIdx = Math.min(filtered.length, start + slice.length);
+        $("verifyPageInfo").textContent = filtered.length
+          ? `صفحة ${state.verifyPage} من ${totalPages} (عرض ${start + 1}–${endIdx} من ${filtered.length})`
+          : "عرض 0 من 0";
+        $("verifyPrevBtn").disabled = state.verifyPage <= 1;
+        $("verifyNextBtn").disabled = state.verifyPage >= totalPages;
+      }
+
+      async function fetchSyncReport() {
+        try {
+          const rep = await apiJson("/api/sync/report");
+          renderSyncCompletionReport(rep);
+          $("navStep5").classList.add("done");
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function renderSyncCompletionReport(rep) {
+        if (!rep) return;
+        const sec = $("syncCompletionSection");
+        sec.classList.remove("hidden");
+
+        $("syncReportKpis").innerHTML = `
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات جديدة نزلت</div>
+            <div class="kpi-val" style="color:var(--success);">${rep.newly_downloaded_count || 0}</div>
+            <div class="kpi-sub">${(rep.new_folders || []).length} مجلد جديد</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات محدثة نزلت</div>
+            <div class="kpi-val" style="color:var(--accent);">${rep.updated_downloaded_count || 0}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات مطابقة / متخطاة</div>
+            <div class="kpi-val">${rep.skipped_total_count || 0}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">ملفات فاشلة</div>
+            <div class="kpi-val" style="color:var(--danger);">${rep.failed_count || 0}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">إجمالي الحجم المنزّل</div>
+            <div class="kpi-val ltr">${formatBytes(rep.total_downloaded_bytes || 0)}</div>
+          </div>
+        `;
+
+        const host = $("syncReportByFolder");
+        const groups = rep.downloaded_by_folder || [];
+        if (!groups.length && !(rep.failed_files || []).length) {
+          host.innerHTML = `<div class="banner">لم يتم تنزيل ملفات جديدة في هذه الجولة.</div>`;
+          return;
+        }
+
+        host.innerHTML = groups
+          .map((g) => {
+            const rows = [
+              ...(g.new_files || []).map((f) => `<div class="diff-file-row"><span class="ltr">+ ${escapeHtml(f.name)}</span><span class="row"><span class="badge badge-ok">جديد نزل</span><span class="ltr mono">${formatBytes(f.downloaded_bytes || f.size)}</span></span></div>`),
+              ...(g.updated_files || []).map((f) => `<div class="diff-file-row"><span class="ltr">↻ ${escapeHtml(f.name)}</span><span class="row"><span class="badge badge-info">محدث نزل</span><span class="ltr mono">${formatBytes(f.downloaded_bytes || f.size)}</span></span></div>`),
+            ].join("");
+            return `
+              <div class="folder-diff-card">
+                <div class="folder-diff-head">
+                  <span class="ltr mono" style="font-weight:700;">📁 ${escapeHtml(g.folder)}</span>
+                  <div class="row" style="gap:6px;">
+                    ${g.new_count ? `<span class="badge badge-ok">جديد: ${g.new_count}</span>` : ""}
+                    ${g.updated_count ? `<span class="badge badge-info">محدث: ${g.updated_count}</span>` : ""}
+                    <span class="badge badge-neutral ltr">${formatBytes(g.total_bytes || 0)}</span>
+                  </div>
+                </div>
+                <div class="folder-diff-files">${rows}</div>
+              </div>
+            `;
+          })
+          .join("");
+
+        if ((rep.failed_files || []).length > 0) {
+          const failedHtml = (rep.failed_files || [])
+            .map((f) => `<div class="diff-file-row"><span class="ltr mono">${escapeHtml(f.relative_path)}</span><span style="color:var(--danger);">${escapeHtml(f.error || "فشل")}</span></div>`)
+            .join("");
+          host.innerHTML += `
+            <div class="folder-diff-card" style="border-color:#fecaca;">
+              <div class="folder-diff-head" style="background:var(--danger-bg);">
+                <strong style="color:var(--danger);">ملفات فشل تنزيلها (${rep.failed_count})</strong>
+              </div>
+              <div class="folder-diff-files">${failedHtml}</div>
+            </div>
+          `;
+        }
+      }
+
+      $("runVerifyBtn").addEventListener("click", () => runVerify(null, false));
+      $("fixMissingBtn").addEventListener("click", async () => {
+        if (!state.verifyReport?.retry_manifest) return;
+        const dest_dir = state.verifyReport.dest_dir || $("localDirInput").value.trim();
+        $("localDirInput").value = dest_dir;
+        try {
+          await startDirectDownload(state.verifyReport.retry_manifest, false);
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+      $("refreshSyncReportBtn").addEventListener("click", fetchSyncReport);
+
+      document.querySelectorAll("[data-verify-filter]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.verifyFilter = btn.dataset.verifyFilter;
+          state.verifyPage = 1;
+          document.querySelectorAll("[data-verify-filter]").forEach((b) => b.classList.toggle("active", b === btn));
+          renderVerifyTable();
+        });
+      });
+
+      $("verifyPrevBtn").addEventListener("click", () => {
+        state.verifyPage = Math.max(1, state.verifyPage - 1);
+        renderVerifyTable();
+      });
+      $("verifyNextBtn").addEventListener("click", () => {
+        state.verifyPage += 1;
+        renderVerifyTable();
+      });
+
+      // ------------------------------------------------------------------
+      // Boot
+      // ------------------------------------------------------------------
+      async function boot() {
+        await refreshAuthStatus(false);
+        try {
+          const snap = await apiJson("/api/download/status");
+          if (snap && (snap.total_files > 0 || snap.status !== "idle")) {
+            handleSnapshot(snap);
+            if (snap.dest_dir && !$("localDirInput").value.trim()) {
+              $("localDirInput").value = snap.dest_dir;
+            }
+          }
+        } catch {}
+        updatePathPreview();
+        connectSSE();
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>

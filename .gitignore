@@ -1,0 +1,42 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Authentication tokens, cookies, and local session caches (DO NOT COMMIT)
+session_cache.json
+playwright-user-data/
+browser_profile/
+*.cookie
+*.cookies
+
+# Download folders, temporary files, and partial streams
+downloads/
+temp/
+*.part
+*.tmp
+
+# Verification and audit reports
+*.csv
+audit_*.json
+
+# IDEs, Editors and OS metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+Thumbs.db
+Desktop.ini
+.DS_Store
