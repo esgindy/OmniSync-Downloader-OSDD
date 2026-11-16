@@ -5,7 +5,7 @@
 **Resilient Multi-Source File Streamer & Sync Engine**  
 *أداة التحميل المباشر والمزامنة الذكية للملفات والمجلدات الضخمة*
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0-success.svg)](https://github.com/)
+[![Release](https://img.shields.io/badge/Release-v3.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
@@ -24,13 +24,21 @@
 **OmniSync-Downloader (OSDD)** is a high-performance, open-source tool and web dashboard designed to eliminate the common headaches of downloading and synchronizing large directories from cloud and local/network storage.
 
 - In **v1.0**, OSDD solved Microsoft SharePoint and OneDrive folder downloads by pulling files **directly file-by-file**, bypassing server-side zip compression that leads to corrupted archives, download timeouts, and the restrictive 250 GB / 10,000 file caps.
-- In **v2.0**, OSDD introduces a native **Drive-to-Drive / Disk-to-Disk Sync & Deep Audit Engine** with chunked streaming SHA-256 verification (< 5MB RAM even for 100GB+ files), live dashboard indicators (speed, downloaded vs. remaining volume, remaining files), 1-click silent background execution, and automatic process termination when the browser closes.
+- In **v2.0**, OSDD introduced a native **Drive-to-Drive / Disk-to-Disk Sync & Deep Audit Engine** with chunked streaming SHA-256 verification (< 5MB RAM even for 100GB+ files), live dashboard indicators (speed, downloaded vs. remaining volume, remaining files), 1-click silent background execution, and automatic process termination when the browser closes.
+- In **v3.0**, OSDD introduces **Google Drive Direct Streaming & Cloud-to-Cloud Bridge**: file-by-file direct download of Google Drive shared links (bypassing the 2GB zip limit and download timeouts), direct stream piping between cloud providers (e.g. SharePoint to Google Drive / OneDrive), top-positioned live dashboard, and a built-in 8-language localization engine.
 
 ---
 
-### ✨ Features (v2.0)
+### ✨ Features (v3.0)
 
-#### 💽 Drive-to-Drive / Disk-to-Disk Sync & Deep Audit (New in v2.0)
+#### 🌐 Google Drive Direct Streaming & Cloud-to-Cloud Bridge (New in v3.0)
+- **Google Drive File-by-File Streaming:** Download large Google Drive shared folders and files directly without waiting for Google to zip them (no 2GB zip splitting, no archive corruption).
+- **Virus Scan Warning Bypass:** Automatic token handling for large files that trigger Google's antivirus warning page.
+- **Direct Cloud-to-Cloud Bridge:** Stream-pipe files directly between cloud sources (SharePoint, OneDrive, Google Drive) without needing full intermediate disk caching.
+- **Top Live Dashboard:** Live download speedometer, progress KPIs, and remaining counters pinned to the top of the interface.
+- **Multi-Language Switcher (8 Languages):** Instant UI localization supporting Arabic (العربية), English, Spanish (Español), French (Français), German (Deutsch), Chinese (中文), Russian (Русский), and Portuguese (Português).
+
+#### 💽 Drive-to-Drive / Disk-to-Disk Sync & Deep Audit (v2.0)
 - **Directory Tree Comparison:** Compare folders across different drives, external USB HDDs, or NAS network shares.
 - **Delta Sync (Copy-based, Non-destructive):** Detects and copies **only new and modified files**; original source files are untouched.
 - **Streaming SHA-256 Deep Audit:** 1MB chunked cryptographic hash verification with **< 5MB RAM consumption** even on massive 100GB+ files.
@@ -92,13 +100,21 @@ playwright install chromium
 **OmniSync-Downloader (OSDD)** هي أداة برمجية مفتوحة المصدر عالية الأداء تم بناؤها للتغلب على مشاكل تحميل ومزامنة المجلدات والمكتبات الضخمة من السحابة ووحدات التخزين المحلية والشبكية.
 
 - في **الإصدار v1.0**، ركز البرنامج على حل مشاكل تحميل مجلدات **Microsoft SharePoint** و **OneDrive** عبر سحب الملفات مباشرة **ملفاً بملف** دون تجميعها في ملف مضغوط (Zip)، مما يمنع تلف الملفات ويتجاوز حدود شيربوينت الصارمة (250GB أو 10,000 ملف).
-- في **الإصدار v2.0**، يقدم البرنامج ميزة **مزامنة وتدقيق الملفات بين هاردين أو جهازين (Drive-to-Drive Sync & Deep Audit)** بفحص الهاش المتدفق (SHA-256) للملفات العملاقة (+100GB) باستهلاك رام أقل من 5 ميجابايت، مع مؤشرات حية في الداش بورد لحجم وعدد الملفات المتبقية والسرعة اللحظية، وتشغيل صامت بالكامل وإيقاف تلقائي عند إغلاق المتصفح.
+- في **الإصدار v2.0**، قدم البرنامج ميزة **مزامنة وتدقيق الملفات بين هاردين أو جهازين (Drive-to-Drive Sync & Deep Audit)** بفحص الهاش المتدفق (SHA-256) للملفات العملاقة (+100GB) باستهلاك رام أقل من 5 ميجابايت، مع مؤشرات حية في الداش بورد لحجم وعدد الملفات المتبقية والسرعة اللحظية، وتشغيل صامت بالكامل وإيقاف تلقائي عند إغلاق المتصفح.
+- في **الإصدار v3.0**، يضيف البرنامج دعم **التحميل المباشر من Google Drive وجسر النقل السحابي (Cloud-to-Cloud Bridge)**: تحميل ملفات ومجلدات جوجل درايف ملفاً بملف متجاوزاً قيود الضغط (حد الـ 2GB وتجزئة الملفات المضغوطة)، ونقل مباشر من سحابة إلى سحابة (مثل SharePoint إلى Google Drive أو OneDrive)، مع تثبيت لوحة المتابعة الحية في أعلى الواجهة، ومبدل لغات فوري يدعم أشهر 8 لغات عالمية.
 
 ---
 
-### ✨ أبرز مميزات الإصدار v2.0
+### ✨ أبرز مميزات الإصدار v3.0
 
-#### 💽 مزامنة وتدقيق هارد لهارد (جديد في v2.0)
+#### 🌐 التحميل المباشر من Google Drive وجسر السحاب (جديد في v3.0)
+- **سحب ملفات ومجلدات جوجل درايف مباشرة:** تحميل المجلدات والملفات الضخمة بدون انتظار جوجل لضغطها، متجاوزاً تجزئة ملفات Zip وتلف الأرشيف.
+- **تخطي تحذير فحص الفيروسات تلقائياً:** التعامل الذكي مع صفحات تأكيد التحميل للملفات الكبيرة في جوجل درايف دون توقف.
+- **جسر النقل من سحابة لسحابة (Cloud-to-Cloud Bridge):** تدفق مباشر للملفات بين المنصات السحابية (SharePoint, OneDrive, Google Drive) دون الحاجة لمساحة تخزين وسيطة كاملة على القرص المحلي.
+- **لوحة متابعة حية في قمة الصفحة:** عرض عداد السرعة وحجم وعدد الملفات المتبقية والوقت المتوقع في مكان بارز بأعلى الشاشة.
+- **مبدل لغات فوري (8 لغات):** دعم كامل للغة العربية والإنجليزية والإسبانية والفرنسية والألمانية والصينية والروسية والبرتغالية.
+
+#### 💽 مزامنة وتدقيق هارد لهارد (v2.0)
 - **مقارنة شجرة المجلدات:** فحص ومقارنة محتويات مجلدين على هاردين مختلفين أو عبر الشبكة (NAS / SMB).
 - **مزامنة ذكية بالنسخ (Delta Sync Copy):** نقل ونسخ **الملفات الجديدة والمعدلة فقط** مع الحفاظ على ملفات المصدر الأصلية بنسبة 100% دون مساس بها.
 - **فحص التطابق العميق (Streaming SHA-256):** فحص رقمي متدفق بقطع 1 ميجابايت يستهلك **أقل من 5 ميجابايت رام** حتى مع الملفات الضخمة جداً (+100GB).

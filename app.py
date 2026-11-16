@@ -33,6 +33,12 @@ if sys.platform == "win32":
 from downloader import DownloadManager, MANIFEST_FILENAME  # noqa: E402
 from sp_auth import BrowserAuthManager  # noqa: E402
 from sp_client import SPItem, SharePointClient  # noqa: E402
+from gdrive_client import (  # noqa: E402
+    CloudToCloudBridge,
+    GDriveClient,
+    extract_gdrive_id,
+    get_gdrive_direct_download_url,
+)
 from sync_engine import (  # noqa: E402
     DiskSyncManager,
     build_sync_completion_report,
@@ -64,6 +70,8 @@ class AppState:
         self.current_sync_plan: Optional[dict[str, Any]] = None
         self.disk_sync_manager = DiskSyncManager()
         self.current_disk_compare_result: Optional[dict[str, Any]] = None
+        self.gdrive_client = GDriveClient()
+        self.cloud_bridge = CloudToCloudBridge()
         self.scan_lock = asyncio.Lock()
         self.scan_state: dict[str, Any] = self._empty_scan_state()
 
@@ -1006,6 +1014,104 @@ async def api_disk_sync_status(request: Request) -> JSONResponse:
 
 
 # ---------------------------------------------------------------------------
+# Routes: Google Drive & Cloud-to-Cloud Bridge (v3.0)
+# ---------------------------------------------------------------------------
+
+
+async def api_gdrive_parse(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    url = (body.get("url") or "").strip()
+    item_id, item_type = extract_gdrive_id(url)
+    return JSONResponse({"item_id": item_id, "item_type": item_type, "valid": bool(item_id)})
+
+
+async def api_gdrive_scan(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    url = (body.get("url") or "").strip()
+    api_key = (body.get("api_key") or "").strip() or None
+    item_id, item_type = extract_gdrive_id(url)
+    if not item_id:
+        return JSONResponse({"error": "رابط Google Drive غير صالح أو لم يتم التعرف على معرّف المجلد"}, status_code=400)
+
+    try:
+        manifest = await state.gdrive_client.scan_folder(item_id, folder_name=f"GDrive_{item_id[:8]}", api_key=api_key)
+        state.current_manifest = manifest
+        return JSONResponse({"status": "ok", "manifest": manifest})
+    except Exception as exc:
+        return JSONResponse({"error": f"فشل فحص مجلد Google Drive: {exc}"}, status_code=500)
+
+
+async def api_gdrive_download(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    dest_dir = (body.get("dest_dir") or "").strip()
+    if not dest_dir:
+        return JSONResponse({"error": "يرجى تحديد مجلد الحفظ المحلي"}, status_code=400)
+
+    manifest = body.get("manifest") or state.current_manifest
+    if not manifest or not manifest.get("files"):
+        return JSONResponse({"error": "لا توجد ملفات محددة للتحميل من Google Drive"}, status_code=400)
+
+    raw_files = manifest.get("files") or []
+    sp_items = []
+    for f in raw_files:
+        sp_items.append(
+            SPItem(
+                name=f.get("name") or "unnamed",
+                is_folder=False,
+                size=f.get("size") or 0,
+                relative_path=f.get("relative_path") or f.get("name") or "",
+                download_url=f.get("download_url") or get_gdrive_direct_download_url(f.get("item_id")),
+            )
+        )
+
+    folders = list(manifest.get("folders") or [])
+    create_empty = bool(body.get("create_empty_folders", True))
+
+    await state.download_manager.start_job(
+        items=sp_items,
+        dest_dir=dest_dir,
+        folders=folders,
+        create_empty_folders=create_empty,
+        mode="direct",
+    )
+    return JSONResponse({"status": "started", "snapshot": state.download_manager.get_snapshot()})
+
+
+async def api_cloud_bridge_start(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+    src_url = (body.get("source_url") or "").strip()
+    tgt_url = (body.get("target_url") or "").strip()
+    src_type = (body.get("source_type") or "gdrive").strip()
+    tgt_type = (body.get("target_type") or "onedrive").strip()
+
+    if not src_url or not tgt_url:
+        return JSONResponse({"error": "يرجى إدخال رابط المصدر السحابي ورابط الهدف السحابي"}, status_code=400)
+
+    state.cloud_bridge.start_pipeline(src_url, tgt_url, src_type, tgt_type, [])
+    return JSONResponse({"status": "started", "snapshot": state.cloud_bridge.get_snapshot()})
+
+
+async def api_cloud_bridge_status(request: Request) -> JSONResponse:
+    return JSONResponse(state.cloud_bridge.get_snapshot())
+
+
+# ---------------------------------------------------------------------------
 # App Lifecycle & Entrypoint
 # ---------------------------------------------------------------------------
 
@@ -1047,6 +1153,11 @@ routes = [
     Route("/api/disk/sync/resume", api_disk_sync_resume, methods=["POST"]),
     Route("/api/disk/sync/cancel", api_disk_sync_cancel, methods=["POST"]),
     Route("/api/disk/sync/status", api_disk_sync_status, methods=["GET"]),
+    Route("/api/gdrive/parse", api_gdrive_parse, methods=["POST"]),
+    Route("/api/gdrive/scan", api_gdrive_scan, methods=["POST"]),
+    Route("/api/gdrive/download", api_gdrive_download, methods=["POST"]),
+    Route("/api/cloud-bridge/start", api_cloud_bridge_start, methods=["POST"]),
+    Route("/api/cloud-bridge/status", api_cloud_bridge_status, methods=["GET"]),
     Route("/api/sp/set-url", api_sp_set_url, methods=["POST"]),
     Route("/api/sp/root", api_sp_root, methods=["GET"]),
     Route("/api/sp/children", api_sp_children, methods=["POST"]),

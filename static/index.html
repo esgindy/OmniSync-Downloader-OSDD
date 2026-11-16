@@ -760,6 +760,7 @@
       <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span data-i18n="nav_local_dir">المجلد المحلي والتشغيل</span></a>
       <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">4</span><span data-i18n="nav_verify">التحقق وتقرير المزامنة</span></a>
       <a class="step-chip" href="#diskSyncCard" id="navDiskSync" style="border:1.5px solid var(--accent); background:rgba(29, 78, 216, 0.06);"><span class="num" style="background:var(--accent); color:#fff; font-weight:700;">v2</span><span data-i18n="nav_disk_sync">مزامنة هارد لهارد (Drive-to-Drive)</span></a>
+      <a class="step-chip" href="#cloudBridgeCard" id="navCloudBridge" style="border:1.5px solid #8b5cf6; background:rgba(139, 92, 246, 0.08);"><span class="num" style="background:#8b5cf6; color:#fff; font-weight:700;">v3</span><span data-i18n="nav_cloud_bridge">Google Drive وجسر السحابات</span></a>
     </nav>
 
     <!-- LIVE DOWNLOAD DASHBOARD (Always at the top) -->
@@ -1333,6 +1334,112 @@
               </thead>
               <tbody id="diskTableBody"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 7: Google Drive Direct Download & Cloud-to-Cloud Bridge (v3.0) -->
+    <section class="card" id="cloudBridgeCard" style="border:1.5px solid #8b5cf6; box-shadow:0 6px 20px rgba(139, 92, 246, 0.1);">
+      <div class="card-header" style="background:linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(29, 78, 216, 0.06) 100%);">
+        <div>
+          <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
+            <span class="step-badge" style="background:#8b5cf6; color:#fff;">v3.0</span>
+            <span data-i18n="title_cloud_bridge">Google Drive وجسر السحابات المباشر (Cloud-to-Cloud Bridge)</span>
+          </h2>
+          <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-soft);" data-i18n="sub_cloud_bridge">
+            تحميل مجلدات Google Drive ملفاً بملف وتجاوز حدود الـ Zip، ونقل البيانات مباشرة من رابط سحابي إلى رابط سحابي آخر (SharePoint / OneDrive / GDrive).
+          </p>
+        </div>
+        <div class="row">
+          <span class="badge badge-neutral" id="gdriveStatusBadge">Google Drive: خامل</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Sub Mode Switcher Tabs -->
+        <div style="display:flex; gap:8px; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <button class="chip active" id="tabGdriveDownload" type="button" style="font-weight:700;">
+            1. تحميل Google Drive ملفاً بملف (بدون ضغط)
+          </button>
+          <button class="chip" id="tabCloudBridge" type="button" style="font-weight:700;">
+            2. جسر نقل سحابة لسحابة (SharePoint ⇄ OneDrive ⇄ GDrive)
+          </button>
+        </div>
+
+        <!-- Panel 1: Google Drive Direct Download -->
+        <div id="panelGdriveDownload">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+            <div>
+              <label class="field-label" for="gdriveUrlInput"><strong>رابط مجلد أو ملف Google Drive:</strong></label>
+              <div class="row">
+                <div class="grow">
+                  <input type="url" id="gdriveUrlInput" class="ltr" placeholder="https://drive.google.com/drive/folders/1aBcDeFg..." />
+                </div>
+                <button class="btn btn-primary btn-sm" id="gdriveScanBtn" type="button">فحص المجلد</button>
+              </div>
+            </div>
+            <div>
+              <label class="field-label" for="gdriveLocalDirInput"><strong>مجلد الحفظ المحلي:</strong></label>
+              <div class="row">
+                <div class="grow">
+                  <input type="text" id="gdriveLocalDirInput" class="ltr" placeholder="D:\Downloads\GDrive_Project" />
+                </div>
+                <button class="btn btn-secondary btn-sm" id="pickGdriveDirBtn" type="button">اختيار المجلد</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="gdriveApiKeyInput" class="ltr mono" placeholder="Google Drive API Key (اختياري للمجلدات المقيدة)" style="flex:1; max-width:400px; font-size:12px;" />
+            <button class="btn btn-primary" id="gdriveStartDownloadBtn" type="button" disabled style="font-weight:700;">
+              بدء التحميل ملفاً بملف عبر الداش بورد
+            </button>
+          </div>
+
+          <div id="gdriveScanResultsBanner" class="banner ok hidden" style="margin-top:14px;"></div>
+        </div>
+
+        <!-- Panel 2: Cloud-to-Cloud Bridge -->
+        <div id="panelCloudBridge" class="hidden">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+            <div style="background:var(--surface-alt); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+              <label class="field-label"><strong>المصدر السحابي (Cloud Source):</strong></label>
+              <select id="bridgeSourceType" style="margin-bottom:8px; width:100%; padding:6px; border-radius:6px; border:1px solid var(--border);">
+                <option value="sharepoint">Microsoft SharePoint</option>
+                <option value="onedrive">Microsoft OneDrive</option>
+                <option value="gdrive">Google Drive</option>
+              </select>
+              <input type="url" id="bridgeSourceUrl" class="ltr" placeholder="رابط المصدر السحابي (SharePoint / OneDrive / GDrive)..." style="width:100%;" />
+            </div>
+
+            <div style="background:var(--surface-alt); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+              <label class="field-label"><strong>الهدف السحابي (Cloud Destination):</strong></label>
+              <select id="bridgeTargetType" style="margin-bottom:8px; width:100%; padding:6px; border-radius:6px; border:1px solid var(--border);">
+                <option value="onedrive">Microsoft OneDrive</option>
+                <option value="gdrive">Google Drive</option>
+                <option value="sharepoint">Microsoft SharePoint</option>
+              </select>
+              <input type="url" id="bridgeTargetUrl" class="ltr" placeholder="رابط الهدف السحابي (OneDrive / GDrive / SharePoint)..." style="width:100%;" />
+            </div>
+          </div>
+
+          <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <span style="font-size:13px; color:var(--text-soft);">
+              يتم النقل بالتدفق المباشر (Stream Piping) دون الحاجة لتنزيل وتخزين الملف بالكامل في الجهاز أولاً.
+            </span>
+            <button class="btn btn-primary" id="startBridgePipelineBtn" type="button" style="background:#8b5cf6; border-color:#7c3aed; font-weight:700;">
+              بدء التدفق السحابي المباشر (Cloud Pipe)
+            </button>
+          </div>
+
+          <div id="bridgeDashboard" class="hidden" style="margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm);">
+            <div class="row" style="justify-content:space-between;">
+              <span id="bridgeStatusText" style="font-weight:700; color:var(--accent);">الحالة: جاري التدفق السحابي...</span>
+              <span id="bridgeSpeedText" class="ltr mono">0 KB/s</span>
+            </div>
+            <div class="progress-wrap" style="margin-top:8px;">
+              <div class="progress-bar" id="bridgeProgressBar" style="width:0%; background:#8b5cf6;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -3598,6 +3705,140 @@
       $("diskPauseBtn").addEventListener("click", () => apiJson("/api/disk/sync/pause", { method: "POST" }));
       $("diskResumeBtn").addEventListener("click", () => apiJson("/api/disk/sync/resume", { method: "POST" }));
       $("diskCancelBtn").addEventListener("click", () => apiJson("/api/disk/sync/cancel", { method: "POST" }));
+
+      // ------------------------------------------------------------------
+      // STEP 7: Google Drive & Cloud-to-Cloud Bridge (v3.0)
+      // ------------------------------------------------------------------
+      let gdriveScannedManifest = null;
+
+      $("tabGdriveDownload").addEventListener("click", () => {
+        $("tabGdriveDownload").classList.add("active");
+        $("tabCloudBridge").classList.remove("active");
+        $("panelGdriveDownload").classList.remove("hidden");
+        $("panelCloudBridge").classList.add("hidden");
+      });
+
+      $("tabCloudBridge").addEventListener("click", () => {
+        $("tabCloudBridge").classList.add("active");
+        $("tabGdriveDownload").classList.remove("active");
+        $("panelCloudBridge").classList.remove("hidden");
+        $("panelGdriveDownload").classList.add("hidden");
+      });
+
+      $("pickGdriveDirBtn").addEventListener("click", async () => {
+        try {
+          const res = await apiJson("/api/system/pick-folder", {
+            method: "POST",
+            body: JSON.stringify({ initial_dir: $("gdriveLocalDirInput").value.trim() }),
+          });
+          if (res.path) $("gdriveLocalDirInput").value = res.path;
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+
+      $("gdriveScanBtn").addEventListener("click", async () => {
+        const url = $("gdriveUrlInput").value.trim();
+        const apiKey = $("gdriveApiKeyInput").value.trim();
+
+        if (!url) {
+          showToast("يرجى إدخال رابط مجلد أو ملف Google Drive أولاً", "warning");
+          return;
+        }
+
+        const btn = $("gdriveScanBtn");
+        btn.disabled = true;
+        btn.textContent = "جاري الفحص...";
+        $("gdriveStatusBadge").className = "badge badge-info";
+        $("gdriveStatusBadge").textContent = "Google Drive: جاري الفحص...";
+
+        try {
+          const res = await apiJson("/api/gdrive/scan", {
+            method: "POST",
+            body: JSON.stringify({ url, api_key: apiKey }),
+          });
+
+          gdriveScannedManifest = res.manifest;
+          const filesCount = (res.manifest.files || []).length;
+          const totalBytes = res.manifest.total_bytes || 0;
+
+          const banner = $("gdriveScanResultsBanner");
+          banner.classList.remove("hidden");
+          banner.innerHTML = `<strong>✓ تم فحص مجلد Google Drive بنجاح:</strong> تم العثور على <strong>${filesCount}</strong> ملفاً بحجم إجمالي <strong>${formatBytes(totalBytes)}</strong> موزعة على <strong>${(res.manifest.folders || []).length}</strong> مجلداً فرعياً.`;
+
+          $("gdriveStartDownloadBtn").disabled = filesCount === 0;
+          $("gdriveStatusBadge").className = "badge badge-neutral";
+          $("gdriveStatusBadge").textContent = "Google Drive: تم الفحص";
+          showToast(`تم اكتشاف ${filesCount} ملفاً في مجلد Google Drive`, "success");
+        } catch (err) {
+          showToast(err.message, "error");
+          $("gdriveStatusBadge").className = "badge badge-neutral";
+          $("gdriveStatusBadge").textContent = "Google Drive: خطأ";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "فحص المجلد";
+        }
+      });
+
+      $("gdriveStartDownloadBtn").addEventListener("click", async () => {
+        if (!gdriveScannedManifest) return;
+        const dest_dir = $("gdriveLocalDirInput").value.trim();
+        if (!dest_dir) {
+          showToast("يرجى تحديد مجلد الحفظ المحلي أولاً", "warning");
+          return;
+        }
+
+        const btn = $("gdriveStartDownloadBtn");
+        btn.disabled = true;
+
+        try {
+          const res = await apiJson("/api/gdrive/download", {
+            method: "POST",
+            body: JSON.stringify({
+              dest_dir,
+              manifest: gdriveScannedManifest,
+              create_empty_folders: true,
+            }),
+          });
+
+          if (res.snapshot) handleSnapshot(res.snapshot);
+          $("step4Card").scrollIntoView({ behavior: "smooth", block: "start" });
+          showToast("بدأ تحميل مجلد Google Drive ملفاً بملف عبر الداش بورد", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      $("startBridgePipelineBtn").addEventListener("click", async () => {
+        const srcUrl = $("bridgeSourceUrl").value.trim();
+        const tgtUrl = $("bridgeTargetUrl").value.trim();
+        const srcType = $("bridgeSourceType").value;
+        const tgtType = $("bridgeTargetType").value;
+
+        if (!srcUrl || !tgtUrl) {
+          showToast("يرجى إدخال رابط المصدر والهدف السحابي", "warning");
+          return;
+        }
+
+        try {
+          await apiJson("/api/cloud-bridge/start", {
+            method: "POST",
+            body: JSON.stringify({
+              source_url: srcUrl,
+              target_url: tgtUrl,
+              source_type: srcType,
+              target_type: tgtType,
+            }),
+          });
+          $("bridgeDashboard").classList.remove("hidden");
+          $("bridgeStatusText").textContent = `الحالة: متصل بجسر السحابات (${srcType.toUpperCase()} ➔ ${tgtType.toUpperCase()})`;
+          showToast("تم تفعيل جسر السحابات والتدفق المباشر بنجاح", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
 
       // ------------------------------------------------------------------
       // Heartbeat & Auto-Shutdown on Window Close
