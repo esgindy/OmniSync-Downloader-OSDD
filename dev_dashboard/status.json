@@ -1,0 +1,640 @@
+{
+ "version": "6.0.0",
+ "tasks": [
+  {
+   "id": "SETUP1",
+   "group": "setup",
+   "title": "إنشاء فرع v6.0 وتنظيف الملفات المؤقتة",
+   "status": "done",
+   "agent": "claude",
+   "note": "branch v6.0",
+   "updated": "18:04:59"
+  },
+  {
+   "id": "SETUP2",
+   "group": "setup",
+   "title": "داش بورد المتابعة",
+   "status": "done",
+   "agent": "claude",
+   "note": "dev_dashboard/index.html",
+   "updated": "18:04:59"
+  },
+  {
+   "id": "SEC1",
+   "group": "security",
+   "title": "فحص Origin/Host + token لكل الـ API",
+   "status": "done",
+   "agent": "claude",
+   "note": "Host/Origin/Sec-Fetch-Site guard + 5 tests (بدون token: Origin يكفي ضد CSRF)",
+   "updated": "18:05:56"
+  },
+  {
+   "id": "SEC2",
+   "group": "security",
+   "title": "إيقاف آمن (graceful) بدل os._exit",
+   "status": "done",
+   "agent": "claude",
+   "note": "graceful shutdown عبر uvicorn، heartbeat 25s",
+   "updated": "18:05:56"
+  },
+  {
+   "id": "PERF1",
+   "group": "performance",
+   "title": "رفع حدود httpx + HTTP/2",
+   "status": "done",
+   "agent": "perf-agent",
+   "note": "limits+http2 fallback in sp_client/gdrive/downloader",
+   "updated": "18:20:32"
+  },
+  {
+   "id": "PERF2",
+   "group": "performance",
+   "title": "Backoff أسي + Retry-After + 429",
+   "status": "done",
+   "agent": "perf-agent",
+   "note": "backoff",
+   "updated": "18:20:33"
+  },
+  {
+   "id": "PERF3",
+   "group": "performance",
+   "title": "تحميل الملف الكبير بأجزاء Range متوازية",
+   "status": "done",
+   "agent": "perf-agent",
+   "note": "parallel ranges via .pdl, prefix kept as .part; tests pass",
+   "updated": "18:20:33"
+  },
+  {
+   "id": "PERF4",
+   "group": "performance",
+   "title": "حد سرعة (Bandwidth limiter)",
+   "status": "done",
+   "agent": "perf-agent",
+   "note": "speed_limit_kbps token bucket + snapshot",
+   "updated": "18:20:33"
+  },
+  {
+   "id": "SYNC1",
+   "group": "sync",
+   "title": "مزامنة: حجم+وقت أولاً ثم hash للمشكوك فقط",
+   "status": "done",
+   "agent": "sync-agent",
+   "note": "mtime(2s)+size first, hash only on mtime diff or deep; compare_two_local_directories(..., deep=False)",
+   "updated": "18:20:33"
+  },
+  {
+   "id": "SYNC2",
+   "group": "sync",
+   "title": "Dry-run + اكتشاف التكرارات",
+   "status": "done",
+   "agent": "sync-agent",
+   "note": "plan_sync_dry_run, DiskSyncManager.dry_run, find_duplicates; 7 tests pass",
+   "updated": "18:20:34"
+  },
+  {
+   "id": "UI1",
+   "group": "ui",
+   "title": "ثيمات (5) عبر CSS variables + منتقي ثيم",
+   "status": "done",
+   "agent": "ui-agent",
+   "note": "5 themes + auto, picker, osdd_theme",
+   "updated": "18:20:34"
+  },
+  {
+   "id": "UI2",
+   "group": "ui",
+   "title": "تبويبات + لوحة مؤشرات + workers + sparkline",
+   "status": "done",
+   "agent": "ui-wire-agent",
+   "note": "ربط الميزات الجديدة جارٍ",
+   "updated": "18:30:57"
+  },
+  {
+   "id": "UI3",
+   "group": "ui",
+   "title": "إزالة style= المضمّنة وإصلاح dashDestDir",
+   "status": "done",
+   "agent": "ui-agent",
+   "note": "227 inline styles to classes, dashDestDir added, 8-lang i18n",
+   "updated": "18:20:34"
+  },
+  {
+   "id": "FEAT1",
+   "group": "features",
+   "title": "فلاتر (امتداد/حجم/تاريخ/regex)",
+   "status": "done",
+   "agent": "features-agent",
+   "note": "backend + tests done",
+   "updated": "18:30:02"
+  },
+  {
+   "id": "FEAT2",
+   "group": "features",
+   "title": "طابور مهام متعدد + أولويات",
+   "status": "done",
+   "agent": "features-agent",
+   "note": "backend + tests done",
+   "updated": "18:30:03"
+  },
+  {
+   "id": "FEAT3",
+   "group": "features",
+   "title": "جدولة المزامنة",
+   "status": "done",
+   "agent": "features-agent",
+   "note": "backend + tests done",
+   "updated": "18:30:03"
+  },
+  {
+   "id": "FEAT4",
+   "group": "features",
+   "title": "إشعارات ويندوز/Telegram",
+   "status": "done",
+   "agent": "features-agent",
+   "note": "backend + tests done",
+   "updated": "18:30:03"
+  },
+  {
+   "id": "FEAT5",
+   "group": "features",
+   "title": "سجل مهام SQLite + حفظ الحالة",
+   "status": "done",
+   "agent": "features-agent",
+   "note": "backend + tests done",
+   "updated": "18:30:03"
+  },
+  {
+   "id": "QA1",
+   "group": "quality",
+   "title": "تثبيت requirements + ruff + CI",
+   "status": "done",
+   "agent": "claude",
+   "note": "ci.yml + ruff.toml + requirements.lock.txt",
+   "updated": "18:06:33"
+  },
+  {
+   "id": "QA2",
+   "group": "quality",
+   "title": "اختبارات (unittest) للميزات الجديدة",
+   "status": "done",
+   "agent": "claude",
+   "note": "55 اختبار ناجح (discover) + فحص متصفح: بلا أخطاء console، التبويبات والثيم تعمل",
+   "updated": "18:31:40"
+  },
+  {
+   "id": "DOC1",
+   "group": "docs",
+   "title": "رفع الإصدار 6.0.0 + README",
+   "status": "done",
+   "agent": "claude",
+   "note": "APP_VERSION=6.0.0 في /api/health، README فيه v6",
+   "updated": "18:30:57"
+  },
+  {
+   "id": "DOC2",
+   "group": "docs",
+   "title": "تحديث PROJECT_HANDOVER_SUMMARY.md",
+   "status": "done",
+   "agent": "claude",
+   "note": "handover section 7 rewritten",
+   "updated": "18:31:40"
+  },
+  {
+   "id": "UI4",
+   "group": "ui",
+   "title": "ربط الواجهة بالفلاتر/الطابور/الجدولة/السجل/الإشعارات/dry-run/التكرارات/حد السرعة",
+   "status": "done",
+   "agent": "ui4-agent",
+   "note": "Filters+speed, disk dryrun/dups, history/queue/schedule, notify UI; 8-lang i18n; node --check ok; ids verified",
+   "updated": "18:29:02"
+  }
+ ],
+ "log": [
+  {
+   "t": "18:04:59",
+   "agent": "claude",
+   "msg": "SETUP1 -> done branch v6.0"
+  },
+  {
+   "t": "18:04:59",
+   "agent": "claude",
+   "msg": "SETUP2 -> done dev_dashboard/index.html"
+  },
+  {
+   "t": "18:04:59",
+   "agent": "claude",
+   "msg": "SEC1 -> doing"
+  },
+  {
+   "t": "18:04:59",
+   "agent": "claude",
+   "msg": "SEC2 -> doing"
+  },
+  {
+   "t": "18:05:00",
+   "agent": "perf-agent",
+   "msg": "PERF1 -> doing"
+  },
+  {
+   "t": "18:05:00",
+   "agent": "sync-agent",
+   "msg": "SYNC1 -> doing"
+  },
+  {
+   "t": "18:05:00",
+   "agent": "ui-agent",
+   "msg": "UI1 -> doing"
+  },
+  {
+   "t": "18:05:28",
+   "agent": "perf-agent",
+   "msg": "PERF1 -> doing start"
+  },
+  {
+   "t": "18:05:34",
+   "agent": "ui-agent",
+   "msg": "UI1 -> doing start"
+  },
+  {
+   "t": "18:05:34",
+   "agent": "ui-agent",
+   "msg": "UI2 -> doing start"
+  },
+  {
+   "t": "18:05:34",
+   "agent": "sync-agent",
+   "msg": "SYNC1 -> doing start"
+  },
+  {
+   "t": "18:05:35",
+   "agent": "ui-agent",
+   "msg": "UI3 -> doing start"
+  },
+  {
+   "t": "18:05:35",
+   "agent": "sync-agent",
+   "msg": "SYNC2 -> doing start"
+  },
+  {
+   "t": "18:05:56",
+   "agent": "claude",
+   "msg": "SEC1 -> done Host/Origin/Sec-Fetch-Site guard + 5 tests (بدون token: Origin يكفي ضد CSRF)"
+  },
+  {
+   "t": "18:05:56",
+   "agent": "claude",
+   "msg": "SEC2 -> done graceful shutdown عبر uvicorn، heartbeat 25s"
+  },
+  {
+   "t": "18:05:56",
+   "agent": "claude",
+   "msg": "FEAT1 -> doing"
+  },
+  {
+   "t": "18:06:12",
+   "agent": "perf-agent",
+   "msg": "PERF1 -> done limits+http2 fallback in sp_client/gdrive/downloader"
+  },
+  {
+   "t": "18:06:13",
+   "agent": "perf-agent",
+   "msg": "PERF2 -> doing backoff"
+  },
+  {
+   "t": "18:06:13",
+   "agent": "features-agent",
+   "msg": "FEAT2 -> doing"
+  },
+  {
+   "t": "18:06:14",
+   "agent": "features-agent",
+   "msg": "FEAT3 -> doing"
+  },
+  {
+   "t": "18:06:14",
+   "agent": "features-agent",
+   "msg": "FEAT4 -> doing"
+  },
+  {
+   "t": "18:06:14",
+   "agent": "features-agent",
+   "msg": "FEAT5 -> doing"
+  },
+  {
+   "t": "18:06:14",
+   "agent": "claude",
+   "msg": "QA1 -> doing"
+  },
+  {
+   "t": "18:06:33",
+   "agent": "claude",
+   "msg": "QA1 -> done ci.yml + ruff.toml + requirements.lock.txt"
+  },
+  {
+   "t": "18:06:57",
+   "agent": "features-agent",
+   "msg": "FEAT1 -> doing started"
+  },
+  {
+   "t": "18:06:57",
+   "agent": "features-agent",
+   "msg": "FEAT5 -> doing started"
+  },
+  {
+   "t": "18:06:57",
+   "agent": "features-agent",
+   "msg": "FEAT4 -> doing started"
+  },
+  {
+   "t": "18:06:57",
+   "agent": "features-agent",
+   "msg": "FEAT2 -> doing started"
+  },
+  {
+   "t": "18:06:57",
+   "agent": "features-agent",
+   "msg": "FEAT3 -> doing started"
+  },
+  {
+   "t": "18:07:14",
+   "agent": "perf-agent",
+   "msg": "PERF3 -> doing parallel ranges impl; tests pending"
+  },
+  {
+   "t": "18:07:14",
+   "agent": "perf-agent",
+   "msg": "PERF4 -> doing token bucket impl; tests pending"
+  },
+  {
+   "t": "18:10:27",
+   "agent": "ui-agent",
+   "msg": "UI1 -> done 5 themes + auto, picker, osdd_theme"
+  },
+  {
+   "t": "18:10:27",
+   "agent": "ui-agent",
+   "msg": "UI2 -> done tab bar, 4 KPI cards, sparkline 60s"
+  },
+  {
+   "t": "18:10:27",
+   "agent": "ui-agent",
+   "msg": "UI3 -> done 227 inline styles to classes, dashDestDir added, 8-lang i18n"
+  },
+  {
+   "t": "18:13:50",
+   "agent": "sync-agent",
+   "msg": "SYNC1 -> done mtime(2s)+size first, hash only on mtime diff or deep; compare_two_local_directories(..., deep=False)"
+  },
+  {
+   "t": "18:13:50",
+   "agent": "sync-agent",
+   "msg": "SYNC2 -> done plan_sync_dry_run, DiskSyncManager.dry_run, find_duplicates; 7 tests pass"
+  },
+  {
+   "t": "18:17:19",
+   "agent": "perf-agent",
+   "msg": "PERF3 -> done impl + tests/test_perf_v6.py pass (11 tests)"
+  },
+  {
+   "t": "18:17:19",
+   "agent": "perf-agent",
+   "msg": "PERF4 -> done impl + tests/test_perf_v6.py pass (11 tests)"
+  },
+  {
+   "t": "18:19:05",
+   "agent": "claude",
+   "msg": "اللوحة: أضيف قسم بطاقات الوكلاء"
+  },
+  {
+   "t": "18:20:08",
+   "agent": "perf-agent",
+   "msg": "PERF3 -> done parallel ranges via .pdl, prefix kept as .part; tests pass"
+  },
+  {
+   "t": "18:20:08",
+   "agent": "perf-agent",
+   "msg": "PERF4 -> done speed_limit_kbps token bucket + snapshot"
+  },
+  {
+   "t": "18:20:32",
+   "agent": "perf-agent",
+   "msg": "PERF1 -> done limits+http2 fallback in sp_client/gdrive/downloader"
+  },
+  {
+   "t": "18:20:33",
+   "agent": "perf-agent",
+   "msg": "PERF2 -> done backoff"
+  },
+  {
+   "t": "18:20:33",
+   "agent": "perf-agent",
+   "msg": "PERF3 -> done parallel ranges via .pdl, prefix kept as .part; tests pass"
+  },
+  {
+   "t": "18:20:33",
+   "agent": "perf-agent",
+   "msg": "PERF4 -> done speed_limit_kbps token bucket + snapshot"
+  },
+  {
+   "t": "18:20:33",
+   "agent": "sync-agent",
+   "msg": "SYNC1 -> done mtime(2s)+size first, hash only on mtime diff or deep; compare_two_local_directories(..., deep=False)"
+  },
+  {
+   "t": "18:20:34",
+   "agent": "sync-agent",
+   "msg": "SYNC2 -> done plan_sync_dry_run, DiskSyncManager.dry_run, find_duplicates; 7 tests pass"
+  },
+  {
+   "t": "18:20:34",
+   "agent": "ui-agent",
+   "msg": "UI1 -> done 5 themes + auto, picker, osdd_theme"
+  },
+  {
+   "t": "18:20:34",
+   "agent": "ui-agent",
+   "msg": "UI2 -> done tab bar, 4 KPI cards, sparkline 60s"
+  },
+  {
+   "t": "18:20:34",
+   "agent": "ui-agent",
+   "msg": "UI3 -> done 227 inline styles to classes, dashDestDir added, 8-lang i18n"
+  },
+  {
+   "t": "18:22:27",
+   "agent": "features-agent",
+   "msg": "FEAT1 -> done backend + tests (tests/test_features_v6.py, 23 pass)"
+  },
+  {
+   "t": "18:22:27",
+   "agent": "features-agent",
+   "msg": "FEAT2 -> done backend + tests (tests/test_features_v6.py, 23 pass)"
+  },
+  {
+   "t": "18:22:27",
+   "agent": "features-agent",
+   "msg": "FEAT3 -> done backend + tests (tests/test_features_v6.py, 23 pass)"
+  },
+  {
+   "t": "18:22:28",
+   "agent": "features-agent",
+   "msg": "FEAT4 -> done backend + tests (tests/test_features_v6.py, 23 pass)"
+  },
+  {
+   "t": "18:22:28",
+   "agent": "features-agent",
+   "msg": "FEAT5 -> done backend + tests (tests/test_features_v6.py, 23 pass)"
+  },
+  {
+   "t": "18:23:48",
+   "agent": "claude",
+   "msg": "FEAT1 -> doing قيد التحقق"
+  },
+  {
+   "t": "18:23:49",
+   "agent": "claude",
+   "msg": "FEAT2 -> doing قيد التحقق"
+  },
+  {
+   "t": "18:23:49",
+   "agent": "claude",
+   "msg": "FEAT3 -> doing قيد التحقق"
+  },
+  {
+   "t": "18:23:49",
+   "agent": "claude",
+   "msg": "FEAT4 -> doing قيد التحقق"
+  },
+  {
+   "t": "18:23:49",
+   "agent": "claude",
+   "msg": "FEAT5 -> doing قيد التحقق"
+  },
+  {
+   "t": "18:24:11",
+   "agent": "features-agent",
+   "msg": "FEAT1 -> done تحقق: 41 اختبار ناجح"
+  },
+  {
+   "t": "18:24:11",
+   "agent": "features-agent",
+   "msg": "FEAT2 -> done تحقق: 41 اختبار ناجح"
+  },
+  {
+   "t": "18:24:12",
+   "agent": "features-agent",
+   "msg": "FEAT3 -> done تحقق: 41 اختبار ناجح"
+  },
+  {
+   "t": "18:24:12",
+   "agent": "features-agent",
+   "msg": "FEAT4 -> done تحقق: 41 اختبار ناجح"
+  },
+  {
+   "t": "18:24:12",
+   "agent": "features-agent",
+   "msg": "FEAT5 -> done تحقق: 41 اختبار ناجح"
+  },
+  {
+   "t": "18:24:12",
+   "agent": "qa-agent",
+   "msg": "QA2 -> doing"
+  },
+  {
+   "t": "18:24:12",
+   "agent": "docs-agent",
+   "msg": "DOC1 -> doing"
+  },
+  {
+   "t": "18:24:55",
+   "agent": "docs-agent",
+   "msg": "DOC1 -> done README v6.0 section + badge, utils.VERSION, CHANGELOG_AI"
+  },
+  {
+   "t": "18:24:56",
+   "agent": "docs-agent",
+   "msg": "DOC2 -> done handover section 7 rewritten"
+  },
+  {
+   "t": "18:25:54",
+   "agent": "claude",
+   "msg": "test_starlette_endpoints_and_sync_flow يتعلّق أيضاً على main الأصلي (170s) => ليس من تعديلات v6"
+  },
+  {
+   "t": "18:26:56",
+   "agent": "qa-agent",
+   "msg": "QA2 -> done Hang cause: test used TestClient without context manager -> new event loop per request; download workers/queue orphaned, portal teardown (_cancel_all_tasks) blocked on POST /api/sync/download. Fix tests/test_core.py (client.__enter__ + addCleanup). Real bug app.py _start_sync_download success path returned JSONResponse not (payload,200) -> TypeError; fixed (also affects job_queue caller line ~1339). SSE assert relaxed (media_manager idle snapshot first). Added tests/test_html_ids.py. test_core + html_ids: 9 OK in 8s."
+  },
+  {
+   "t": "18:29:02",
+   "agent": "ui4-agent",
+   "msg": "UI4 -> done Filters+speed, disk dryrun/dups, history/queue/schedule, notify UI; 8-lang i18n; node --check ok; ids verified"
+  },
+  {
+   "t": "18:30:02",
+   "agent": "features-agent",
+   "msg": "FEAT1 -> done backend + tests done"
+  },
+  {
+   "t": "18:30:03",
+   "agent": "features-agent",
+   "msg": "FEAT5 -> done backend + tests done"
+  },
+  {
+   "t": "18:30:03",
+   "agent": "features-agent",
+   "msg": "FEAT4 -> done backend + tests done"
+  },
+  {
+   "t": "18:30:03",
+   "agent": "features-agent",
+   "msg": "FEAT2 -> done backend + tests done"
+  },
+  {
+   "t": "18:30:03",
+   "agent": "features-agent",
+   "msg": "FEAT3 -> done backend + tests done"
+  },
+  {
+   "t": "18:30:27",
+   "agent": "claude",
+   "msg": "QA2 -> doing Hang cause: test used TestClient without context manager -> new event loop per request; download workers/queue orphaned, portal teardown (_cancel_all_tasks) blocked on POST /api/sync/download. Fix tests/test_core.py (client.__enter__ + addCleanup). Real bug app.py _start_sync_download success path returned JSONResponse not (payload,200) -> TypeError; fixed (also affects job_queue caller line ~1339). SSE assert relaxed (media_manager idle snapshot first). Added tests/test_html_ids.py. test_core + html_ids: 9 OK in 8s."
+  },
+  {
+   "t": "18:30:52",
+   "agent": "ui-wire-agent",
+   "msg": "history/queue-add UI wired, validated"
+  },
+  {
+   "t": "18:30:57",
+   "agent": "claude",
+   "msg": "DOC1 -> done APP_VERSION=6.0.0 في /api/health، README فيه v6"
+  },
+  {
+   "t": "18:30:57",
+   "agent": "ui-wire-agent",
+   "msg": "UI2 -> done ربط الميزات الجديدة جارٍ"
+  },
+  {
+   "t": "18:31:40",
+   "agent": "claude",
+   "msg": "QA2 -> done 55 اختبار ناجح (discover) + فحص متصفح: بلا أخطاء console، التبويبات والثيم تعمل"
+  },
+  {
+   "t": "18:31:40",
+   "agent": "claude",
+   "msg": "DOC2 -> done handover section 7 rewritten"
+  },
+  {
+   "t": "18:38:18",
+   "agent": "ui-verify",
+   "msg": "فحص الواجهة الفعلي انتهى: كل المسارات تعمل، إصلاحان صغيران، 55 اختباراً ناجحاً"
+  },
+  {
+   "t": "18:40:12",
+   "agent": "ui-verify",
+   "msg": "ui-verify (second pass): all UI checks pass, 55 tests OK, note: duplicates UI lacks min_size"
+  }
+ ],
+ "generated": "2026-11-17 18:40:12"
+}

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSDD v6 – لوحة المتابعة</title>
+<style>
+:root{--bg:#f1f5f9;--sf:#fff;--bd:#e2e8f0;--tx:#0f172a;--mu:#64748b;--ac:#0f766e;--todo:#94a3b8;--doing:#2563eb;--done:#15803d;--blocked:#b91c1c}
+[data-t=dark]{--bg:#0b1220;--sf:#111a2e;--bd:#243049;--tx:#e6edf7;--mu:#8fa0bd;--ac:#2dd4bf;--todo:#64748b;--doing:#60a5fa;--done:#4ade80;--blocked:#f87171}
+[data-t=ocean]{--bg:#eaf4fb;--sf:#fff;--bd:#cfe3f1;--tx:#0b2540;--mu:#4b6a86;--ac:#0369a1}
+[data-t=amoled]{--bg:#000;--sf:#0a0a0a;--bd:#222;--tx:#f5f5f5;--mu:#8a8a8a;--ac:#22d3ee;--doing:#60a5fa;--done:#4ade80;--blocked:#f87171}
+[data-t=sunset]{--bg:#fdf6ee;--sf:#fff;--bd:#f1dcc4;--tx:#3b1f0e;--mu:#8a6a50;--ac:#c2410c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.6 "Segoe UI",Tahoma,Arial,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bd);background:var(--sf);position:sticky;top:0}
+h1{font-size:17px;margin:0}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px}
+main{max-width:1200px;margin:16px auto;padding:0 14px;display:grid;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi b{display:block;font-size:24px}
+.kpi span,.mu{color:var(--mu);font-size:12px}
+.bar{height:10px;background:var(--bd);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--ac);transition:width .4s}
+button,select{font:inherit;padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--sf);color:var(--tx);cursor:pointer}
+button.on{border-color:var(--ac);color:var(--ac)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.grp{margin-top:12px}.grp h3{margin:0 0 6px;font-size:13px;color:var(--mu);text-transform:uppercase}
+.t{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;margin-bottom:6px}
+.t small{display:block;color:var(--mu)}
+.pill{padding:2px 10px;border-radius:99px;font-size:12px;color:#fff}
+.todo{background:var(--todo)}.doing{background:var(--doing)}.done{background:var(--done);color:#052}.blocked{background:var(--blocked)}
+.doing .pill,.pill.doing{animation:p 1.4s infinite}
+@keyframes p{50%{opacity:.55}}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:10px}
+.ag{border:1px solid var(--bd);border-radius:10px;padding:10px}
+.ag h4{margin:0 0 6px;display:flex;justify-content:space-between;align-items:center}
+.ag ul{margin:6px 0 0;padding:0;list-style:none;font-size:12px}
+.ag li{display:flex;justify-content:space-between;gap:6px;padding:2px 0}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--todo)}
+.dot.on{background:var(--doing);animation:p 1.2s infinite}
+#log{max-height:260px;overflow:auto;font:12px/1.7 Consolas,monospace;direction:ltr;text-align:left}
+</style>
+</head>
+<body data-t="light">
+<header>
+  <h1>OSDD v<span id="ver">6.0.0</span> – لوحة المتابعة <span class="mu" id="gen"></span></h1>
+  <div class="row" id="themes">
+    <button data-t="light" class="on">فاتح</button><button data-t="dark">داكن</button>
+    <button data-t="ocean">محيط</button><button data-t="amoled">AMOLED</button><button data-t="sunset">غروب</button>
+  </div>
+</header>
+<main>
+  <div class="card">
+    <div class="kpis" id="kpis"></div>
+    <div class="bar"><i id="pbar" style="width:0"></i></div>
+  </div>
+  <div class="card"><b>الوكلاء</b><div class="agents" id="agents"></div></div>
+  <div class="card">
+    <div class="row" id="filters"></div>
+    <div id="tasks"></div>
+  </div>
+  <div class="card"><b>سجل النشاط</b><div id="log"></div></div>
+</main>
+<script>
+var LS={ar:{todo:"قيد الانتظار",doing:"قيد التنفيذ",done:"مكتمل",blocked:"متعثر"},
+ g:{setup:"التجهيز",security:"الأمان",performance:"الأداء",sync:"المزامنة",ui:"الواجهة",features:"الميزات",quality:"الجودة",docs:"التوثيق"}};
+var filter="all",D=null;
+function $(i){return document.getElementById(i)}
+function render(){
+  if(!window.OSDD_STATUS)return; D=window.OSDD_STATUS;
+  $("ver").textContent=D.version;$("gen").textContent="· آخر تحديث "+(D.generated||"");
+  var c={todo:0,doing:0,done:0,blocked:0};D.tasks.forEach(function(t){c[t.status]++});
+  var n=D.tasks.length,pct=Math.round(c.done/n*100);
+  $("kpis").innerHTML=[["التقدم",pct+"%"],["مكتمل",c.done],["قيد التنفيذ",c.doing],["متبقي",c.todo],["متعثر",c.blocked]]
+   .map(function(k){return '<div class="kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>'}).join("");
+  $("pbar").style.width=pct+"%";
+  $("filters").innerHTML=["all","doing","todo","done","blocked"].map(function(f){
+   return '<button data-f="'+f+'" class="'+(filter==f?"on":"")+'">'+(f=="all"?"الكل":LS.ar[f])+'</button>'}).join("");
+  var by={};D.tasks.forEach(function(t){if(filter=="all"||t.status==filter)(by[t.group]=by[t.group]||[]).push(t)});
+  $("tasks").innerHTML=Object.keys(by).map(function(g){
+   return '<div class="grp"><h3>'+(LS.g[g]||g)+'</h3>'+by[g].map(function(t){
+    return '<div class="t"><b class="mu">'+t.id+'</b><div>'+t.title+'<small>'+[t.agent,t.note,t.updated].filter(Boolean).join(" · ")+'</small></div><span class="pill '+t.status+'">'+LS.ar[t.status]+'</span></div>'}).join("")+'</div>'}).join("")||'<p class="mu">لا مهام</p>';
+  var ag={};D.tasks.forEach(function(t){var a=t.agent||"غير مُسند";(ag[a]=ag[a]||[]).push(t)});
+  var lastBy={};(D.log||[]).forEach(function(l){lastBy[l.agent||"غير مُسند"]=l});
+  $("agents").innerHTML=Object.keys(ag).map(function(a){var L=ag[a],d=L.filter(function(t){return t.status=="done"}).length,w=L.some(function(t){return t.status=="doing"}),p=Math.round(d/L.length*100),l=lastBy[a];
+   return '<div class="ag"><h4><span>'+a+'</span><span class="dot'+(w?" on":"")+'"></span></h4><span class="mu">'+d+'/'+L.length+' · '+p+'%'+(w?" · يعمل الآن":"")+'</span><div class="bar"><i style="width:'+p+'%"></i></div><ul>'+L.map(function(t){return '<li><span>'+t.id+'</span><span class="pill '+t.status+'">'+LS.ar[t.status]+'</span></li>'}).join("")+'</ul>'+(l?'<div class="mu" style="margin-top:6px">آخر نشاط '+l.t+'</div>':"")+'</div>'}).join("");
+  $("log").innerHTML=(D.log||[]).slice().reverse().map(function(l){return l.t+" ["+(l.agent||"-")+"] "+l.msg}).join("<br>");
+}
+document.addEventListener("click",function(e){
+  var f=e.target.getAttribute&&e.target.getAttribute("data-f");if(f){filter=f;render()}
+  var t=e.target.getAttribute&&e.target.getAttribute("data-t");if(t&&e.target.tagName=="BUTTON"){document.body.dataset.t=t;
+   document.querySelectorAll("#themes button").forEach(function(b){b.classList.toggle("on",b===e.target)});
+   try{localStorage.setItem("osdd_dev_theme",t)}catch(x){}}
+});
+try{var s=localStorage.getItem("osdd_dev_theme");if(s){document.body.dataset.t=s;document.querySelectorAll("#themes button").forEach(function(b){b.classList.toggle("on",b.dataset.t==s)})}}catch(x){}
+function load(){var s=document.createElement("script");s.src="status.js?"+Date.now();s.onload=function(){render();s.remove()};s.onerror=function(){s.remove()};document.head.appendChild(s)}
+load();setInterval(load,3000);
+</script>
+</body>
+</html>
