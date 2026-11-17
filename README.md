@@ -271,7 +271,7 @@ python app.py
 
 لتسهيل وصول المستخدمين والباحثين إلى المشروع على GitHub ومحركات البحث، قم بإضافة هذه الوسوم في إعدادات المستودع (Repository Topics):
 
-`sharepoint-downloader` • `onedrive-downloader` • `google-drive-downloader` • `cloud-to-cloud-transfer` • `file-synchronizer` • `drive-sync` • `delta-sync` • `duplicate-finder` • `media-downloader` • `yt-dlp` • `bulk-download` • `resume-downloads` • `async-streaming` • `sha256-audit` • `starlette` • `playwright` • `python` • `multilingual` • `arabic-localization` • `windows`
+`sharepoint-downloader` • `onedrive-downloader` • `google-drive-downloader` • `cloud-to-cloud-transfer` • `file-synchronizer` • `drive-sync` • `delta-sync` • `duplicate-finder` • `media-downloader` • `yt-dlp` • `bulk-downloader` • `resume-downloads` • `async-streaming` • `sha256-verification` • `starlette` • `playwright` • `python` • `multilingual` • `arabic-localization` • `windows`
 
 ---
 
