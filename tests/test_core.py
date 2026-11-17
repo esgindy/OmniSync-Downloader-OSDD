@@ -714,7 +714,7 @@ class TestWebApiIntegration(unittest.TestCase):
                     self.assertEqual(r_idx.status_code, 200)
                     self.assertIn("SharePoint", r_idx.text)
 
-                    self.assertEqual(client.get("/api/health").json(), {"ok": True, "version": "5.0.0"})
+                    self.assertEqual(client.get("/api/health").json(), {"ok": True, "version": "5.0.1"})
 
                     r_imp = client.post(
                         "/api/auth/import-cookies",

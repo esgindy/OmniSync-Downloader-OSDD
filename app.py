@@ -62,7 +62,7 @@ from verifier import (  # noqa: E402
     verify_download,
 )
 
-APP_VERSION = "5.0.0"
+APP_VERSION = "5.0.1"
 STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 

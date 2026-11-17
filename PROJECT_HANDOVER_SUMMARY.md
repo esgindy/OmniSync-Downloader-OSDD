@@ -90,7 +90,7 @@ sharepoint-downloader/
 
 ---
 
-## 7. الإصدار v5.0.0 — فرع `v5.0` — آخر تحديث 2026-11-17 (مرفوع على GitHub مع tag `v5.0.0`)
+## 7. الإصدار v5.0.1 — فرع `v5.0` — آخر تحديث 2026-11-17 (مرفوع على GitHub مع tag `v5.0.0`)
 **المتابعة:** `dev_dashboard/index.html` (تتحدث كل 3 ثوانٍ من `status.js`، بدون توكينز). التحديث: `python dev_dashboard/dev_status.py set <ID> <todo|doing|done|blocked> --agent NAME --note "..."`.
 
 **الأمان/الاستقرار:** `LocalOnlyGuard` في `app.py` (رفض Host/Origin غير محلي و`Sec-Fetch-Site: cross-site`)، إيقاف آمن عبر `_request_exit()` بدل `os._exit`، مهلة heartbeat 25 ثانية، `/api/health` يعيد `version`.
