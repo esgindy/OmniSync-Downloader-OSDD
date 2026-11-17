@@ -4,3 +4,4 @@ sse-starlette>=2.0.0
 httpx[http2]>=0.27.0
 playwright>=1.42.0
 yt-dlp>=2024.0.0
+send2trash>=1.8.0

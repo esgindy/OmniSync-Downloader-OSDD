@@ -53,6 +53,9 @@ from sync_engine import (  # noqa: E402
     export_sync_csv,
     export_sync_json,
     find_duplicates,
+    find_duplicates_multi,
+    plan_duplicate_removal,
+    apply_duplicate_removal,
     plan_sync_dry_run,
 )
 from utils import extract_sharepoint_url_hints, win_long_path  # noqa: E402
@@ -62,7 +65,7 @@ from verifier import (  # noqa: E402
     verify_download,
 )
 
-APP_VERSION = "5.0.1"
+APP_VERSION = "6.0.0"
 STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 
@@ -1421,6 +1424,68 @@ async def api_disk_duplicates(request: Request) -> JSONResponse:
     return JSONResponse(result)
 
 
+def _dupes_roots(body: dict) -> list[str]:
+    roots = [str(body.get("root_a") or "").strip(), str(body.get("root_b") or "").strip()]
+    return [r for r in roots if r]
+
+
+async def api_dupes_scan(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    roots = _dupes_roots(body)
+    if not roots:
+        return JSONResponse({"error": "يرجى تحديد المسار A"}, status_code=400)
+    try:
+        min_size = max(0, int(body.get("min_size", 0) or 0))
+    except (TypeError, ValueError):
+        return JSONResponse({"error": "min_size غير صالح"}, status_code=400)
+    try:
+        result = await asyncio.to_thread(find_duplicates_multi, roots, min_size)
+    except (ValueError, OSError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(result)
+
+
+async def api_dupes_plan(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    groups = body.get("groups")
+    if not isinstance(groups, list):
+        return JSONResponse({"error": "groups مطلوبة"}, status_code=400)
+    try:
+        result = plan_duplicate_removal(
+            groups,
+            keep=str(body.get("keep") or "root:0"),
+            dedupe_within_kept=bool(body.get("dedupe_within_kept")),
+            excluded_paths=set(body.get("excluded_paths") or []),
+        )
+    except (ValueError, KeyError, TypeError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(result)
+
+
+async def api_dupes_apply(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    if body.get("confirm") is not True:
+        return JSONResponse({"error": "التأكيد مطلوب (confirm=true)"}, status_code=400)
+    items = body.get("items")
+    roots = _dupes_roots(body)
+    if not isinstance(items, list) or not items or not roots:
+        return JSONResponse({"error": "items والمسارات مطلوبة"}, status_code=400)
+    try:
+        result = await asyncio.to_thread(apply_duplicate_removal, items, roots)
+    except RuntimeError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(result)
+
+
 async def api_filters_test(request: Request) -> JSONResponse:
     try:
         body = await _read_json_body(request)
@@ -1602,6 +1667,9 @@ routes = [
     Route("/api/filters/test", api_filters_test, methods=["POST"]),
     Route("/api/disk/dryrun", api_disk_dryrun, methods=["POST"]),
     Route("/api/disk/duplicates", api_disk_duplicates, methods=["POST"]),
+    Route("/api/dupes/scan", api_dupes_scan, methods=["POST"]),
+    Route("/api/dupes/plan", api_dupes_plan, methods=["POST"]),
+    Route("/api/dupes/apply", api_dupes_apply, methods=["POST"]),
     Route("/api/history", api_history_list, methods=["GET"]),
     Route("/api/history", api_history_clear, methods=["DELETE"]),
     Route("/api/history/export", api_history_export, methods=["GET"]),

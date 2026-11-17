@@ -6,3 +6,4 @@ httpx==0.28.1
 h2>=4.1
 playwright==1.65.2
 yt-dlp==2026.10.26
+send2trash==2.2.0

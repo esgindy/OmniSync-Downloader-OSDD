@@ -788,6 +788,232 @@ def find_duplicates(root: str | Path, min_size: int = DUP_MIN_SIZE) -> dict[str,
     }
 
 
+def find_duplicates_multi(roots: list[str | Path], min_size: int = DUP_MIN_SIZE) -> dict[str, Any]:
+    """
+    Find identical files inside one or two roots (A, B), including copies shared between them.
+    Group by size, then first-64KB hash, then full SHA-256.
+    Returns {"roots", "groups": [{"hash", "size", "count", "wasted_bytes", "files": [{"root_index",
+    "rel", "path", "size", "mtime"}]}], "group_count", "duplicate_files", "wasted_bytes",
+    "cross_groups"}; cross_groups counts groups that exist in more than one root.
+    """
+    clean: list[Path] = []
+    for r in roots:
+        s = str(r or "").strip()
+        if s:
+            clean.append(Path(s))
+    if not clean:
+        raise ValueError("no root given")
+    for r in clean:
+        if not os.path.isdir(win_long_path(r)):
+            raise ValueError(f"not a folder: {r}")
+
+    by_size: dict[int, list[tuple[int, str, str]]] = {}
+    for idx, root_path in enumerate(clean):
+        long_base = win_long_path(root_path)
+        base_len = len(long_base.rstrip("/\\")) + 1
+        for dirpath, dirnames, filenames in os.walk(long_base):
+            dirnames.sort()
+            for fname in sorted(filenames):
+                full = os.path.join(dirpath, fname)
+                try:
+                    st = os.stat(full)
+                except OSError:
+                    continue
+                if st.st_size >= max(1, min_size) and os.path.isfile(full) and not os.path.islink(full):
+                    by_size.setdefault(st.st_size, []).append((idx, full, full[base_len:]))
+
+    groups: list[dict[str, Any]] = []
+    for size, entries in by_size.items():
+        if len(entries) < 2:
+            continue
+        by_part: dict[str, list[tuple[int, str, str]]] = {}
+        for ent in entries:
+            h = _hash_head(ent[1])
+            if h:
+                by_part.setdefault(h, []).append(ent)
+        for cands in by_part.values():
+            if len(cands) < 2:
+                continue
+            by_full: dict[str, list[tuple[int, str, str]]] = {}
+            for ent in cands:
+                h = calculate_file_hash(ent[1])
+                if h:
+                    by_full.setdefault(h, []).append(ent)
+            for h, same in by_full.items():
+                if len(same) < 2:
+                    continue
+                files = []
+                for idx, full, rel in same:
+                    try:
+                        mtime = os.stat(full).st_mtime
+                    except OSError:
+                        mtime = 0.0
+                    files.append({
+                        "root_index": idx,
+                        "rel": rel.replace("\\", "/"),
+                        "path": os.path.join(str(clean[idx]), rel),
+                        "size": size,
+                        "mtime": mtime,
+                    })
+                files.sort(key=lambda f: (f["root_index"], f["rel"]))
+                groups.append({
+                    "hash": h,
+                    "size": size,
+                    "count": len(files),
+                    "wasted_bytes": size * (len(files) - 1),
+                    "files": files,
+                })
+    groups.sort(key=lambda g: g["wasted_bytes"], reverse=True)
+    return {
+        "roots": [str(r) for r in clean],
+        "groups": groups,
+        "group_count": len(groups),
+        "duplicate_files": sum(g["count"] - 1 for g in groups),
+        "wasted_bytes": sum(g["wasted_bytes"] for g in groups),
+        "cross_groups": sum(1 for g in groups if len({f["root_index"] for f in g["files"]}) > 1),
+    }
+
+
+DUP_KEEP_STRATEGIES = ("root:0", "root:1", "oldest", "newest", "shortest_path")
+
+
+def plan_duplicate_removal(
+    groups: list[dict[str, Any]],
+    keep: str = "root:0",
+    dedupe_within_kept: bool = False,
+    excluded_paths: Optional[set[str]] = None,
+) -> dict[str, Any]:
+    """
+    Dry run: decide which copies stay and which go. Nothing is deleted here.
+    keep: "root:0" (A stays), "root:1" (B stays), "oldest", "newest" or "shortest_path".
+    With root:N all copies inside root N stay (unless dedupe_within_kept) and copies elsewhere go;
+    if a group has no copy in root N, one copy is kept (the first) and the rest go.
+    Files in excluded_paths are never deleted. At least one copy of every group always stays.
+    """
+    if keep not in DUP_KEEP_STRATEGIES:
+        raise ValueError("invalid keep strategy")
+    excluded = {os.path.normcase(os.path.abspath(p)) for p in (excluded_paths or set())}
+    items: list[dict[str, Any]] = []
+    kept_total = 0
+    for g in groups:
+        files = list(g.get("files") or [])
+        if len(files) < 2:
+            continue
+        if keep.startswith("root:"):
+            want = int(keep.split(":", 1)[1])
+            preferred = [f for f in files if f.get("root_index") == want]
+            if preferred:
+                keepers = preferred[:1] if dedupe_within_kept else preferred
+            else:
+                keepers = files[:1]
+        elif keep == "oldest":
+            keepers = [min(files, key=lambda f: (f.get("mtime", 0), f["path"]))]
+        elif keep == "newest":
+            keepers = [max(files, key=lambda f: (f.get("mtime", 0), f["path"]))]
+        else:
+            keepers = [min(files, key=lambda f: (len(f["path"]), f["path"]))]
+        keeper_paths = {f["path"] for f in keepers}
+        main_keeper = keepers[0]["path"]
+        kept_total += len(keepers)
+        for f in files:
+            if f["path"] in keeper_paths:
+                continue
+            if os.path.normcase(os.path.abspath(f["path"])) in excluded:
+                kept_total += 1
+                continue
+            items.append({
+                "path": f["path"],
+                "keeper": main_keeper,
+                "hash": g.get("hash"),
+                "size": int(g.get("size", f.get("size", 0))),
+                "root_index": f.get("root_index", 0),
+            })
+    return {
+        "dry_run": True,
+        "keep": keep,
+        "items": items,
+        "delete_count": len(items),
+        "delete_bytes": sum(i["size"] for i in items),
+        "kept_count": kept_total,
+    }
+
+
+def _under_any_root(path: str, roots: list[str]) -> bool:
+    p = os.path.normcase(os.path.realpath(path))
+    for r in roots:
+        base = os.path.normcase(os.path.realpath(r))
+        if p != base and p.startswith(base.rstrip("\\/") + os.sep):
+            return True
+    return False
+
+
+def apply_duplicate_removal(items: list[dict[str, Any]], roots: list[str]) -> dict[str, Any]:
+    """
+    Move duplicate files to the Recycle Bin (never a permanent delete). Every item is re-verified
+    right before removal: path under a scanned root, keeper still exists, same size and same SHA-256.
+    Requires send2trash; without it nothing is removed.
+    """
+    try:
+        from send2trash import send2trash
+    except ImportError as exc:
+        raise RuntimeError("send2trash غير مثبت: pip install send2trash") from exc
+
+    keepers = {os.path.normcase(os.path.abspath(i.get("keeper", ""))) for i in items}
+    removed: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for item in items:
+        path = str(item.get("path") or "")
+        keeper = str(item.get("keeper") or "")
+        expected = item.get("hash")
+
+        def skip(reason: str) -> None:
+            skipped.append({"path": path, "reason": reason})
+
+        if not path or not keeper or not expected:
+            skip("بيانات ناقصة")
+            continue
+        if os.path.normcase(os.path.abspath(path)) == os.path.normcase(os.path.abspath(keeper)):
+            skip("المسار هو نفسه النسخة المحفوظة")
+            continue
+        if os.path.normcase(os.path.abspath(path)) in keepers:
+            skip("نسخة محفوظة لمجموعة أخرى")
+            continue
+        if not (_under_any_root(path, roots) and _under_any_root(keeper, roots)):
+            skip("خارج المجلدات المفحوصة")
+            continue
+        lp, lk = win_long_path(Path(path)), win_long_path(Path(keeper))
+        if os.path.islink(lp) or not os.path.isfile(lp):
+            skip("الملف غير موجود")
+            continue
+        if not os.path.isfile(lk):
+            skip("النسخة المحفوظة غير موجودة")
+            continue
+        try:
+            size = int(item.get("size", -1))
+            if os.path.getsize(lp) != size or os.path.getsize(lk) != size:
+                skip("اختلف الحجم منذ الفحص")
+                continue
+        except OSError:
+            skip("تعذر قراءة الحجم")
+            continue
+        if calculate_file_hash(lp) != expected or calculate_file_hash(lk) != expected:
+            skip("اختلف المحتوى منذ الفحص")
+            continue
+        try:
+            send2trash(path)
+        except Exception as exc:  # noqa: BLE001
+            skip(f"فشل النقل إلى السلة: {exc}")
+            continue
+        removed.append({"path": path, "size": size})
+    return {
+        "removed": removed,
+        "skipped": skipped,
+        "removed_count": len(removed),
+        "freed_bytes": sum(r["size"] for r in removed),
+        "skipped_count": len(skipped),
+    }
+
+
 class DiskSyncManager:
     """High-performance Drive-to-Drive / Disk-to-Disk sync engine with streaming chunked copy."""
 

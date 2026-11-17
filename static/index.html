@@ -1280,7 +1280,8 @@
       <button type="button" class="tab-btn active" role="tab" id="navSharepoint" data-tab="sharepoint" aria-selected="true"><span class="tab-ico" aria-hidden="true">SP</span><span data-i18n="tab_sharepoint">SharePoint</span></button>
       <button type="button" class="tab-btn" role="tab" id="navCloudBridge" data-tab="gdrive" aria-selected="false"><span class="tab-ico" aria-hidden="true">GD</span><span data-i18n="tab_gdrive">Google Drive وجسر السحابات</span></button>
       <button type="button" class="tab-btn" role="tab" id="navDiskSync" data-tab="disk" aria-selected="false"><span class="tab-ico" aria-hidden="true">HD</span><span data-i18n="tab_disk">مزامنة الأقراص</span></button>
-      <button type="button" class="tab-btn" role="tab" id="navMedia" data-tab="media" aria-selected="false"><span class="tab-ico" aria-hidden="true">MP</span><span data-i18n="tab_media">الوسائط</span></button>
+      <button type="button" class="tab-btn" role="tab" id="navDupes" data-tab="dupes" aria-selected="false"><span class="tab-ico" aria-hidden="true">DUP</span><span data-i18n="tab_dupes">مراجعة التكرار</span></button>
+      <button type="button" class="tab-btn" role="tab" id="navMedia"data-tab="media" aria-selected="false"><span class="tab-ico" aria-hidden="true">MP</span><span data-i18n="tab_media">الوسائط</span></button>
       <button type="button" class="tab-btn" role="tab" id="navHistory" data-tab="history" aria-selected="false"><span class="tab-ico" aria-hidden="true">LOG</span><span data-i18n="tab_history">سجل المهام</span></button>
     </nav>
 
@@ -1999,6 +2000,50 @@
         <div id="mediaStatusBanner" class="banner hidden u78"></div>
       </div>
     </section>
+    </div>
+    <div class="tab-panel" id="tabp-dupes" role="tabpanel">
+      <section class="card" id="dupesCard">
+        <div class="card-header"><h2 class="card-title"><span class="step-badge">DUP</span><span data-i18n="dp_title"></span></h2></div>
+        <div class="card-body">
+          <p data-i18n="dp_sub"></p>
+          <div>
+            <label class="field-label" for="dupesRootA" data-i18n="dp_root_a"></label>
+            <input type="text" id="dupesRootA" class="ltr" />
+          </div>
+          <div>
+            <label class="field-label" for="dupesRootB" data-i18n="dp_root_b"></label>
+            <input type="text" id="dupesRootB" class="ltr" />
+          </div>
+          <div class="row">
+            <div>
+              <label class="field-label" for="dupesMinSize" data-i18n="dp_min"></label>
+              <input type="number" id="dupesMinSize" class="ltr" min="0" value="0" />
+            </div>
+            <button class="btn btn-primary" id="dupesScanBtn" type="button" data-i18n="dp_scan"></button>
+          </div>
+          <div id="dupesScanSummary" class="banner info hidden"></div>
+          <div id="dupesGroupsWrap" class="hidden">
+            <div class="table-wrap"><table><thead><tr><th data-i18n="th_group"></th><th data-i18n="th_size"></th><th data-i18n="th_files"></th></tr></thead><tbody id="dupesGroupsBody"></tbody></table></div>
+            <label class="field-label" for="dupesKeep" data-i18n="dp_keep"></label>
+            <select id="dupesKeep">
+              <option value="root:0" data-i18n="dp_keep_a"></option>
+              <option value="root:1" data-i18n="dp_keep_b"></option>
+              <option value="oldest" data-i18n="dp_keep_old"></option>
+              <option value="newest" data-i18n="dp_keep_new"></option>
+              <option value="shortest_path" data-i18n="dp_keep_short"></option>
+            </select>
+            <label class="check-card"><input type="checkbox" id="dupesWithin" /><span data-i18n="dp_within"></span></label>
+            <div class="row"><button class="btn btn-secondary" id="dupesPlanBtn" type="button" data-i18n="dp_preview"></button></div>
+          </div>
+          <div id="dupesPlanSummary" class="banner info hidden"></div>
+          <div id="dupesPlanWrap" class="hidden">
+            <div class="table-wrap"><table><thead><tr><th data-i18n="dp_to_delete"></th><th data-i18n="dp_keeper"></th><th data-i18n="th_size"></th></tr></thead><tbody id="dupesPlanBody"></tbody></table></div>
+            <label class="check-card"><input type="checkbox" id="dupesConfirmChk" /><span data-i18n="dp_confirm"></span></label>
+            <div class="row"><button class="btn btn-danger" id="dupesApplyBtn" type="button" disabled data-i18n="dp_apply"></button></div>
+          </div>
+          <div id="dupesResult" class="banner info hidden"></div>
+        </div>
+      </section>
     </div>
     <div class="tab-panel" id="tabp-history" role="tabpanel">
       <section class="card" id="historyCard">
@@ -3232,7 +3277,19 @@
  }
 };
       Object.keys(I18N_V6).forEach((l) => { if (I18N[l]) Object.assign(I18N[l], I18N_V6[l]); });
-      const tr = (k) => ((I18N[document.documentElement.lang] || I18N.ar)[k] || I18N.ar[k] || k);
+      // Duplicates review tab strings
+      const I18N_DUP = {
+        ar: { tab_dupes: "مراجعة التكرار", dp_title: "مراجعة الملفات المكررة", dp_sub: "افحص مجلداً (وأضف مساراً ثانياً اختيارياً) للعثور على الملفات المتطابقة، ثم احذف المكرر مع اختيار المكان الذي يبقى. الحذف ينقل الملفات إلى سلة المحذوفات.", dp_root_a: "المسار A", dp_root_b: "المسار B (اختياري)", dp_min: "أقل حجم (MB، 0 = الكل)", dp_scan: "فحص", dp_keep: "المكان الذي يبقى", dp_keep_a: "يبقى A (يُحذف المكرر من B)", dp_keep_b: "يبقى B (يُحذف المكرر من A)", dp_keep_old: "يبقى الأقدم", dp_keep_new: "يبقى الأحدث", dp_keep_short: "يبقى أقصر مسار", dp_within: "إبقاء نسخة واحدة فقط حتى داخل المكان المحفوظ", dp_preview: "معاينة الحذف", dp_protect: "حماية", dp_scan_sum: "مجموعات: {g} | ملفات مكررة: {f} | مساحة مهدرة: {w} | موجودة في المسارين: {c}", dp_none: "لا توجد ملفات مكررة", dp_plan_sum: "سيُنقل {n} ملف إلى سلة المحذوفات ويوفر {b}. النسخ المحفوظة: {k}", dp_to_delete: "سيُحذف", dp_keeper: "النسخة المحفوظة", dp_confirm: "أفهم أن هذه الملفات ستُنقل إلى سلة المحذوفات", dp_apply: "حذف المكرر", dp_done: "تم نقل {n} ملف إلى السلة (توفير {b}). تم تخطي {s}", dp_scan_first: "حدد المسار A أولاً", dp_th_file: "الملف", dp_th_loc: "المكان" },
+        en: { tab_dupes: "Duplicates", dp_title: "Duplicate files review", dp_sub: "Scan a folder (plus an optional second path) for identical files, then remove duplicates and choose which location stays. Deleted files go to the Recycle Bin.", dp_root_a: "Path A", dp_root_b: "Path B (optional)", dp_min: "Min size (MB, 0 = all)", dp_scan: "Scan", dp_keep: "Which location stays", dp_keep_a: "Keep A (delete copies in B)", dp_keep_b: "Keep B (delete copies in A)", dp_keep_old: "Keep the oldest", dp_keep_new: "Keep the newest", dp_keep_short: "Keep the shortest path", dp_within: "Keep only one copy even inside the kept location", dp_preview: "Preview deletion", dp_protect: "Protect", dp_scan_sum: "Groups: {g} | Duplicate files: {f} | Wasted: {w} | In both paths: {c}", dp_none: "No duplicate files found", dp_plan_sum: "{n} files will move to the Recycle Bin, saving {b}. Kept copies: {k}", dp_to_delete: "Will delete", dp_keeper: "Kept copy", dp_confirm: "I understand these files will be moved to the Recycle Bin", dp_apply: "Delete duplicates", dp_done: "Moved {n} files to the Recycle Bin (saved {b}). Skipped {s}", dp_scan_first: "Enter path A first", dp_th_file: "File", dp_th_loc: "Location" },
+        es: { tab_dupes: "Duplicados", dp_title: "Revisión de archivos duplicados", dp_sub: "Analiza una carpeta (y una segunda ruta opcional) para hallar archivos idénticos, elimina duplicados y elige qué ubicación se conserva. Los archivos eliminados van a la Papelera.", dp_root_a: "Ruta A", dp_root_b: "Ruta B (opcional)", dp_min: "Tamaño mín. (MB, 0 = todos)", dp_scan: "Analizar", dp_keep: "Ubicación que se conserva", dp_keep_a: "Conservar A (borrar copias en B)", dp_keep_b: "Conservar B (borrar copias en A)", dp_keep_old: "Conservar el más antiguo", dp_keep_new: "Conservar el más reciente", dp_keep_short: "Conservar la ruta más corta", dp_within: "Conservar solo una copia incluso dentro de la ubicación conservada", dp_preview: "Vista previa", dp_protect: "Proteger", dp_scan_sum: "Grupos: {g} | Archivos duplicados: {f} | Espacio perdido: {w} | En ambas rutas: {c}", dp_none: "No hay archivos duplicados", dp_plan_sum: "{n} archivos irán a la Papelera, ahorrando {b}. Copias conservadas: {k}", dp_to_delete: "Se eliminará", dp_keeper: "Copia conservada", dp_confirm: "Entiendo que estos archivos irán a la Papelera", dp_apply: "Eliminar duplicados", dp_done: "{n} archivos movidos a la Papelera (ahorro {b}). Omitidos {s}", dp_scan_first: "Introduce primero la ruta A", dp_th_file: "Archivo", dp_th_loc: "Ubicación" },
+        fr: { tab_dupes: "Doublons", dp_title: "Revue des fichiers en double", dp_sub: "Analysez un dossier (et un second chemin facultatif) pour trouver les fichiers identiques, puis supprimez les doublons en choisissant l'emplacement conservé. Les fichiers supprimés vont à la Corbeille.", dp_root_a: "Chemin A", dp_root_b: "Chemin B (facultatif)", dp_min: "Taille min. (Mo, 0 = tous)", dp_scan: "Analyser", dp_keep: "Emplacement conservé", dp_keep_a: "Garder A (supprimer les copies de B)", dp_keep_b: "Garder B (supprimer les copies de A)", dp_keep_old: "Garder le plus ancien", dp_keep_new: "Garder le plus récent", dp_keep_short: "Garder le chemin le plus court", dp_within: "Ne garder qu'une copie même dans l'emplacement conservé", dp_preview: "Aperçu de la suppression", dp_protect: "Protéger", dp_scan_sum: "Groupes : {g} | Fichiers en double : {f} | Espace perdu : {w} | Dans les deux chemins : {c}", dp_none: "Aucun fichier en double", dp_plan_sum: "{n} fichiers iront à la Corbeille, économisant {b}. Copies conservées : {k}", dp_to_delete: "Sera supprimé", dp_keeper: "Copie conservée", dp_confirm: "Je comprends que ces fichiers iront à la Corbeille", dp_apply: "Supprimer les doublons", dp_done: "{n} fichiers déplacés vers la Corbeille (gain {b}). Ignorés : {s}", dp_scan_first: "Saisissez d'abord le chemin A", dp_th_file: "Fichier", dp_th_loc: "Emplacement" },
+        de: { tab_dupes: "Duplikate", dp_title: "Duplikate prüfen", dp_sub: "Durchsuche einen Ordner (plus optional einen zweiten Pfad) nach identischen Dateien, entferne Duplikate und wähle den Speicherort, der bleibt. Gelöschte Dateien landen im Papierkorb.", dp_root_a: "Pfad A", dp_root_b: "Pfad B (optional)", dp_min: "Mindestgröße (MB, 0 = alle)", dp_scan: "Scannen", dp_keep: "Welcher Ort bleibt", dp_keep_a: "A behalten (Kopien in B löschen)", dp_keep_b: "B behalten (Kopien in A löschen)", dp_keep_old: "Älteste behalten", dp_keep_new: "Neueste behalten", dp_keep_short: "Kürzesten Pfad behalten", dp_within: "Nur eine Kopie behalten, auch im behaltenen Ort", dp_preview: "Löschvorschau", dp_protect: "Schützen", dp_scan_sum: "Gruppen: {g} | Doppelte Dateien: {f} | Verschwendet: {w} | In beiden Pfaden: {c}", dp_none: "Keine doppelten Dateien gefunden", dp_plan_sum: "{n} Dateien kommen in den Papierkorb und sparen {b}. Behaltene Kopien: {k}", dp_to_delete: "Wird gelöscht", dp_keeper: "Behaltene Kopie", dp_confirm: "Ich verstehe, dass diese Dateien in den Papierkorb verschoben werden", dp_apply: "Duplikate löschen", dp_done: "{n} Dateien in den Papierkorb verschoben (gespart {b}). Übersprungen: {s}", dp_scan_first: "Zuerst Pfad A eingeben", dp_th_file: "Datei", dp_th_loc: "Ort" },
+        zh: { tab_dupes: "重复文件", dp_title: "重复文件审查", dp_sub: "扫描一个文件夹(可再加第二个路径)查找相同文件,然后删除重复项并选择保留哪个位置。删除的文件会移到回收站。", dp_root_a: "路径 A", dp_root_b: "路径 B(可选)", dp_min: "最小大小(MB,0=全部)", dp_scan: "扫描", dp_keep: "保留的位置", dp_keep_a: "保留 A(删除 B 中的副本)", dp_keep_b: "保留 B(删除 A 中的副本)", dp_keep_old: "保留最旧的", dp_keep_new: "保留最新的", dp_keep_short: "保留最短路径", dp_within: "即使在保留的位置内也只保留一份", dp_preview: "预览删除", dp_protect: "保护", dp_scan_sum: "分组:{g} | 重复文件:{f} | 浪费空间:{w} | 同时存在于两个路径:{c}", dp_none: "未发现重复文件", dp_plan_sum: "{n} 个文件将移到回收站,节省 {b}。保留的副本:{k}", dp_to_delete: "将删除", dp_keeper: "保留的副本", dp_confirm: "我了解这些文件将被移到回收站", dp_apply: "删除重复项", dp_done: "已将 {n} 个文件移到回收站(节省 {b})。已跳过 {s}", dp_scan_first: "请先输入路径 A", dp_th_file: "文件", dp_th_loc: "位置" },
+        ru: { tab_dupes: "Дубликаты", dp_title: "Проверка дубликатов", dp_sub: "Просканируйте папку (и необязательный второй путь), найдите одинаковые файлы, удалите дубликаты и выберите, какое расположение сохранить. Удалённые файлы попадают в Корзину.", dp_root_a: "Путь A", dp_root_b: "Путь B (необязательно)", dp_min: "Мин. размер (МБ, 0 = все)", dp_scan: "Сканировать", dp_keep: "Какое расположение сохранить", dp_keep_a: "Оставить A (удалить копии в B)", dp_keep_b: "Оставить B (удалить копии в A)", dp_keep_old: "Оставить самый старый", dp_keep_new: "Оставить самый новый", dp_keep_short: "Оставить самый короткий путь", dp_within: "Оставить только одну копию даже внутри сохраняемого места", dp_preview: "Предпросмотр удаления", dp_protect: "Защитить", dp_scan_sum: "Групп: {g} | Дубликатов: {f} | Потеряно: {w} | В обоих путях: {c}", dp_none: "Дубликаты не найдены", dp_plan_sum: "{n} файлов попадут в Корзину, экономия {b}. Сохранено копий: {k}", dp_to_delete: "Будет удалено", dp_keeper: "Сохраняемая копия", dp_confirm: "Я понимаю, что эти файлы будут перемещены в Корзину", dp_apply: "Удалить дубликаты", dp_done: "В Корзину перемещено {n} файлов (экономия {b}). Пропущено: {s}", dp_scan_first: "Сначала укажите путь A", dp_th_file: "Файл", dp_th_loc: "Расположение" },
+        pt: { tab_dupes: "Duplicados", dp_title: "Revisão de arquivos duplicados", dp_sub: "Analise uma pasta (e um segundo caminho opcional) para achar arquivos idênticos, remova duplicados e escolha qual local permanece. Os arquivos excluídos vão para a Lixeira.", dp_root_a: "Caminho A", dp_root_b: "Caminho B (opcional)", dp_min: "Tamanho mín. (MB, 0 = todos)", dp_scan: "Analisar", dp_keep: "Local que permanece", dp_keep_a: "Manter A (excluir cópias em B)", dp_keep_b: "Manter B (excluir cópias em A)", dp_keep_old: "Manter o mais antigo", dp_keep_new: "Manter o mais recente", dp_keep_short: "Manter o caminho mais curto", dp_within: "Manter apenas uma cópia mesmo dentro do local mantido", dp_preview: "Pré-visualizar exclusão", dp_protect: "Proteger", dp_scan_sum: "Grupos: {g} | Arquivos duplicados: {f} | Espaço desperdiçado: {w} | Nos dois caminhos: {c}", dp_none: "Nenhum arquivo duplicado", dp_plan_sum: "{n} arquivos irão para a Lixeira, economizando {b}. Cópias mantidas: {k}", dp_to_delete: "Será excluído", dp_keeper: "Cópia mantida", dp_confirm: "Entendo que estes arquivos irão para a Lixeira", dp_apply: "Excluir duplicados", dp_done: "{n} arquivos movidos para a Lixeira (economia {b}). Ignorados: {s}", dp_scan_first: "Informe primeiro o caminho A", dp_th_file: "Arquivo", dp_th_loc: "Local" },
+      };
+      Object.keys(I18N_DUP).forEach((l) => { if (I18N[l]) Object.assign(I18N[l], I18N_DUP[l]); });
+      const tr =(k) => ((I18N[document.documentElement.lang] || I18N.ar)[k] || I18N.ar[k] || k);
 
       function applyLanguage(lang) {
         if (!I18N[lang]) lang = "ar";
@@ -5634,6 +5691,103 @@
           showToast(err.message, "error");
         } finally {
           $("diskDupBtn").disabled = false;
+        }
+      });
+
+      // ---- Duplicates review tab ----
+      const dupesState = { groups: [], roots: [], plan: null };
+      const dupFmt = (key, vars) => Object.keys(vars).reduce((s, k) => s.split("{" + k + "}").join(String(vars[k])), tr(key));
+      const dupRootLabel = (i) => (i === 0 ? "A" : "B");
+
+      function dupesRoots() {
+        return { root_a: $("dupesRootA").value.trim(), root_b: $("dupesRootB").value.trim() };
+      }
+      function dupesResetPlan() {
+        dupesState.plan = null;
+        $("dupesPlanWrap").classList.add("hidden");
+        $("dupesPlanSummary").classList.add("hidden");
+        $("dupesConfirmChk").checked = false;
+        $("dupesApplyBtn").disabled = true;
+      }
+
+      $("dupesScanBtn").addEventListener("click", async () => {
+        const roots = dupesRoots();
+        if (!roots.root_a) { showToast(tr("dp_scan_first"), "warning"); return; }
+        $("dupesScanBtn").disabled = true;
+        dupesResetPlan();
+        $("dupesResult").classList.add("hidden");
+        try {
+          const minMb = Math.max(0, parseFloat($("dupesMinSize").value) || 0);
+          const res = await apiJson("/api/dupes/scan", { method: "POST", body: JSON.stringify({ ...roots, min_size: Math.round(minMb * 1048576) }) });
+          dupesState.groups = res.groups || [];
+          dupesState.roots = res.roots || [];
+          const sum = $("dupesScanSummary");
+          sum.textContent = res.group_count
+            ? dupFmt("dp_scan_sum", { g: res.group_count, f: res.duplicate_files, w: formatBytes(res.wasted_bytes), c: res.cross_groups })
+            : tr("dp_none");
+          sum.classList.remove("hidden");
+          fillRows("dupesGroupsBody", dupesState.groups.map((g) => [
+            escapeHtml(String(g.hash || "").slice(0, 12)) + ` x${g.count}`,
+            `${formatBytes(g.size)} (${escapeHtml(tr("lbl_wasted"))}: ${formatBytes(g.wasted_bytes)})`,
+            (g.files || []).map((f) =>
+              `<label class="check-card"><input type="checkbox" class="dupes-protect" data-path="${escapeHtml(f.path)}" /><span class="ltr">[${dupRootLabel(f.root_index)}] ${escapeHtml(f.rel)}</span></label>`
+            ).join(""),
+          ]), 3);
+          $("dupesGroupsWrap").classList.toggle("hidden", !dupesState.groups.length);
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("dupesScanBtn").disabled = false;
+        }
+      });
+
+      $("dupesPlanBtn").addEventListener("click", async () => {
+        dupesResetPlan();
+        const excluded = Array.from(document.querySelectorAll(".dupes-protect:checked")).map((c) => c.dataset.path);
+        $("dupesPlanBtn").disabled = true;
+        try {
+          const plan = await apiJson("/api/dupes/plan", { method: "POST", body: JSON.stringify({
+            groups: dupesState.groups, keep: $("dupesKeep").value,
+            dedupe_within_kept: $("dupesWithin").checked, excluded_paths: excluded,
+          }) });
+          dupesState.plan = plan;
+          const sum = $("dupesPlanSummary");
+          sum.textContent = dupFmt("dp_plan_sum", { n: plan.delete_count, b: formatBytes(plan.delete_bytes), k: plan.kept_count });
+          sum.classList.remove("hidden");
+          fillRows("dupesPlanBody", (plan.items || []).map((i) => [
+            `<span class="ltr">[${dupRootLabel(i.root_index)}] ${escapeHtml(i.path)}</span>`,
+            `<span class="ltr">${escapeHtml(i.keeper)}</span>`,
+            formatBytes(i.size),
+          ]), 3);
+          $("dupesPlanWrap").classList.toggle("hidden", !plan.delete_count);
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("dupesPlanBtn").disabled = false;
+        }
+      });
+
+      $("dupesConfirmChk").addEventListener("change", () => {
+        $("dupesApplyBtn").disabled = !($("dupesConfirmChk").checked && dupesState.plan && dupesState.plan.delete_count);
+      });
+
+      $("dupesApplyBtn").addEventListener("click", async () => {
+        if (!$("dupesConfirmChk").checked || !dupesState.plan) return;
+        $("dupesApplyBtn").disabled = true;
+        try {
+          const res = await apiJson("/api/dupes/apply", { method: "POST", body: JSON.stringify({
+            ...dupesRoots(), items: dupesState.plan.items, confirm: true,
+          }) });
+          const out = $("dupesResult");
+          out.textContent = dupFmt("dp_done", { n: res.removed_count, b: formatBytes(res.freed_bytes), s: res.skipped_count });
+          out.classList.remove("hidden");
+          dupesState.groups = [];
+          dupesResetPlan();
+          $("dupesGroupsWrap").classList.add("hidden");
+          $("dupesScanSummary").classList.add("hidden");
+        } catch (err) {
+          showToast(err.message, "error");
+          $("dupesConfirmChk").checked = false;
         }
       });
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-__version__ = "5.0.1"
+__version__ = "6.0.0"
 VERSION = __version__
 
 # Characters strictly forbidden in Windows NTFS path components
