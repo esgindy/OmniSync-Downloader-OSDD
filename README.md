@@ -123,6 +123,18 @@ The sidebar opens or collapses with one click. When collapsed, only each tool's 
 
 ---
 
+## 📣 Infographics / الإنفوجرافيك
+
+<div align="center">
+
+| العربية | English |
+|:---:|:---:|
+| <img src="docs/promo/infographic-ar.webp" width="420" alt="OmniSync Downloader infographic in Arabic"> | <img src="docs/promo/infographic-en.webp" width="420" alt="OmniSync Downloader infographic in English"> |
+
+</div>
+
+---
+
 ## 🆕 What's New in v6.0 / الجديد في الإصدار 6.0
 - **v6.0.1:** collapsible sidebar (icons only when collapsed), the app is now named **OmniSync Downloader (OSDD)**, and the description covers every feature. / شريط جانبي قابل للطي، والاسم الجديد، ووصف شامل.
 - **v6.0.0:** new **Duplicates review** tab with a choice of which location stays and Recycle Bin removal. / تاب مراجعة التكرار مع اختيار المكان الذي يبقى والحذف إلى سلة المحذوفات.
