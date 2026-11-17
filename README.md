@@ -5,7 +5,7 @@
 **Enterprise-Grade Multi-Source File Streamer & High-Speed Data Sync Engine**  
 *الأداة البرمجية المتقدمة للتحميل المباشر المتدفق والمزامنة الفائقة للملفات والمكتبات الضخمة*
 
-[![Release](https://img.shields.io/badge/Release-v6.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
+[![Release](https://img.shields.io/badge/Release-v5.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
@@ -27,7 +27,7 @@
 
 ---
 
-## 🆕 What's New in v6.0 / الجديد في الإصدار 6.0
+## 🆕 What's New in v5.0 / الجديد في الإصدار 5.0
 
 ### 🇬🇧 English
 - **Security:** a Host/Origin guard rejects any non-local `Host`/`Origin` and `Sec-Fetch-Site: cross-site` requests (blocks CSRF and DNS rebinding). Graceful shutdown: the server asks uvicorn to stop so active downloads are cancelled cleanly (10 s fallback); heartbeat timeout is 25 s.
