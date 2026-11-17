@@ -57,6 +57,78 @@ flowchart LR
 
 ---
 
+## 🖼️ Screenshots / لقطات الشاشة
+
+<div align="center">
+
+### 🎨 5 Themes + Auto / خمسة ثيمات مع الوضع التلقائي
+
+| Light | Dark |
+|:---:|:---:|
+| <img src="docs/screenshots/theme-light.jpg" width="420" alt="Light theme"> | <img src="docs/screenshots/theme-dark.jpg" width="420" alt="Dark theme"> |
+| **Ocean** | **AMOLED** |
+| <img src="docs/screenshots/theme-ocean.jpg" width="420" alt="Ocean theme"> | <img src="docs/screenshots/theme-amoled.jpg" width="420" alt="AMOLED theme"> |
+| **Sunset** | **Collapsible sidebar / شريط جانبي قابل للطي** |
+| <img src="docs/screenshots/theme-sunset.jpg" width="420" alt="Sunset theme"> | <img src="docs/screenshots/sidebar-collapsed.jpg" width="420" alt="Collapsed sidebar with icons only"> |
+
+</div>
+
+The sidebar opens or collapses with one click. When collapsed, only each tool's icon remains (its name shows on hover) and your choice is remembered. It works in both RTL and LTR layouts.
+الشريط الجانبي يُفتح ويُطوى بنقرة واحدة، وعند الطي تبقى أيقونة كل أداة فقط (والاسم يظهر عند التمرير) وتُحفظ حالتك، ويعمل مع RTL وLTR.
+
+### 🏢 SharePoint
+
+<img src="docs/screenshots/tab-sharepoint.jpg" width="900" alt="SharePoint tab">
+
+- **EN:** Sign in once through a browser window (or paste a cookie / cURL), browse the SharePoint folder tree, tick what you need and download it file by file with no ZIP. Large files use parallel Range transfers, interrupted downloads resume, and an audit step compares local files against the remote ones.
+- **AR:** سجّل الدخول مرة واحدة عبر نافذة متصفح (أو الصق Cookie / cURL)، واستعرض شجرة مجلدات SharePoint وحدد ما تريد وحمّله ملفاً بملف بدون ZIP. الملفات الكبيرة تُحمَّل بأجزاء Range متوازية، والتحميل المقطوع يُستأنف، وخطوة التحقق تقارن الملفات المحلية بالبعيدة.
+
+### ☁️ Google Drive & Cloud Bridge
+
+<img src="docs/screenshots/tab-gdrive.jpg" width="900" alt="Google Drive and cloud bridge tab">
+
+- **EN:** Download whole Google Drive folders file by file (no ZIP limits), or move data straight from one cloud link to another (SharePoint / OneDrive / Google Drive) with the cloud-to-cloud bridge.
+- **AR:** حمّل مجلدات Google Drive كاملة ملفاً بملف بدون حدود ZIP، أو انقل البيانات مباشرة من رابط سحابي إلى آخر (SharePoint / OneDrive / Google Drive) عبر جسر السحابات.
+
+### 💽 Disk Sync / مزامنة الأقراص
+
+<img src="docs/screenshots/tab-disk.jpg" width="900" alt="Disk sync tab">
+
+- **EN:** Compare two folders or drives (local, external or network) by size and time first, then by streaming SHA-256 only for suspicious files. Run a **dry-run** to preview what would be copied or removed, optionally delete extras from the destination, and copy only new and modified files.
+- **AR:** قارن بين مجلدين أو قرصين (محلي أو خارجي أو شبكة) بالحجم والوقت أولاً ثم بـ SHA-256 المتدفق للملفات المشكوك فيها فقط. شغّل **المحاكاة (Dry-run)** لمعاينة ما سيُنسخ أو يُحذف، واحذف الزائد من الهدف اختيارياً، وانسخ الجديد والمعدّل فقط.
+
+### 🧬 Duplicates review / مراجعة التكرار
+
+<img src="docs/screenshots/tab-dupes.jpg" width="900" alt="Duplicates review tab">
+
+- **EN:** Scan path A (and an optional path B) for identical files, inside one location or across both. Choose which location stays (A, B, oldest, newest or shortest path), protect any file by hand, preview the result, then move the duplicates to the **Recycle Bin**. Every file is re-checked (size and SHA-256) right before removal, and one copy of each group always stays.
+- **AR:** افحص المسار A (ومعه مسار B اختيارياً) للعثور على الملفات المتطابقة داخل المكان الواحد أو بين المكانين. اختر المكان الذي يبقى (A أو B أو الأقدم أو الأحدث أو أقصر مسار) وأحمِ أي ملف يدوياً، ثم عاين النتيجة وانقل المكرر إلى **سلة المحذوفات**. يُعاد التحقق من كل ملف (الحجم وSHA-256) قبل نقله، وتبقى دائماً نسخة واحدة من كل مجموعة.
+
+### 🎬 Media / الوسائط
+
+<img src="docs/screenshots/tab-media.jpg" width="900" alt="Media downloader tab">
+
+- **EN:** Universal media downloader powered by yt-dlp: inspect a link or playlist, pick quality and format, and save to a folder you choose.
+- **AR:** منزّل وسائط شامل مبني على yt-dlp: افحص رابطاً أو قائمة تشغيل، واختر الجودة والصيغة، واحفظ في المجلد الذي تحدده.
+
+### 🕘 Task history, queue & scheduler / السجل والطابور والجدولة
+
+<img src="docs/screenshots/tab-history.jpg" width="900" alt="Task history tab">
+
+- **EN:** A SQLite job history (exportable to CSV), a priority job queue, a sync scheduler and Windows / Telegram notifications, all in one place.
+- **AR:** سجل مهام SQLite (يُصدَّر إلى CSV)، وطابور مهام بأولويات، وجدولة للمزامنة، وإشعارات ويندوز / Telegram، في مكان واحد.
+
+> The live dashboard at the top of every page shows speed, progress, ETA, a 60-second speed graph and each active worker in real time.
+> لوحة المؤشرات الحية في أعلى كل صفحة تعرض السرعة والتقدم والوقت المتبقي ورسماً لسرعة آخر 60 ثانية وكل عامل نشط لحظياً.
+
+---
+
+## 🆕 What's New in v6.0 / الجديد في الإصدار 6.0
+- **v6.0.1:** collapsible sidebar (icons only when collapsed), the app is now named **OmniSync Downloader (OSDD)**, and the description covers every feature. / شريط جانبي قابل للطي، والاسم الجديد، ووصف شامل.
+- **v6.0.0:** new **Duplicates review** tab with a choice of which location stays and Recycle Bin removal. / تاب مراجعة التكرار مع اختيار المكان الذي يبقى والحذف إلى سلة المحذوفات.
+
+---
+
 ## 🆕 What's New in v5.0 / الجديد في الإصدار 5.0
 
 ### 🇬🇧 English
@@ -199,7 +271,7 @@ python app.py
 
 لتسهيل وصول المستخدمين والباحثين إلى المشروع على GitHub ومحركات البحث، قم بإضافة هذه الوسوم في إعدادات المستودع (Repository Topics):
 
-`sharepoint-downloader` • `onedrive-downloader` • `google-drive-downloader` • `file-synchronizer` • `drive-sync` • `media-downloader` • `multilingual` • `i18n` • `localization` • `sha256-audit` • `starlette` • `playwright` • `yt-dlp` • `bulk-download` • `cloud-storage` • `async-streaming` • `delta-sync` • `resume-downloads` • `python` • `arabic-localization`
+`sharepoint-downloader` • `onedrive-downloader` • `google-drive-downloader` • `cloud-to-cloud-transfer` • `file-synchronizer` • `drive-sync` • `delta-sync` • `duplicate-finder` • `media-downloader` • `yt-dlp` • `bulk-download` • `resume-downloads` • `async-streaming` • `sha256-audit` • `starlette` • `playwright` • `python` • `multilingual` • `arabic-localization` • `windows`
 
 ---
 
