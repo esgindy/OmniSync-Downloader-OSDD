@@ -702,13 +702,19 @@ class TestWebApiIntegration(unittest.TestCase):
             ):
                 fresh_state = web_app.AppState()
                 with mock.patch.object(web_app, "state", fresh_state):
+                    # Enter the client so ONE event loop/portal lives for the whole test.
+                    # Without it each request gets its own loop and the background
+                    # download workers/queue (bound to the first request's loop) are
+                    # orphaned, which hangs /api/sync/download.
                     client = TestClient(web_app.app)
+                    client.__enter__()
+                    self.addCleanup(client.__exit__, None, None, None)
 
                     r_idx = client.get("/")
                     self.assertEqual(r_idx.status_code, 200)
                     self.assertIn("SharePoint", r_idx.text)
 
-                    self.assertEqual(client.get("/api/health").json(), {"ok": True})
+                    self.assertEqual(client.get("/api/health").json(), {"ok": True, "version": "6.0.0"})
 
                     r_imp = client.post(
                         "/api/auth/import-cookies",
@@ -833,7 +839,10 @@ class TestWebApiIntegration(unittest.TestCase):
                         first_ev = await gen.__anext__()
                         self.assertEqual(first_ev["event"], "snapshot")
                         parsed = json.loads(first_ev["data"])
-                        self.assertEqual(parsed["status"], "completed")
+                        # SSE multiplexes media_manager (idle) and download_manager
+                        # snapshots; the first one may be the media manager's idle.
+                        self.assertIn(parsed["status"], ("idle", "completed"))
+                        self.assertEqual(fresh_state.download_manager.get_snapshot()["status"], "completed")
                         with self.assertRaises(StopAsyncIteration):
                             await gen.__anext__()
                         self.assertEqual(len(fresh_state.download_manager._subscribers), 0)

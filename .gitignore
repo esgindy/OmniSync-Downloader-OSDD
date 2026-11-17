@@ -41,3 +41,14 @@ AGENTS.md
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# v6 local tooling and scratch
+Image/
+mockup_temp.txt
+OSDD_Promo_*.svg
+
+# v6 runtime data
+osdd_history.db
+osdd_history.db-*
+osdd_settings.json
+osdd_schedules.json

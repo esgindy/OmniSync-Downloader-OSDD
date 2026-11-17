@@ -5,8 +5,10 @@ RenderListDataAsStream, and REST v1 APIs with automatic fallback and throttling 
 from __future__ import annotations
 
 import asyncio
+import email.utils
 import random
 import re
+import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Awaitable, Callable, Optional
 from urllib.parse import quote, unquote, urlparse
@@ -19,6 +21,44 @@ from utils import (
     encode_sp_path_param,
     extract_sharepoint_url_hints,
 )
+
+
+_H2_OK: Optional[bool] = None
+
+
+def http2_available() -> bool:
+    """True when the optional `h2` package is installed (httpx[http2])."""
+    global _H2_OK
+    if _H2_OK is None:
+        try:
+            import h2  # noqa: F401
+            _H2_OK = True
+        except Exception:
+            _H2_OK = False
+    return _H2_OK
+
+
+def parse_retry_after(value: Optional[str]) -> Optional[float]:
+    """Parse Retry-After as seconds or HTTP-date; None when absent/invalid."""
+    if not value or not value.strip():
+        return None
+    raw = value.strip()
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        pass
+    try:
+        dt = email.utils.parsedate_to_datetime(raw)
+        return max(0.0, dt.timestamp() - time.time())
+    except Exception:
+        return None
+
+
+def jitter_backoff(attempt: int, base: float = 1.0, cap: float = 60.0) -> float:
+    """Exponential backoff with equal jitter: half fixed, half random."""
+    d = min(cap, base * (2 ** min(max(attempt, 0), 10)))
+    return d / 2 + random.uniform(0, d / 2)
+
 
 
 @dataclass
@@ -104,7 +144,8 @@ class SharePointClient:
         return httpx.AsyncClient(
             timeout=httpx.Timeout(connect=25.0, read=60.0, write=30.0, pool=20.0),
             follow_redirects=True,
-            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+            limits=httpx.Limits(max_connections=64, max_keepalive_connections=32),
+            http2=http2_available(),
         )
 
     async def _request_json(
@@ -127,7 +168,7 @@ class SharePointClient:
                 resp = await client.request(method, url, headers=headers, json=json_body)
             except (httpx.RequestError, httpx.StreamError):
                 if attempt < retries:
-                    await asyncio.sleep(min(15.0, 1.5 * (2 ** attempt) + random.uniform(0, 0.5)))
+                    await asyncio.sleep(jitter_backoff(attempt, base=1.5, cap=15.0))
                     continue
                 raise
 
@@ -140,10 +181,10 @@ class SharePointClient:
                         continue
                 return 401, {"error": "انتهت صلاحية الجلسة وتم التوجيه لصفحة تسجيل الدخول"}
 
-            if resp.status_code in (429, 503, 504):
-                retry_after = resp.headers.get("Retry-After")
-                delay = float(retry_after) if retry_after and retry_after.isdigit() else (2.0 * (2 ** attempt))
-                await asyncio.sleep(min(60.0, delay + random.uniform(0.2, 1.0)))
+            if resp.status_code in (429, 502, 503, 504) and attempt < retries:
+                ra = parse_retry_after(resp.headers.get("Retry-After"))
+                delay = ra if ra is not None else jitter_backoff(attempt, base=2.0, cap=60.0)
+                await asyncio.sleep(min(120.0, delay + random.uniform(0.2, 1.0)))
                 continue
 
             if resp.status_code in (401, 403):

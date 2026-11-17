@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
+__version__ = "6.0.0"
+VERSION = __version__
+
 # Characters strictly forbidden in Windows NTFS path components
 _WIN_FORBIDDEN_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 # Reserved Windows device names (case-insensitive)

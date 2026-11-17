@@ -3,34 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function () { try { var th = localStorage.getItem("osdd_theme"); if (th) document.documentElement.setAttribute("data-theme", th); else document.documentElement.setAttribute("data-theme", "auto"); } catch (e) { document.documentElement.setAttribute("data-theme", "auto"); } })();
+  </script>
   <title>OmniSync-Downloader (OSDD)</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
     :root {
-      --bg: #f1f5f9;
-      --surface: #ffffff;
-      --surface-alt: #f8fafc;
-      --border: #e2e8f0;
-      --border-strong: #cbd5e1;
-      --text: #0f172a;
-      --text-muted: #475569;
-      --text-soft: #64748b;
-      --primary: #0f766e;
-      --primary-hover: #0d5f59;
-      --primary-light: #ccfbf1;
-      --accent: #1d4ed8;
-      --accent-hover: #1e40af;
-      --accent-light: #dbeafe;
-      --success: #15803d;
-      --success-bg: #dcfce7;
-      --warning: #b45309;
-      --warning-bg: #fef3c7;
-      --danger: #b91c1c;
-      --danger-bg: #fee2e2;
-      --info: #0369a1;
-      --info-bg: #e0f2fe;
-      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-      --shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
       --radius: 12px;
       --radius-sm: 8px;
       --font-sans: "Segoe UI", Tahoma, "Noto Sans Arabic", Arial, sans-serif;
@@ -61,7 +40,7 @@
 
     /* Header */
     .topbar {
-      background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
+      background: linear-gradient(135deg, var(--topbar-a) 0%, var(--topbar-b) 100%);
       color: #fff;
       padding: 16px 24px;
       box-shadow: var(--shadow);
@@ -195,8 +174,8 @@
       flex-shrink: 0;
     }
     .step-chip.done .num { background: var(--success-bg); color: var(--success); }
-    .step-chip.active { border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
-    .step-chip.active .num { background: var(--primary); color: #fff; }
+    .step-chip.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, var(--surface)); color: var(--primary); }
+    .step-chip.active .num { background: var(--primary); color: var(--on-accent); }
 
     @media (max-width: 900px) {
       .stepper { grid-template-columns: repeat(2, 1fr); }
@@ -233,7 +212,7 @@
 
     .step-badge {
       background: var(--primary);
-      color: #fff;
+      color: var(--on-accent);
       border-radius: 6px;
       padding: 2px 8px;
       font-size: 12px;
@@ -276,7 +255,7 @@
       border-radius: var(--radius-sm);
       font-family: inherit;
       font-size: 13.5px;
-      background: #fff;
+      background: var(--surface);
       color: var(--text);
       transition: border-color 0.15s, box-shadow 0.15s;
     }
@@ -284,7 +263,7 @@
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
     }
 
     textarea { resize: vertical; min-height: 86px; }
@@ -311,24 +290,24 @@
       cursor: not-allowed;
     }
 
-    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary { background: var(--primary); color: var(--on-accent); }
     .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
 
-    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent { background: var(--accent); color: var(--on-accent); }
     .btn-accent:hover:not(:disabled) { background: var(--accent-hover); }
 
     .btn-secondary {
-      background: #fff;
+      background: var(--surface);
       color: var(--text);
       border-color: var(--border-strong);
     }
-    .btn-secondary:hover:not(:disabled) { background: var(--surface-alt); border-color: #94a3b8; }
+    .btn-secondary:hover:not(:disabled) { background: var(--surface-alt); border-color: var(--text-soft); }
 
-    .btn-warning { background: #d97706; color: #fff; }
-    .btn-warning:hover:not(:disabled) { background: #b45309; }
+    .btn-warning { background: var(--orange); color: var(--on-accent); }
+    .btn-warning:hover:not(:disabled) { background: var(--warning); }
 
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-danger:hover:not(:disabled) { background: #991b1b; }
+    .btn-danger { background: var(--danger); color: var(--on-accent); }
+    .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 80%, #000); }
 
     .btn-sm { padding: 6px 11px; font-size: 12.5px; }
     .btn-lg { padding: 11px 20px; font-size: 14.5px; }
@@ -347,7 +326,7 @@
     .badge-warn { background: var(--warning-bg); color: var(--warning); }
     .badge-danger { background: var(--danger-bg); color: var(--danger); }
     .badge-info { background: var(--info-bg); color: var(--info); }
-    .badge-neutral { background: #e2e8f0; color: #334155; }
+    .badge-neutral { background: var(--border); color: var(--text-muted); }
 
     /* Alerts & Toasts */
     #toastContainer {
@@ -386,10 +365,10 @@
       background: var(--surface-alt);
       font-size: 13px;
     }
-    .banner.info { background: var(--info-bg); border-color: #bae6fd; color: #0c4a6e; }
-    .banner.ok { background: var(--success-bg); border-color: #bbf7d0; color: #14532d; }
-    .banner.warn { background: var(--warning-bg); border-color: #fde68a; color: #78350f; }
-    .banner.danger { background: var(--danger-bg); border-color: #fecaca; color: #7f1d1d; }
+    .banner.info { background: var(--info-bg); border-color: color-mix(in srgb, var(--info) 35%, transparent); color: var(--info); }
+    .banner.ok { background: var(--success-bg); border-color: color-mix(in srgb, var(--success) 35%, transparent); color: var(--success); }
+    .banner.warn { background: var(--warning-bg); border-color: color-mix(in srgb, var(--warning) 35%, transparent); color: var(--warning); }
+    .banner.danger { background: var(--danger-bg); border-color: color-mix(in srgb, var(--danger) 35%, transparent); color: var(--danger); }
 
     /* Session Info Box */
     .session-box {
@@ -421,7 +400,7 @@
     .tree-box {
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      background: #fff;
+      background: var(--surface);
       max-height: 410px;
       overflow-y: auto;
       padding: 8px;
@@ -441,7 +420,7 @@
       border-radius: 6px;
       transition: background 0.1s;
     }
-    .tree-node:hover { background: #f1f5f9; }
+    .tree-node:hover { background: var(--surface-alt); }
 
     .tree-toggle {
       width: 24px;
@@ -457,11 +436,11 @@
       font-size: 13px;
       flex-shrink: 0;
     }
-    .tree-toggle:hover { background: #e2e8f0; }
+    .tree-toggle:hover { background: var(--border); }
 
     .tree-children {
       padding-right: 22px;
-      border-right: 1px dashed #cbd5e1;
+      border-right: 1px dashed var(--border-strong);
       margin-right: 11px;
     }
 
@@ -544,18 +523,18 @@
       width: 100%;
       height: 12px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--border);
       overflow: hidden;
     }
     .progress-wrap.sm { height: 7px; }
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #0d9488, #2563eb);
+      background: linear-gradient(90deg, var(--primary), var(--accent));
       width: 0%;
       transition: width 0.25s ease;
     }
-    .progress-bar.done { background: #16a34a; }
-    .progress-bar.paused { background: #d97706; }
+    .progress-bar.done { background: var(--success); }
+    .progress-bar.paused { background: var(--orange); }
 
     /* Workers Grid */
     .workers-grid {
@@ -574,12 +553,12 @@
       gap: 6px;
     }
     .worker-card.active {
-      border-color: #7dd3fc;
-      background: #f0f9ff;
+      border-color: color-mix(in srgb, var(--info) 45%, transparent);
+      background: var(--info-bg);
     }
     .worker-card.retrying {
-      border-color: #fcd34d;
-      background: #fffbeb;
+      border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+      background: var(--warning-bg);
     }
     .worker-head {
       display: flex;
@@ -615,7 +594,7 @@
       padding: 5px 11px;
       border-radius: 999px;
       border: 1px solid var(--border-strong);
-      background: #fff;
+      background: var(--surface);
       color: var(--text-muted);
       font-size: 12.5px;
       font-weight: 600;
@@ -624,7 +603,7 @@
     .chip.active {
       background: var(--primary);
       border-color: var(--primary);
-      color: #fff;
+      color: var(--on-accent);
     }
 
     /* Tables */
@@ -632,7 +611,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       overflow-x: auto;
-      background: #fff;
+      background: var(--surface);
     }
     table {
       width: 100%;
@@ -653,7 +632,7 @@
       white-space: nowrap;
     }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #f8fafc; }
+    tr:hover td { background: var(--surface-alt); }
 
     .pagination {
       display: flex;
@@ -676,7 +655,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       overflow: hidden;
-      background: #fff;
+      background: var(--surface);
     }
     .folder-diff-head {
       padding: 10px 14px;
@@ -702,11 +681,428 @@
       justify-content: space-between;
       gap: 8px;
       padding: 4px 0;
-      border-bottom: 1px dashed #f1f5f9;
+      border-bottom: 1px dashed var(--border);
     }
     .diff-file-row:last-child { border-bottom: none; }
 
     .hidden { display: none !important; }
+  
+    /* ---- Themes (CSS variables on [data-theme]) ---- */
+    :root,
+    :root[data-theme="light"] {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --primary: #0f766e;
+      --primary-hover: #0d5f59;
+      --primary-light: #ccfbf1;
+      --accent: #1d4ed8;
+      --accent-hover: #1e40af;
+      --accent-light: #dbeafe;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --warning: #b45309;
+      --warning-bg: #fef3c7;
+      --danger: #b91c1c;
+      --danger-bg: #fee2e2;
+      --info: #0369a1;
+      --info-bg: #e0f2fe;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      --topbar-a: #0f172a;
+      --topbar-b: #134e4a;
+      --on-accent: #ffffff;
+      --purple: #8b5cf6;
+      --red: #ef4444;
+      --orange: #d97706;
+      --orange2: #f97316;
+      --green: #22c55e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="auto"] {
+        --bg: #0b1220;
+        --surface: #111a2e;
+        --surface-alt: #0e1729;
+        --border: #1f2c47;
+        --border-strong: #2d4064;
+        --text: #e6edf7;
+        --text-muted: #a9b6cc;
+        --text-soft: #8493ad;
+        --primary: #2dd4bf;
+        --primary-hover: #5eead4;
+        --primary-light: #12363a;
+        --accent: #60a5fa;
+        --accent-hover: #93c5fd;
+        --accent-light: #16284a;
+        --success: #4ade80;
+        --success-bg: #0f2e1c;
+        --warning: #fbbf24;
+        --warning-bg: #33270b;
+        --danger: #f87171;
+        --danger-bg: #3a1414;
+        --info: #38bdf8;
+        --info-bg: #0c2a3f;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+        --shadow: 0 4px 14px rgba(0,0,0,0.45);
+        --topbar-a: #0a1020;
+        --topbar-b: #0f3a3a;
+        --on-accent: #04201d;
+        --purple: #a78bfa;
+        --red: #f87171;
+        --orange: #f59e0b;
+        --orange2: #fb923c;
+        --green: #4ade80;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0b1220;
+      --surface: #111a2e;
+      --surface-alt: #0e1729;
+      --border: #1f2c47;
+      --border-strong: #2d4064;
+      --text: #e6edf7;
+      --text-muted: #a9b6cc;
+      --text-soft: #8493ad;
+      --primary: #2dd4bf;
+      --primary-hover: #5eead4;
+      --primary-light: #12363a;
+      --accent: #60a5fa;
+      --accent-hover: #93c5fd;
+      --accent-light: #16284a;
+      --success: #4ade80;
+      --success-bg: #0f2e1c;
+      --warning: #fbbf24;
+      --warning-bg: #33270b;
+      --danger: #f87171;
+      --danger-bg: #3a1414;
+      --info: #38bdf8;
+      --info-bg: #0c2a3f;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow: 0 4px 14px rgba(0,0,0,0.45);
+      --topbar-a: #0a1020;
+      --topbar-b: #0f3a3a;
+      --on-accent: #04201d;
+      --purple: #a78bfa;
+      --red: #f87171;
+      --orange: #f59e0b;
+      --orange2: #fb923c;
+      --green: #4ade80;
+    }
+    :root[data-theme="ocean"] {
+      --bg: #eaf4fb;
+      --surface: #ffffff;
+      --surface-alt: #f3f9fd;
+      --border: #cfe3f1;
+      --border-strong: #a9cbe2;
+      --text: #0c2a3f;
+      --text-muted: #32566f;
+      --text-soft: #547a94;
+      --primary: #0369a1;
+      --primary-hover: #075985;
+      --primary-light: #d6ecf8;
+      --accent: #0e7490;
+      --accent-hover: #155e75;
+      --accent-light: #cdeef5;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --warning: #b45309;
+      --warning-bg: #fef3c7;
+      --danger: #b91c1c;
+      --danger-bg: #fee2e2;
+      --info: #0369a1;
+      --info-bg: #e0f2fe;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      --topbar-a: #0c4a6e;
+      --topbar-b: #0369a1;
+      --on-accent: #ffffff;
+      --purple: #8b5cf6;
+      --red: #ef4444;
+      --orange: #d97706;
+      --orange2: #f97316;
+      --green: #22c55e;
+    }
+    :root[data-theme="amoled"] {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-alt: #050505;
+      --border: #1c1c1f;
+      --border-strong: #2e2e33;
+      --text: #f2f4f7;
+      --text-muted: #b4bac4;
+      --text-soft: #8a919e;
+      --primary: #22d3ee;
+      --primary-hover: #67e8f9;
+      --primary-light: #08303a;
+      --accent: #a78bfa;
+      --accent-hover: #c4b5fd;
+      --accent-light: #241a45;
+      --success: #4ade80;
+      --success-bg: #06210f;
+      --warning: #fbbf24;
+      --warning-bg: #271c05;
+      --danger: #f87171;
+      --danger-bg: #2b0d0d;
+      --info: #38bdf8;
+      --info-bg: #06222f;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow: 0 4px 14px rgba(0,0,0,0.8);
+      --topbar-a: #000000;
+      --topbar-b: #0a1a1f;
+      --on-accent: #001a20;
+      --purple: #a78bfa;
+      --red: #f87171;
+      --orange: #f59e0b;
+      --orange2: #fb923c;
+      --green: #4ade80;
+    }
+    :root[data-theme="sunset"] {
+      --bg: #fdf6ee;
+      --surface: #fffaf3;
+      --surface-alt: #fdf0e2;
+      --border: #f0dcc6;
+      --border-strong: #e0c2a0;
+      --text: #3b1d0c;
+      --text-muted: #6b4328;
+      --text-soft: #8a6444;
+      --primary: #c2410c;
+      --primary-hover: #9a3412;
+      --primary-light: #ffedd5;
+      --accent: #be185d;
+      --accent-hover: #9d174d;
+      --accent-light: #fce7f3;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --warning: #b45309;
+      --warning-bg: #fef3c7;
+      --danger: #b91c1c;
+      --danger-bg: #fee2e2;
+      --info: #0369a1;
+      --info-bg: #e0f2fe;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      --topbar-a: #7c2d12;
+      --topbar-b: #c2410c;
+      --on-accent: #ffffff;
+      --purple: #8b5cf6;
+      --red: #ef4444;
+      --orange: #d97706;
+      --orange2: #f97316;
+      --green: #22c55e;
+    }
+    :root[data-theme="auto"] { color-scheme: light; }
+    @media (prefers-color-scheme: dark) { :root[data-theme="auto"] { color-scheme: dark; } }
+    :root[data-theme="dark"], :root[data-theme="amoled"] { color-scheme: dark; }
+
+    /* ---- Header controls ---- */
+    .top-select {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 999px;
+      outline: none;
+      font-family: inherit;
+    }
+    .top-select option { color: var(--text); background: var(--surface); }
+    .btn-shutdown {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-shutdown:hover { background: #ef4444; color: #fff; }
+    .icon-inline { vertical-align: middle; margin-inline-end: 4px; }
+
+    /* ---- Live dashboard card ---- */
+    #step4Card { border: 2px solid var(--primary); box-shadow: 0 6px 22px color-mix(in srgb, var(--primary) 14%, transparent); }
+    .step-chip-live { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--accent) 12%, transparent)); border: 1.5px solid var(--primary); }
+    .kpi-grid-4 { grid-template-columns: repeat(4, 1fr); }
+    @media (max-width: 900px) { .kpi-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .kpi-grid-4 { grid-template-columns: 1fr; } }
+    .kpi-grid-4 .kpi-card { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .kpi-speed .kpi-val { color: var(--primary); }
+    .kpi-line { font-size: 13px; margin-top: 4px; font-weight: 600; color: var(--text-muted); }
+    .kpi-sep { color: var(--text-soft); }
+    .kpi-hl-primary { color: var(--primary); font-weight: 700; }
+    .kpi-hl-accent { color: var(--accent); font-weight: 700; }
+    .kpi-hl-warn { color: var(--warning); font-weight: 700; }
+    .kpi-hl-remaining { color: var(--orange); font-weight: 700; }
+    .dest-line { font-size: 12.5px; color: var(--text-muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
+    .spark-wrap { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-alt); padding: 8px 12px 6px; }
+    .spark-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-soft); }
+    .sparkline { width: 100%; height: 48px; display: block; margin-top: 4px; }
+    .spark-line { fill: none; stroke: var(--primary); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+    .spark-area { fill: color-mix(in srgb, var(--primary) 18%, transparent); stroke: none; }
+
+    /* ---- Tabs ---- */
+    .tabbar { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 2px solid var(--border); }
+    .tab-btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px;
+      background: transparent; color: var(--text-muted); border: 1px solid transparent; border-bottom: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-family: inherit; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; margin-bottom: -2px; transition: all 0.15s ease;
+    }
+    .tab-btn:hover { color: var(--text); background: var(--surface-alt); }
+    .tab-btn.active { color: var(--primary); background: var(--surface); border-color: var(--border); border-bottom: 2px solid var(--surface); }
+    .tab-ico { font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: var(--border); color: var(--text-muted); }
+    .tab-btn.active .tab-ico { background: var(--primary); color: var(--on-accent); }
+    .tab-panel { display: none; flex-direction: column; gap: 18px; }
+    .tab-panel.active { display: flex; }
+
+    /* ---- former inline styles (auto-extracted; colors via theme variables) ---- */
+    .u1.u1 { display: inline-flex; align-items: center; }
+    .u2.u2 { border: 2px solid var(--primary); box-shadow: 0 6px 22px color-mix(in srgb, var(--primary) 12%, transparent); }
+    .u3.u3 { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 100%); }
+    .u4.u4 { display: flex; align-items: center; gap: 8px; }
+    .u5.u5 { background: var(--primary); font-size: 13px; }
+    .u6.u6 { margin: 4px 0 8px; font-size: 14.5px; }
+    .u7.u7 { grid-column: 1/-1; color: var(--text-soft); }
+    .u8.u8 { justify-content: space-between; margin-bottom: 10px; }
+    .u9.u9 { min-width: 250px; }
+    .u10.u10 { width: 48px; }
+    .u11.u11 { width: 110px; }
+    .u12.u12 { width: 150px; }
+    .u13.u13 { width: 105px; }
+    .u14.u14 { width: 70px; }
+    .u15.u15 { text-align: center; color: var(--text-soft); padding: 22px; }
+    .u16.u16 { display: flex; flex-direction: column; gap: 4px; }
+    .u17.u17 { gap: 8px; }
+    .u18.u18 { font-size: 12px; color: var(--text-soft); }
+    .u19.u19 { font-size: 12px; color: var(--text-muted); }
+    .u20.u20 { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .u21.u21 { justify-content: space-between; }
+    .u22.u22 { padding: 7px 12px; }
+    .u23.u23 { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .u24.u24 { gap: 12px; }
+    .u25.u25 { font-size: 12px; margin-top: 4px; opacity: 0.85; }
+    .u26.u26 { background: var(--accent); }
+    .u27.u27 { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .u28.u28 { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; }
+    .u29.u29 { width: 16px; height: 16px; accent-color: var(--accent); }
+    .u30.u30 { min-width: 240px; }
+    .u31.u31 { display: flex; flex-direction: column; gap: 12px; padding-bottom: 14px; border-bottom: 2px solid var(--border); }
+    .u32.u32 { margin: 0; font-size: 15.5px; color: var(--accent); }
+    .u33.u33 { display: flex; flex-direction: column; gap: 12px; }
+    .u34.u34 { margin: 0; font-size: 15px; }
+    .u35.u35 { color: var(--text-soft); }
+    .u36.u36 { width: 130px; }
+    .u37.u37 { border: 1.5px solid var(--accent-light); box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 8%, transparent); }
+    .u38.u38 { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, transparent) 0%, color-mix(in srgb, var(--primary) 6%, transparent) 100%); }
+    .u39.u39 { margin: 4px 0 0; font-size: 12.5px; color: var(--text-soft); }
+    .u40.u40 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .u41.u41 { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-top: 12px; }
+    .u42.u42 { justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .u43.u43 { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; user-select: none; }
+    .u44.u44 { display: flex; align-items: center; gap: 6px; }
+    .u45.u45 { margin-top: 16px; }
+    .u46.u46 { margin: 0 0 10px; font-size: 15px; color: var(--text); }
+    .u47.u47 { border-right: 3px solid var(--success); }
+    .u48.u48 { color: var(--success); }
+    .u49.u49 { border-right: 3px solid var(--accent); }
+    .u50.u50 { color: var(--accent); }
+    .u51.u51 { border-right: 3px solid var(--orange); }
+    .u52.u52 { color: var(--orange); }
+    .u53.u53 { border-right: 3px solid var(--text-soft); }
+    .u54.u54 { background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); border-radius: var(--radius-sm); padding: 14px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .u55.u55 { color: var(--accent); font-size: 14.5px; }
+    .u56.u56 { margin-right: 6px; font-size: 13.5px; color: var(--text); }
+    .u57.u57 { font-weight: 700; }
+    .u58.u58 { margin-top: 18px; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--surface); }
+    .u59.u59 { justify-content: space-between; margin-bottom: 12px; }
+    .u60.u60 { margin: 0; font-size: 15px; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+    .u61.u61 { color: var(--primary); font-weight: 700; }
+    .u62.u62 { font-size: 15px; direction: ltr; }
+    .u63.u63 { font-weight: 700; color: var(--primary); }
+    .u64.u64 { color: var(--orange); font-weight: 700; }
+    .u65.u65 { font-weight: 700; color: var(--accent); }
+    .u66.u66 { color: var(--warning); font-weight: 700; }
+    .u67.u67 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .u68.u68 { margin-top: 12px; }
+    .u69.u69 { width: 0%; }
+    .u70.u70 { margin-top: 18px; }
+    .u71.u71 { width: 180px; }
+    .u72.u72 { border: 1.5px solid var(--purple); box-shadow: 0 6px 20px color-mix(in srgb, var(--purple) 10%, transparent); }
+    .u73.u73 { background: linear-gradient(135deg, color-mix(in srgb, var(--purple) 8%, transparent) 0%, color-mix(in srgb, var(--accent) 6%, transparent) 100%); }
+    .u74.u74 { background: var(--purple); color: var(--on-accent); }
+    .u75.u75 { display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .u76.u76 { margin-top: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .u77.u77 { flex: 1; max-width: 400px; font-size: 12px; }
+    .u78.u78 { margin-top: 14px; }
+    .u79.u79 { background: var(--surface-alt); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .u80.u80 { margin-bottom: 8px; width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border); }
+    .u81.u81 { width: 100%; }
+    .u82.u82 { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .u83.u83 { font-size: 13px; color: var(--text-soft); }
+    .u84.u84 { background: var(--purple); border-color: var(--purple); font-weight: 700; }
+    .u85.u85 { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .u86.u86 { margin-top: 8px; }
+    .u87.u87 { width: 0%; background: var(--purple); }
+    .u88.u88 { border: 1.5px solid var(--red); box-shadow: 0 6px 20px color-mix(in srgb, var(--red) 10%, transparent); }
+    .u89.u89 { background: linear-gradient(135deg, color-mix(in srgb, var(--red) 8%, transparent) 0%, color-mix(in srgb, var(--orange2) 6%, transparent) 100%); }
+    .u90.u90 { background: var(--red); color: var(--on-accent); }
+    .u91.u91 { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; font-size: 12px; }
+    .u92.u92 { color: var(--red); font-weight: 600; }
+    .u93.u93 { vertical-align: middle; margin-left: 4px; }
+    .u94.u94 { color: #000; font-weight: 600; }
+    .u95.u95 { color: #e1306c; font-weight: 600; }
+    .u96.u96 { color: #1877f2; font-weight: 600; }
+    .u97.u97 { color: var(--text); font-weight: 600; }
+    .u98.u98 { color: #ff4500; font-weight: 600; }
+    .u99.u99 { color: #1ab7ea; font-weight: 600; }
+    .u100.u100 { color: #ff5500; font-weight: 600; }
+    .u101.u101 { margin-bottom: 12px; gap: 8px; }
+    .u102.u102 { flex: 1; }
+    .u103.u103 { display: flex; gap: 8px; }
+    .u104.u104 { background: var(--red); border-color: var(--danger); font-weight: 700; }
+    .u105.u105 { margin-bottom: 14px; gap: 8px; }
+    .u106.u106 { margin-top: 14px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+    .u107.u107 { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+    .u108.u108 { width: 160px; min-width: 140px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 3px 10px rgba(0,0,0,0.15); position: relative; }
+    .u109.u109 { width: 100%; height: auto; display: block; object-fit: cover; }
+    .u110.u110 { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.75); color: var(--on-accent); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .u111.u111 { flex: 1; min-width: 240px; }
+    .u112.u112 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .u113.u113 { margin: 0 0 6px; font-size: 16px; line-height: 1.4; }
+    .u114.u114 { font-size: 13px; color: var(--text-soft); margin-bottom: 14px; }
+    .u115.u115 { gap: 10px; align-items: center; flex-wrap: wrap; }
+    .u116.u116 { margin-bottom: 4px; }
+    .u117.u117 { padding: 7px 12px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 13.5px; font-weight: 600; background: var(--bg); color: var(--text); min-width: 220px; }
+    .u118.u118 { background: var(--red); border-color: var(--danger); font-weight: 700; padding: 8px 24px; }
+    .u119.u119 { border-top: 1px solid var(--border); background: var(--surface); padding: 24px 20px; margin-top: 40px; text-align: center; color: var(--text-soft); font-size: 13.5px; }
+    .u120.u120 { max-width: 1360px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .u121.u121 { color: var(--accent); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+    .u122.u122 { vertical-align: middle; }
+    .u123.u123 { color: var(--danger); }
+    .u124.u124 { color: var(--danger); font-weight: 700; }
+    .u125.u125 { color: var(--warning); }
+    .u126.u126 { gap: 6px; }
+    .u127.u127 { justify-content: space-between; font-size: 11.5px; color: var(--text-muted); }
+    .u128.u128 { font-size: 11.5px; color: var(--text-soft); }
+    .u129.u129 { text-align: center; color: var(--text-soft); padding: 20px; }
+    .u130.u130 { font-size: 11.5px; color: var(--text-soft); overflow-wrap: anywhere; }
+    .u131.u131 { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .u132.u132 { font-size: 12px; color: var(--danger); overflow-wrap: anywhere; }
+    .u133.u133 { text-align: center; color: var(--success); padding: 18px; }
+    .u134.u134 { border-color: #fecaca; }
+    .u135.u135 { background: var(--danger-bg); }
+    .u136.u136 { text-align: center; padding: 18px; color: var(--text-soft); }
+    .u137.u137 { font-size: 12px; }
+    .u138.u138 { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: var(--text); color: #f8fafc; font-family: sans-serif; text-align: center; padding: 24px; }
+    .u139.u139 { background: #1e293b; border: 1px solid #334155; padding: 36px 48px; border-radius: 18px; box-shadow: 0 12px 30px rgba(0,0,0,0.5); max-width: 480px; width: 100%; }
+    .u140.u140 { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; background: color-mix(in srgb, var(--green) 15%, transparent); display: flex; align-items: center; justify-content: center; color: var(--green); }
+    .u141.u141 { margin: 0 0 10px; font-size: 20px; color: var(--green); }
+    .u142.u142 { margin: 0 0 18px; color: #94a3b8; font-size: 14px; line-height: 1.6; }
+    .u143.u143 { font-size: 13px; color: #64748b; background: var(--text); padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -727,24 +1123,35 @@
       </div>
       <div class="top-badges">
         <!-- Language Switcher (8 Languages) -->
-        <div class="lang-selector-wrap" style="display:inline-flex; align-items:center;">
-          <select id="langSelect" class="top-pill" aria-label="Language" style="background:rgba(255, 255, 255, 0.16); color:#fff; border:1px solid rgba(255,255,255,0.35); font-weight:600; cursor:pointer; padding:6px 12px; border-radius:999px; outline:none; font-family:inherit;">
-            <option value="ar" style="color:#0f172a;">🇸🇦 العربية</option>
-            <option value="en" style="color:#0f172a;">🇺🇸 English</option>
-            <option value="es" style="color:#0f172a;">🇪🇸 Español</option>
-            <option value="fr" style="color:#0f172a;">🇫🇷 Français</option>
-            <option value="de" style="color:#0f172a;">🇩🇪 Deutsch</option>
-            <option value="zh" style="color:#0f172a;">🇨🇳 中文</option>
-            <option value="ru" style="color:#0f172a;">🇷🇺 Русский</option>
-            <option value="pt" style="color:#0f172a;">🇧🇷 Português</option>
+        <div class="lang-selector-wrap u1">
+          <select id="langSelect" class="top-pill top-select" aria-label="Language">
+            <option value="ar">🇸🇦 العربية</option>
+            <option value="en">🇺🇸 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="pt">🇧🇷 Português</option>
+          </select>
+        </div>
+        <!-- Theme Switcher -->
+        <div class="lang-selector-wrap theme-selector-wrap">
+          <select id="themeSelect" class="top-pill top-select" aria-label="Theme">
+            <option value="auto" data-i18n="theme_auto">Auto</option>
+            <option value="light" data-i18n="theme_light">Light</option>
+            <option value="dark" data-i18n="theme_dark">Dark</option>
+            <option value="ocean" data-i18n="theme_ocean">Ocean</option>
+            <option value="amoled" data-i18n="theme_amoled">AMOLED</option>
+            <option value="sunset" data-i18n="theme_sunset">Sunset</option>
           </select>
         </div>
 
         <span class="top-pill" id="topAuthBadge"><span class="dot" id="topAuthDot"></span><span id="topAuthText" data-i18n="status_offline">غير متصل</span></span>
         <span class="top-pill" id="topSseBadge"><span class="dot" id="topSseDot"></span><span id="topSseText" data-i18n="sse_waiting">SSE: في الانتظار</span></span>
         <span class="top-pill" id="topJobBadge" data-i18n="job_idle">الحالة: خامل</span>
-        <button class="top-pill" id="topShutdownBtn" title="إيقاف البرنامج وإنهاء خدمة الخلفية بالكامل" style="background:rgba(239, 68, 68, 0.2); border:1px solid #ef4444; color:#fca5a5; cursor:pointer; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)';this.style.color='#fca5a5';">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+        <button class="top-pill btn-shutdown" id="topShutdownBtn" title="إيقاف البرنامج وإنهاء خدمة الخلفية بالكامل">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="icon-inline"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
           <span data-i18n="btn_shutdown">إيقاف البرنامج</span>
         </button>
       </div>
@@ -752,23 +1159,12 @@
   </header>
 
   <main class="container">
-    <!-- Stepper -->
-    <nav class="stepper" aria-label="خطوات العمل">
-      <a class="step-chip active" href="#step4Card" id="navStep4" style="background:linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(29, 78, 216, 0.12) 100%); border:1.5px solid var(--primary);"><span class="num" style="background:var(--primary); color:#fff; font-weight:700;">⚡</span><span data-i18n="nav_dashboard">الداش بورد الحية</span></a>
-      <a class="step-chip" href="#step1Card" id="navStep1"><span class="num">1</span><span data-i18n="nav_auth">تسجيل الدخول والرابط</span></a>
-      <a class="step-chip" href="#step2Card" id="navStep2"><span class="num">2</span><span data-i18n="nav_sp_folders">تحديد مجلدات SharePoint</span></a>
-      <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span data-i18n="nav_local_dir">المجلد المحلي والتشغيل</span></a>
-      <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">4</span><span data-i18n="nav_verify">التحقق وتقرير المزامنة</span></a>
-      <a class="step-chip" href="#diskSyncCard" id="navDiskSync" style="border:1.5px solid var(--accent); background:rgba(29, 78, 216, 0.06);"><span class="num" style="background:var(--accent); color:#fff; font-weight:700;">v2</span><span data-i18n="nav_disk_sync">مزامنة هارد لهارد (Drive-to-Drive)</span></a>
-      <a class="step-chip" href="#cloudBridgeCard" id="navCloudBridge" style="border:1.5px solid #8b5cf6; background:rgba(139, 92, 246, 0.08);"><span class="num" style="background:#8b5cf6; color:#fff; font-weight:700;">v3</span><span data-i18n="nav_cloud_bridge">Google Drive وجسر السحابات</span></a>
-      <a class="step-chip" href="#mediaCard" id="navMedia" style="border:1.5px solid #ef4444; background:rgba(239, 68, 68, 0.08);"><span class="num" style="background:#ef4444; color:#fff; font-weight:700;">v4</span><span data-i18n="nav_media">تنزيل الفيديو والوسائط (Media &amp; YouTube)</span></a>
-    </nav>
 
     <!-- LIVE DOWNLOAD DASHBOARD (Always at the top) -->
-    <section class="card" id="step4Card" style="border:2px solid var(--primary); box-shadow:0 6px 22px rgba(15, 118, 110, 0.12);">
-      <div class="card-header" style="background:linear-gradient(135deg, rgba(15, 118, 110, 0.08) 0%, rgba(29, 78, 216, 0.06) 100%);">
-        <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
-          <span class="step-badge" style="background:var(--primary); font-size:13px;">⚡ LIVE</span>
+    <section class="card u2" id="step4Card">
+      <div class="card-header u3">
+        <h2 class="card-title u4">
+          <span class="step-badge u5">⚡ LIVE</span>
           <span data-i18n="card_dash_title">داش بورد التحميل الحية المباشرة</span>
         </h2>
         <div class="row">
@@ -777,38 +1173,23 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-label" data-i18n="kpi_overall_progress">إجمالي التقدم</div>
-            <div class="kpi-val" id="dashPct">0.0%</div>
-            <div class="kpi-sub" id="dashFilesSummary">0 / 0 ملف</div>
-          </div>
-          <div class="kpi-card">
+        <div class="kpi-grid kpi-grid-4">
+          <div class="kpi-card kpi-speed">
             <div class="kpi-label" data-i18n="kpi_live_speed">سرعة التحميل الحية ⚡</div>
-            <div class="kpi-val ltr" id="dashSpeed" style="color:var(--primary); font-weight:700;">0 KB/s</div>
+            <div class="kpi-val ltr" id="dashSpeed">0 KB/s</div>
             <div class="kpi-sub" id="dashSpeedSub" data-i18n="kpi_live_speed_sub">بث حي كل ~400ms</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label" data-i18n="kpi_volume_title">حجم الملفات (المحمل والمتبقي) 💾</div>
-            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
-              <span id="dashDownloadedBytes" style="font-weight:700; color:var(--primary);">0 B</span>
-              <span style="font-size:12px; color:var(--text-soft);"> / </span>
-              <span id="dashTotalBytes">0 B</span>
-            </div>
-            <div class="kpi-sub" style="font-size:12.5px;">
-              <span data-i18n="label_remaining">المتبقي:</span> <strong id="dashRemainingBytes" style="color:#d97706; font-weight:700;">0 B</strong>
-            </div>
+            <div class="kpi-label" data-i18n="kpi_done_title">المنجز</div>
+            <div class="kpi-val" id="dashPct">0.0%</div>
+            <div class="kpi-sub" id="dashFilesSummary">0 / 0 ملف</div>
+            <div class="kpi-line ltr"><span id="dashDoneFiles" class="kpi-hl-accent">0</span><span class="kpi-sep"> / </span><span id="dashTotalFilesCount">0</span></div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label" data-i18n="kpi_files_title">عدد الملفات (المكتمل والمتبقي) 📄</div>
-            <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
-              <span id="dashDoneFiles" style="font-weight:700; color:var(--accent);">0</span>
-              <span style="font-size:12px; color:var(--text-soft);"> / </span>
-              <span id="dashTotalFilesCount">0</span>
-            </div>
-            <div class="kpi-sub" style="font-size:12.5px;">
-              <span data-i18n="label_remaining">المتبقي:</span> <strong id="dashRemainingFiles" style="color:#b45309; font-weight:700;">0 ملف</strong>
-            </div>
+            <div class="kpi-label" data-i18n="kpi_remaining_title">المتبقي</div>
+            <div class="kpi-val ltr"><strong id="dashRemainingBytes" class="kpi-hl-remaining">0 B</strong></div>
+            <div class="kpi-sub"><strong id="dashRemainingFiles" class="kpi-hl-warn">0 ملف</strong></div>
+            <div class="kpi-line ltr"><span id="dashDownloadedBytes" class="kpi-hl-primary">0 B</span><span class="kpi-sep"> / </span><span id="dashTotalBytes">0 B</span></div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label" data-i18n="kpi_eta_title">الوقت المتبقي المتوقع (ETA) ⏱️</div>
@@ -817,9 +1198,21 @@
           </div>
         </div>
 
+        <div class="spark-wrap">
+          <div class="spark-head">
+            <span data-i18n="spark_title">السرعة الإجمالية - آخر 60 ثانية</span>
+            <span class="ltr mono" id="dashSparkMax">0 KB/s</span>
+          </div>
+          <svg id="dashSparkline" class="sparkline" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden="true">
+            <path id="dashSparkArea" class="spark-area" d=""></path>
+            <polyline id="dashSparkLine" class="spark-line" points=""></polyline>
+          </svg>
+        </div>
+
         <div class="progress-wrap">
           <div class="progress-bar" id="dashProgressBar"></div>
         </div>
+        <div class="dest-line"><span data-i18n="label_dest_dir">مجلد الوجهة:</span> <span class="ltr mono" id="dashDestDir">-</span></div>
 
         <div class="row">
           <button class="btn btn-warning btn-sm" id="pauseBtn" type="button" disabled data-i18n="btn_pause">إيقاف مؤقت</button>
@@ -829,14 +1222,14 @@
         </div>
 
         <div>
-          <h3 style="margin:4px 0 8px; font-size:14.5px;" data-i18n="title_active_workers">العاملون النشطون (مين شغال على إيه الآن)</h3>
+          <h3 class="u6" data-i18n="title_active_workers">العاملون النشطون</h3>
           <div class="workers-grid" id="workersGrid">
-            <div class="banner" style="grid-column:1/-1; color:var(--text-soft);" data-i18n="msg_no_active_job">لا توجد عملية تحميل نشطة حالياً.</div>
+            <div class="banner u7" data-i18n="msg_no_active_job">لا توجد عملية تحميل نشطة حالياً.</div>
           </div>
         </div>
 
         <div>
-          <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+          <div class="row u8">
             <div class="filter-bar" id="queueFilterBar">
               <button class="chip active" type="button" data-filter="all"><span data-i18n="filter_all">الكل</span> (<span id="cntAll">0</span>)</button>
               <button class="chip" type="button" data-filter="downloading"><span data-i18n="filter_downloading">قيد التحميل</span> (<span id="cntDownloading">0</span>)</button>
@@ -847,7 +1240,7 @@
               <button class="chip" type="button" data-filter="sync_new"><span data-i18n="filter_new">جديد</span> (<span id="cntNew">0</span>)</button>
               <button class="chip" type="button" data-filter="sync_updated"><span data-i18n="filter_updated">محدث</span> (<span id="cntUpdated">0</span>)</button>
             </div>
-            <div style="min-width:250px;">
+            <div class="u9">
               <input type="text" id="queueSearchInput" placeholder="بحث في جدول الملفات..." data-i18n-ph="ph_search_queue" />
             </div>
           </div>
@@ -856,17 +1249,17 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width:48px;">#</th>
+                  <th class="u10">#</th>
                   <th data-i18n="th_file_path">الملف والمسار النسبي</th>
-                  <th style="width:110px;" data-i18n="th_size">الحجم</th>
-                  <th style="width:150px;" data-i18n="th_progress">التقدم</th>
-                  <th style="width:105px;" data-i18n="th_status">الحالة</th>
-                  <th style="width:70px;" data-i18n="th_attempts">محاولات</th>
+                  <th class="u11" data-i18n="th_size">الحجم</th>
+                  <th class="u12" data-i18n="th_progress">التقدم</th>
+                  <th class="u13" data-i18n="th_status">الحالة</th>
+                  <th class="u14" data-i18n="th_attempts">محاولات</th>
                   <th data-i18n="th_notes">ملاحظات / خطأ</th>
                 </tr>
               </thead>
               <tbody id="queueTableBody">
-                <tr><td colspan="7" style="text-align:center; color:var(--text-soft); padding:22px;" data-i18n="msg_no_files_queue">لا توجد ملفات في قائمة الانتظار بعد.</td></tr>
+                <tr><td class="u15" colspan="7" data-i18n="msg_no_files_queue">لا توجد ملفات في قائمة الانتظار بعد.</td></tr>
               </tbody>
             </table>
           </div>
@@ -881,6 +1274,25 @@
         </div>
       </div>
     </section>
+
+    <!-- Tab bar -->
+    <nav class="tabbar" role="tablist" aria-label="Sections">
+      <button type="button" class="tab-btn active" role="tab" id="navSharepoint" data-tab="sharepoint" aria-selected="true"><span class="tab-ico" aria-hidden="true">SP</span><span data-i18n="tab_sharepoint">SharePoint</span></button>
+      <button type="button" class="tab-btn" role="tab" id="navCloudBridge" data-tab="gdrive" aria-selected="false"><span class="tab-ico" aria-hidden="true">GD</span><span data-i18n="tab_gdrive">Google Drive وجسر السحابات</span></button>
+      <button type="button" class="tab-btn" role="tab" id="navDiskSync" data-tab="disk" aria-selected="false"><span class="tab-ico" aria-hidden="true">HD</span><span data-i18n="tab_disk">مزامنة الأقراص</span></button>
+      <button type="button" class="tab-btn" role="tab" id="navMedia" data-tab="media" aria-selected="false"><span class="tab-ico" aria-hidden="true">MP</span><span data-i18n="tab_media">الوسائط</span></button>
+      <button type="button" class="tab-btn" role="tab" id="navHistory" data-tab="history" aria-selected="false"><span class="tab-ico" aria-hidden="true">LOG</span><span data-i18n="tab_history">سجل المهام</span></button>
+    </nav>
+
+    <div class="tab-panel active" id="tabp-sharepoint" role="tabpanel">
+    <!-- Stepper -->
+    <nav class="stepper" aria-label="خطوات العمل">
+      <a class="step-chip active step-chip-live" href="#step4Card" id="navStep4"><span class="num">⚡</span><span data-i18n="nav_dashboard">الداش بورد الحية</span></a>
+      <a class="step-chip" href="#step1Card" id="navStep1"><span class="num">1</span><span data-i18n="nav_auth">تسجيل الدخول والرابط</span></a>
+      <a class="step-chip" href="#step2Card" id="navStep2"><span class="num">2</span><span data-i18n="nav_sp_folders">تحديد مجلدات SharePoint</span></a>
+      <a class="step-chip" href="#step3Card" id="navStep3"><span class="num">3</span><span data-i18n="nav_local_dir">المجلد المحلي والتشغيل</span></a>
+      <a class="step-chip" href="#step5Card" id="navStep5"><span class="num">4</span><span data-i18n="nav_verify">التحقق وتقرير المزامنة</span></a>
+    </nav>
 
     <!-- STEP 1: Auth -->
     <section class="card" id="step1Card">
@@ -905,21 +1317,21 @@
         </div>
 
         <div class="session-box" id="sessionStatusBox">
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <div class="row" style="gap:8px;">
+          <div class="u16">
+            <div class="row u17">
               <span class="badge badge-neutral" id="authStatusBadge">غير متصل</span>
               <strong id="authStatusMessage">أدخل رابط SharePoint ثم اضغط «فتح متصفح الدخول»</strong>
             </div>
-            <div style="font-size:12px; color:var(--text-soft);" id="authDetailsLine">
+            <div class="u18" id="authDetailsLine">
               الكوكيز: 0 | Auth Cookie: لا | Bearer Token: لا
             </div>
           </div>
-          <div id="authRootHint" class="mono ltr" style="font-size:12px; color:var(--text-muted);"></div>
+          <div id="authRootHint" class="mono ltr u19"></div>
         </div>
 
         <details class="alt-box">
           <summary>بديل: لصق Cookie أو Copy as cURL (في حال تعذر تسجيل الدخول من المتصفح)</summary>
-          <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+          <div class="u20">
             <textarea id="rawCookieInput" class="ltr mono" placeholder="الصق هنا Cookie header (مثال: FedAuth=...; rtFa=...) أو أمر curl الكامل من أدوات المطورين"></textarea>
             <div class="row">
               <button class="btn btn-accent btn-sm" id="importCookiesBtn" type="button">استيراد الكوكيز / cURL</button>
@@ -940,8 +1352,8 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="row" style="justify-content:space-between;">
-          <label class="check-card" style="padding:7px 12px;">
+        <div class="row u21">
+          <label class="check-card u22">
             <input type="checkbox" id="includeRootNameToggle" checked />
             <span>تضمين اسم المجلد الرئيسي للرابط في المسار المحلي</span>
           </label>
@@ -953,7 +1365,7 @@
         </div>
 
         <div>
-          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">معاينة مسار الحفظ الناتج:</div>
+          <div class="u23">معاينة مسار الحفظ الناتج:</div>
           <div class="preview-path ltr" id="pathPreview">اختر المجلدات والمجلد المحلي لمعاينة المسار النهائي...</div>
         </div>
       </div>
@@ -977,7 +1389,7 @@
 
         <div class="settings-grid">
           <div>
-            <label class="field-label" for="concurrencyInput">عدد التنزيلات المتوازية (Workers: 1-6)</label>
+            <label class="field-label" for="concurrencyInput">عدد التنزيلات المتوازية (Workers: 1-10)</label>
             <select id="concurrencyInput">
               <option value="1">1 (آمن وهادئ)</option>
               <option value="2">2</option>
@@ -985,6 +1397,8 @@
               <option value="4">4</option>
               <option value="5">5</option>
               <option value="6">6 (سريع)</option>
+              <option value="8">8 (سريع جداً)</option>
+              <option value="10">10 (أقصى — قد يُبطَّأ من SharePoint)</option>
             </select>
           </div>
           <div>
@@ -1001,7 +1415,27 @@
           </label>
         </div>
 
-        <div class="row" style="gap:12px;">
+        <h3 class="field-label" data-i18n="flt_title"></h3>
+        <div class="settings-grid" id="filtersPanel">
+          <div><label class="field-label" for="fltInclude" data-i18n="flt_inc"></label><input type="text" id="fltInclude" class="ltr" /></div>
+          <div><label class="field-label" for="fltExclude" data-i18n="flt_exc"></label><input type="text" id="fltExclude" class="ltr" /></div>
+          <div><label class="field-label" for="fltMin" data-i18n="flt_min"></label><input type="number" id="fltMin" class="" min="0" step="any"/></div>
+          <div><label class="field-label" for="fltMax" data-i18n="flt_max"></label><input type="number" id="fltMax" class="" min="0" step="any"/></div>
+          <div><label class="field-label" for="fltAfter" data-i18n="flt_after"></label><input type="date" id="fltAfter" class="ltr" /></div>
+          <div><label class="field-label" for="fltBefore" data-i18n="flt_before"></label><input type="date" id="fltBefore" class="ltr" /></div>
+          <div><label class="field-label" for="fltRegex" data-i18n="flt_regex"></label><input type="text" id="fltRegex" class="ltr mono" /></div>
+          <div><label class="field-label" for="speedLimitInput" data-i18n="speed_label"></label><input type="number" id="speedLimitInput" class="" min="0" value="0"/></div>
+        </div>
+        <div>
+          <label class="field-label" for="fltSamples" data-i18n="flt_samples"></label>
+          <textarea id="fltSamples" class="ltr mono"></textarea>
+        </div>
+        <div class="row">
+          <button class="btn btn-secondary btn-sm" id="fltTestBtn" type="button" data-i18n="flt_test"></button>
+          <span class="badge badge-neutral hidden" id="fltTestResult"></span>
+        </div>
+
+        <div class="row u24">
           <label class="check-card">
             <input type="checkbox" id="includeUpdatedInput" />
             <span>تحديث الملفات المختلفة في الحجم/التعديل أيضاً (أثناء المزامنة)</span>
@@ -1028,11 +1462,11 @@
 
         <!-- Live Scan Progress -->
         <div class="banner info hidden" id="scanProgressBanner">
-          <div class="row" style="justify-content:space-between;">
+          <div class="row u21">
             <strong id="scanProgressTitle">جاري فحص شجرة SharePoint...</strong>
             <span id="scanProgressMetrics">المجلدات: 0 | الملفات: 0 | الحجم: 0 B</span>
           </div>
-          <div class="ltr mono" id="scanCurrentFolder" style="font-size:12px; margin-top:4px; opacity:0.85;"></div>
+          <div class="ltr mono u25" id="scanCurrentFolder"></div>
         </div>
 
         <!-- Scanned Manifest Summary -->
@@ -1043,7 +1477,7 @@
     <!-- SYNC DIFF PANEL -->
     <section class="card hidden" id="syncDiffCard">
       <div class="card-header">
-        <h2 class="card-title"><span class="step-badge" style="background:var(--accent);">مقارنة المزامنة</span>الفروقات بين SharePoint والمجلد المحلي</h2>
+        <h2 class="card-title"><span class="step-badge u26">مقارنة المزامنة</span>الفروقات بين SharePoint والمجلد المحلي</h2>
         <div class="row">
           <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=csv&scope=plan" target="_blank">تصدير المقارنة CSV</a>
           <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=json&scope=plan" target="_blank">تصدير المقارنة JSON</a>
@@ -1052,21 +1486,21 @@
       <div class="card-body">
         <div class="kpi-grid" id="syncDiffKpis"></div>
 
-        <div class="banner info" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
-          <label style="display:flex; align-items:center; gap:8px; font-weight:700; cursor:pointer;">
-            <input type="checkbox" id="syncDiffIncludeUpdated" style="width:16px; height:16px; accent-color:var(--accent);" />
+        <div class="banner info u27">
+          <label class="u28">
+            <input class="u29" type="checkbox" id="syncDiffIncludeUpdated" />
             <span>إعادة تحميل الملفات المحدثة/المختلفة في الحجم أو التعديل أيضاً</span>
           </label>
           <button class="btn btn-accent btn-lg" id="startSyncDownloadBtn" type="button">بدء تحميل الجديد فقط</button>
         </div>
 
-        <div class="row" style="justify-content:space-between;">
+        <div class="row u21">
           <div class="filter-bar" id="syncDiffTabs">
             <button class="chip active" type="button" data-sync-tab="changes">المجلدات ذات التغييرات</button>
             <button class="chip" type="button" data-sync-tab="all">كل المجلدات</button>
             <button class="chip" type="button" data-sync-tab="local_only">ملفات محلية فقط</button>
           </div>
-          <div style="min-width:240px;">
+          <div class="u30">
             <input type="text" id="syncDiffSearch" placeholder="بحث باسم مجلد أو ملف..." />
           </div>
         </div>
@@ -1088,9 +1522,9 @@
       </div>
       <div class="card-body">
         <!-- Post-Sync Completion Report -->
-        <div id="syncCompletionSection" class="hidden" style="display:flex; flex-direction:column; gap:12px; padding-bottom:14px; border-bottom:2px solid var(--border);">
-          <div class="row" style="justify-content:space-between;">
-            <h3 style="margin:0; font-size:15.5px; color:var(--accent);">تقرير المزامنة: الملفات الجديدة التي نزلت وفي أي مجلد</h3>
+        <div id="syncCompletionSection" class="hidden u31">
+          <div class="row u21">
+            <h3 class="u32">تقرير المزامنة: الملفات الجديدة التي نزلت وفي أي مجلد</h3>
             <div class="row">
               <button class="btn btn-secondary btn-sm" id="refreshSyncReportBtn" type="button">تحديث تقرير المزامنة</button>
               <a class="btn btn-secondary btn-sm" href="/api/sync/export?format=csv&scope=report" target="_blank">تصدير المزامنة CSV</a>
@@ -1102,16 +1536,16 @@
         </div>
 
         <!-- Post-Download Verification -->
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <div class="row" style="justify-content:space-between;">
-            <h3 style="margin:0; font-size:15px;">تقرير المطابقة والتحقق على القرص المحلي</h3>
+        <div class="u33">
+          <div class="row u21">
+            <h3 class="u34">تقرير المطابقة والتحقق على القرص المحلي</h3>
             <div class="filter-bar">
               <button class="chip active" type="button" data-verify-filter="issues">غير المطابق فقط</button>
               <button class="chip" type="button" data-verify-filter="all">جميع الملفات</button>
             </div>
           </div>
 
-          <div id="verifyBanner" class="banner" style="color:var(--text-soft);">
+          <div id="verifyBanner" class="banner u35">
             اضغط «إعادة الفحص والمطابقة» لفحص المجلد المحلي مقابل قائمة SharePoint أو ملف <code>.sp_downloader_manifest.json</code> المحفوظ.
           </div>
 
@@ -1123,9 +1557,9 @@
                 <tr>
                   <th>#</th>
                   <th>الملف والمجلد</th>
-                  <th style="width:110px;">الحجم المتوقع</th>
-                  <th style="width:110px;">الحجم المحلي</th>
-                  <th style="width:130px;">الحالة</th>
+                  <th class="u11">الحجم المتوقع</th>
+                  <th class="u11">الحجم المحلي</th>
+                  <th class="u36">الحالة</th>
                 </tr>
               </thead>
               <tbody id="verifyTableBody"></tbody>
@@ -1143,14 +1577,16 @@
     </section>
 
     <!-- STEP 6: Drive-to-Drive / Disk-to-Disk Sync & Deep Audit (v2.0) -->
-    <section class="card" id="diskSyncCard" style="border:1.5px solid var(--accent-light); box-shadow:0 6px 20px rgba(29, 78, 216, 0.08);">
-      <div class="card-header" style="background:linear-gradient(135deg, rgba(29, 78, 216, 0.06) 0%, rgba(15, 118, 110, 0.06) 100%);">
+    </div>
+    <div class="tab-panel" id="tabp-disk" role="tabpanel">
+    <section class="card u37" id="diskSyncCard">
+      <div class="card-header u38">
         <div>
-          <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span class="step-badge" style="background:var(--accent);">v2.0</span>
+          <h2 class="card-title u4">
+            <span class="step-badge u26">v2.0</span>
             <span>مزامنة وتدقيق الملفات بين هاردين أو جهازين (Drive-to-Drive Sync & Deep Audit)</span>
           </h2>
-          <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-soft);">
+          <p class="u39">
             مقارنة شجرة المجلدات بين وحدتي تخزين (هارد داخلي / خارجي / NAS)، فحص التطابق العميق للهاش متدفقاً (Streaming SHA-256)، ونقل الملفات الجديدة والمعدلة فقط.
           </p>
         </div>
@@ -1160,7 +1596,7 @@
       </div>
       <div class="card-body">
         <!-- Folders Selection -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+        <div class="u40">
           <div>
             <label class="field-label" for="diskSourceDirInput">
               <strong>مجلد المصدر (Source Folder على هارد 1 أو شبكة):</strong>
@@ -1186,14 +1622,14 @@
         </div>
 
         <!-- Audit Options & Compare Button -->
-        <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-top:12px;">
-          <div class="row" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px; user-select:none;">
+        <div class="u41">
+          <div class="row u42">
+            <label class="u43">
               <input type="checkbox" id="diskCompareHashCheckbox" />
               <span><strong>فحص الهاش العميق المتدفق (Streaming SHA-256)</strong> للملفات المتطابقة في الحجم (استهلاك رام &lt; 5MB حتى لملفات 100GB+)</span>
             </label>
             <div class="row">
-              <button class="btn btn-primary" id="diskRunCompareBtn" type="button" style="display:flex; align-items:center; gap:6px;">
+              <button class="btn btn-primary u44" id="diskRunCompareBtn" type="button">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <span>بدء الفحص والمقارنة (Audit)</span>
               </button>
@@ -1202,8 +1638,8 @@
         </div>
 
         <!-- Audit Summary KPIs (Hidden initially) -->
-        <div id="diskAuditResultsArea" class="hidden" style="margin-top:16px;">
-          <h3 style="margin:0 0 10px; font-size:15px; color:var(--text);">نتائج فحص وتدقيق الشجرة:</h3>
+        <div id="diskAuditResultsArea" class="hidden u45">
+          <h3 class="u46">نتائج فحص وتدقيق الشجرة:</h3>
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-label">ملفات المصدر</div>
@@ -1215,36 +1651,36 @@
               <div class="kpi-val" id="diskKpiDstFiles">0</div>
               <div class="kpi-sub ltr" id="diskKpiDstBytes">0 B</div>
             </div>
-            <div class="kpi-card" style="border-right:3px solid var(--success);">
+            <div class="kpi-card u47">
               <div class="kpi-label">متطابقة 100%</div>
-              <div class="kpi-val" id="diskKpiMatched" style="color:var(--success);">0</div>
+              <div class="kpi-val u48" id="diskKpiMatched">0</div>
               <div class="kpi-sub">لا تحتاج لنقل</div>
             </div>
-            <div class="kpi-card" style="border-right:3px solid var(--accent);">
+            <div class="kpi-card u49">
               <div class="kpi-label">جديدة في المصدر (للنقل)</div>
-              <div class="kpi-val" id="diskKpiMissing" style="color:var(--accent);">0</div>
+              <div class="kpi-val u50" id="diskKpiMissing">0</div>
               <div class="kpi-sub">غير موجودة في الهدف</div>
             </div>
-            <div class="kpi-card" style="border-right:3px solid #d97706;">
+            <div class="kpi-card u51">
               <div class="kpi-label">معدلة (للتحديث)</div>
-              <div class="kpi-val" id="diskKpiModified" style="color:#d97706;">0</div>
+              <div class="kpi-val u52" id="diskKpiModified">0</div>
               <div class="kpi-sub">اختلاف حجم أو هاش</div>
             </div>
-            <div class="kpi-card" style="border-right:3px solid var(--text-soft);">
+            <div class="kpi-card u53">
               <div class="kpi-label">ملفات زائدة بالهدف</div>
-              <div class="kpi-val" id="diskKpiExtra" style="color:var(--text-soft);">0</div>
+              <div class="kpi-val u35" id="diskKpiExtra">0</div>
               <div class="kpi-sub">موجودة بالهدف فقط</div>
             </div>
           </div>
 
           <!-- Sync Trigger Banner -->
-          <div style="background:rgba(29, 78, 216, 0.07); border:1px solid rgba(29, 78, 216, 0.2); border-radius:var(--radius-sm); padding:14px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div class="u54">
             <div>
-              <strong style="color:var(--accent); font-size:14.5px;">جاهز للمزامنة:</strong>
-              <span id="diskSyncReadySummary" style="margin-right:6px; font-size:13.5px; color:var(--text);"></span>
+              <strong class="u55">جاهز للمزامنة:</strong>
+              <span class="u56" id="diskSyncReadySummary"></span>
             </div>
             <div class="row">
-              <button class="btn btn-primary" id="diskStartSyncBtn" type="button" style="font-weight:700;">
+              <button class="btn btn-primary u57" id="diskStartSyncBtn" type="button">
                 بدء النقل والمزامنة الفعلي (Sync Now)
               </button>
             </div>
@@ -1252,9 +1688,9 @@
         </div>
 
         <!-- Live Disk Sync Progress Dashboard (Shown during/after sync) -->
-        <div id="diskSyncDashboardArea" class="hidden" style="margin-top:18px; border:1px solid var(--border); border-radius:var(--radius); padding:16px; background:var(--surface);">
-          <div class="row" style="justify-content:space-between; margin-bottom:12px;">
-            <h3 style="margin:0; font-size:15px; color:var(--primary); display:flex; align-items:center; gap:6px;">
+        <div id="diskSyncDashboardArea" class="hidden u58">
+          <div class="row u59">
+            <h3 class="u60">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
               <span>لوحة تقدم نقل ومزامنة الهارد المباشرة</span>
             </h3>
@@ -1273,42 +1709,42 @@
             </div>
             <div class="kpi-card">
               <div class="kpi-label">سرعة النقل الحية ⚡</div>
-              <div class="kpi-val ltr" id="diskSyncSpeed" style="color:var(--primary); font-weight:700;">0 KB/s</div>
+              <div class="kpi-val ltr u61" id="diskSyncSpeed">0 KB/s</div>
               <div class="kpi-sub">معدل نقل الديسك المباشر</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">حجم المنقول والمتبقي 💾</div>
-              <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
-                <span id="diskSyncCopiedBytes" style="font-weight:700; color:var(--primary);">0 B</span>
-                <span style="font-size:12px; color:var(--text-soft);"> / </span>
+              <div class="kpi-val ltr u62">
+                <span class="u63" id="diskSyncCopiedBytes">0 B</span>
+                <span class="u18"> / </span>
                 <span id="diskSyncTotalBytes">0 B</span>
               </div>
-              <div class="kpi-sub">المتبقي: <strong id="diskSyncRemBytes" style="color:#d97706; font-weight:700;">0 B</strong></div>
+              <div class="kpi-sub">المتبقي: <strong class="u64" id="diskSyncRemBytes">0 B</strong></div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">عدد المنقول والمتبقي 📄</div>
-              <div class="kpi-val ltr" style="font-size:15px; direction:ltr;">
-                <span id="diskSyncCopiedFiles" style="font-weight:700; color:var(--accent);">0</span>
-                <span style="font-size:12px; color:var(--text-soft);"> / </span>
+              <div class="kpi-val ltr u62">
+                <span class="u65" id="diskSyncCopiedFiles">0</span>
+                <span class="u18"> / </span>
                 <span id="diskSyncTotalFiles">0</span>
               </div>
-              <div class="kpi-sub">المتبقي: <strong id="diskSyncRemFiles" style="color:#b45309; font-weight:700;">0 ملف</strong></div>
+              <div class="kpi-sub">المتبقي: <strong class="u66" id="diskSyncRemFiles">0 ملف</strong></div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">الوقت المتبقي المتوقع ⏱️</div>
               <div class="kpi-val" id="diskSyncEta">--</div>
-              <div class="kpi-sub ltr mono" id="diskSyncCurrentFile" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</div>
+              <div class="kpi-sub ltr mono u67" id="diskSyncCurrentFile">-</div>
             </div>
           </div>
 
-          <div class="progress-wrap" style="margin-top:12px;">
-            <div class="progress-bar" id="diskSyncProgressBar" style="width:0%;"></div>
+          <div class="progress-wrap u68">
+            <div class="progress-bar u69" id="diskSyncProgressBar"></div>
           </div>
         </div>
 
         <!-- Files Breakdown Table -->
-        <div id="diskTableWrapArea" class="hidden" style="margin-top:18px;">
-          <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+        <div id="diskTableWrapArea" class="hidden u70">
+          <div class="row u8">
             <div class="filter-bar" id="diskFilterBar">
               <button class="chip active" type="button" data-disk-filter="all">الكل (<span id="diskCntAll">0</span>)</button>
               <button class="chip" type="button" data-disk-filter="missing">جديدة للنقل (<span id="diskCntMissing">0</span>)</button>
@@ -1316,7 +1752,7 @@
               <button class="chip" type="button" data-disk-filter="matched">متطابقة (<span id="diskCntMatched">0</span>)</button>
               <button class="chip" type="button" data-disk-filter="extra">زائدة بالهدف (<span id="diskCntExtra">0</span>)</button>
             </div>
-            <div style="min-width:240px;">
+            <div class="u30">
               <input type="text" id="diskSearchInput" placeholder="بحث في ملفات المقارنة..." />
             </div>
           </div>
@@ -1325,12 +1761,12 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width:48px;">#</th>
+                  <th class="u10">#</th>
                   <th>المسار النسبي للملف</th>
-                  <th style="width:110px;">حجم المصدر</th>
-                  <th style="width:110px;">حجم الهدف</th>
-                  <th style="width:130px;">حالة التطابق</th>
-                  <th style="width:180px;">الهاش / سبب الاختلاف</th>
+                  <th class="u11">حجم المصدر</th>
+                  <th class="u11">حجم الهدف</th>
+                  <th class="u36">حالة التطابق</th>
+                  <th class="u71">الهاش / سبب الاختلاف</th>
                 </tr>
               </thead>
               <tbody id="diskTableBody"></tbody>
@@ -1340,15 +1776,37 @@
       </div>
     </section>
 
-    <!-- STEP 7: Google Drive Direct Download & Cloud-to-Cloud Bridge (v3.0) -->
-    <section class="card" id="cloudBridgeCard" style="border:1.5px solid #8b5cf6; box-shadow:0 6px 20px rgba(139, 92, 246, 0.1);">
-      <div class="card-header" style="background:linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(29, 78, 216, 0.06) 100%);">
+    <section class="card" id="diskToolsCard">
+      <div class="card-body">
+        <div class="row">
+          <button class="btn btn-secondary" id="diskDryRunBtn" type="button" data-i18n="disk_dryrun"></button>
+          <label class="check-card"><input type="checkbox" id="diskDeleteExtraInput" /><span data-i18n="delete_extra"></span></label>
+        </div>
+        <div id="diskDryRunSummary" class="banner info hidden"></div>
+        <div id="diskDryRunWrap" class="hidden"><div class="table-wrap"><table><thead><tr><th data-i18n="th_path"></th><th data-i18n="th_reason"></th><th data-i18n="th_size"></th></tr></thead><tbody id="diskDryRunBody"></tbody></table></div></div>
         <div>
-          <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span class="step-badge" style="background:#8b5cf6; color:#fff;">v3.0</span>
+          <label class="field-label" for="dupRootInput" data-i18n="dup_root"></label>
+          <div class="row">
+            <div class="grow"><input type="text" id="dupRootInput" class="ltr" /></div>
+            <button class="btn btn-secondary" id="diskDupBtn" type="button" data-i18n="disk_dups"></button>
+          </div>
+        </div>
+        <div id="diskDupSummary" class="banner info hidden"></div>
+        <div id="diskDupWrap" class="hidden"><div class="table-wrap"><table><thead><tr><th data-i18n="th_group"></th><th data-i18n="th_size"></th><th data-i18n="th_files"></th></tr></thead><tbody id="diskDupBody"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 7: Google Drive Direct Download & Cloud-to-Cloud Bridge (v3.0) -->
+    </div>
+    <div class="tab-panel" id="tabp-gdrive" role="tabpanel">
+    <section class="card u72" id="cloudBridgeCard">
+      <div class="card-header u73">
+        <div>
+          <h2 class="card-title u4">
+            <span class="step-badge u74">v3.0</span>
             <span data-i18n="title_cloud_bridge">Google Drive وجسر السحابات المباشر (Cloud-to-Cloud Bridge)</span>
           </h2>
-          <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-soft);" data-i18n="sub_cloud_bridge">
+          <p class="u39" data-i18n="sub_cloud_bridge">
             تحميل مجلدات Google Drive ملفاً بملف وتجاوز حدود الـ Zip، ونقل البيانات مباشرة من رابط سحابي إلى رابط سحابي آخر (SharePoint / OneDrive / GDrive).
           </p>
         </div>
@@ -1358,18 +1816,18 @@
       </div>
       <div class="card-body">
         <!-- Sub Mode Switcher Tabs -->
-        <div style="display:flex; gap:8px; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:10px;">
-          <button class="chip active" id="tabGdriveDownload" type="button" style="font-weight:700;">
+        <div class="u75">
+          <button class="chip active u57" id="tabGdriveDownload" type="button">
             1. تحميل Google Drive ملفاً بملف (بدون ضغط)
           </button>
-          <button class="chip" id="tabCloudBridge" type="button" style="font-weight:700;">
+          <button class="chip u57" id="tabCloudBridge" type="button">
             2. جسر نقل سحابة لسحابة (SharePoint ⇄ OneDrive ⇄ GDrive)
           </button>
         </div>
 
         <!-- Panel 1: Google Drive Direct Download -->
         <div id="panelGdriveDownload">
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+          <div class="u40">
             <div>
               <label class="field-label" for="gdriveUrlInput"><strong>رابط مجلد أو ملف Google Drive:</strong></label>
               <div class="row">
@@ -1390,56 +1848,56 @@
             </div>
           </div>
 
-          <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-            <input type="text" id="gdriveApiKeyInput" class="ltr mono" placeholder="Google Drive API Key (اختياري للمجلدات المقيدة)" style="flex:1; max-width:400px; font-size:12px;" />
-            <button class="btn btn-primary" id="gdriveStartDownloadBtn" type="button" disabled style="font-weight:700;">
+          <div class="u76">
+            <input type="text" id="gdriveApiKeyInput" class="ltr mono u77" placeholder="Google Drive API Key (اختياري للمجلدات المقيدة)" />
+            <button class="btn btn-primary u57" id="gdriveStartDownloadBtn" type="button" disabled>
               بدء التحميل ملفاً بملف عبر الداش بورد
             </button>
           </div>
 
-          <div id="gdriveScanResultsBanner" class="banner ok hidden" style="margin-top:14px;"></div>
+          <div id="gdriveScanResultsBanner" class="banner ok hidden u78"></div>
         </div>
 
         <!-- Panel 2: Cloud-to-Cloud Bridge -->
         <div id="panelCloudBridge" class="hidden">
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
-            <div style="background:var(--surface-alt); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <div class="u40">
+            <div class="u79">
               <label class="field-label"><strong>المصدر السحابي (Cloud Source):</strong></label>
-              <select id="bridgeSourceType" style="margin-bottom:8px; width:100%; padding:6px; border-radius:6px; border:1px solid var(--border);">
+              <select class="u80" id="bridgeSourceType">
                 <option value="sharepoint">Microsoft SharePoint</option>
                 <option value="onedrive">Microsoft OneDrive</option>
                 <option value="gdrive">Google Drive</option>
               </select>
-              <input type="url" id="bridgeSourceUrl" class="ltr" placeholder="رابط المصدر السحابي (SharePoint / OneDrive / GDrive)..." style="width:100%;" />
+              <input type="url" id="bridgeSourceUrl" class="ltr u81" placeholder="رابط المصدر السحابي (SharePoint / OneDrive / GDrive)..." />
             </div>
 
-            <div style="background:var(--surface-alt); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+            <div class="u79">
               <label class="field-label"><strong>الهدف السحابي (Cloud Destination):</strong></label>
-              <select id="bridgeTargetType" style="margin-bottom:8px; width:100%; padding:6px; border-radius:6px; border:1px solid var(--border);">
+              <select class="u80" id="bridgeTargetType">
                 <option value="onedrive">Microsoft OneDrive</option>
                 <option value="gdrive">Google Drive</option>
                 <option value="sharepoint">Microsoft SharePoint</option>
               </select>
-              <input type="url" id="bridgeTargetUrl" class="ltr" placeholder="رابط الهدف السحابي (OneDrive / GDrive / SharePoint)..." style="width:100%;" />
+              <input type="url" id="bridgeTargetUrl" class="ltr u81" placeholder="رابط الهدف السحابي (OneDrive / GDrive / SharePoint)..." />
             </div>
           </div>
 
-          <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <span style="font-size:13px; color:var(--text-soft);">
+          <div class="u82">
+            <span class="u83">
               يتم النقل بالتدفق المباشر (Stream Piping) دون الحاجة لتنزيل وتخزين الملف بالكامل في الجهاز أولاً.
             </span>
-            <button class="btn btn-primary" id="startBridgePipelineBtn" type="button" style="background:#8b5cf6; border-color:#7c3aed; font-weight:700;">
+            <button class="btn btn-primary u84" id="startBridgePipelineBtn" type="button">
               بدء التدفق السحابي المباشر (Cloud Pipe)
             </button>
           </div>
 
-          <div id="bridgeDashboard" class="hidden" style="margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm);">
-            <div class="row" style="justify-content:space-between;">
-              <span id="bridgeStatusText" style="font-weight:700; color:var(--accent);">الحالة: جاري التدفق السحابي...</span>
+          <div id="bridgeDashboard" class="hidden u85">
+            <div class="row u21">
+              <span class="u65" id="bridgeStatusText">الحالة: جاري التدفق السحابي...</span>
               <span id="bridgeSpeedText" class="ltr mono">0 KB/s</span>
             </div>
-            <div class="progress-wrap" style="margin-top:8px;">
-              <div class="progress-bar" id="bridgeProgressBar" style="width:0%; background:#8b5cf6;"></div>
+            <div class="progress-wrap u86">
+              <div class="progress-bar u87" id="bridgeProgressBar"></div>
             </div>
           </div>
         </div>
@@ -1447,14 +1905,16 @@
     </section>
 
     <!-- STEP 8: Universal Media & Social Downloader (v4.0) -->
-    <section class="card" id="mediaCard" style="border:1.5px solid #ef4444; box-shadow:0 6px 20px rgba(239, 68, 68, 0.1);">
-      <div class="card-header" style="background:linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(249, 115, 22, 0.06) 100%);">
+    </div>
+    <div class="tab-panel" id="tabp-media" role="tabpanel">
+    <section class="card u88" id="mediaCard">
+      <div class="card-header u89">
         <div>
-          <h2 class="card-title" style="display:flex; align-items:center; gap:8px;">
-            <span class="step-badge" style="background:#ef4444; color:#fff;">v4.0</span>
+          <h2 class="card-title u4">
+            <span class="step-badge u90">v4.0</span>
             <span data-i18n="title_media_downloader">محرك تنزيل الفيديو والوسائط الشامل (Universal Media &amp; Social Streamer)</span>
           </h2>
-          <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-soft);" data-i18n="sub_media_downloader">
+          <p class="u39" data-i18n="sub_media_downloader">
             تحميل الفيديوهات والمقاطع الصوتية وقوائم التشغيل مباشرة من YouTube و TikTok و Instagram و Facebook و X وجميع المنصات بأعلى جودة أو استخراج الصوت MP3.
           </p>
         </div>
@@ -1464,24 +1924,24 @@
       </div>
       <div class="card-body">
         <!-- Supported platforms visual tags -->
-        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; font-size:12px;">
-          <span class="chip" style="color:#ef4444; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle; margin-left:4px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg> YouTube &amp; Shorts</span>
-          <span class="chip" style="color:#000; font-weight:600;">TikTok</span>
-          <span class="chip" style="color:#e1306c; font-weight:600;">Instagram &amp; Reels</span>
-          <span class="chip" style="color:#1877f2; font-weight:600;">Facebook</span>
-          <span class="chip" style="color:#0f172a; font-weight:600;">X (Twitter)</span>
-          <span class="chip" style="color:#ff4500; font-weight:600;">Reddit</span>
-          <span class="chip" style="color:#1ab7ea; font-weight:600;">Vimeo</span>
-          <span class="chip" style="color:#ff5500; font-weight:600;">SoundCloud</span>
+        <div class="u91">
+          <span class="chip u92"><svg class="u93" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg> YouTube &amp; Shorts</span>
+          <span class="chip u94">TikTok</span>
+          <span class="chip u95">Instagram &amp; Reels</span>
+          <span class="chip u96">Facebook</span>
+          <span class="chip u97">X (Twitter)</span>
+          <span class="chip u98">Reddit</span>
+          <span class="chip u99">Vimeo</span>
+          <span class="chip u100">SoundCloud</span>
         </div>
 
         <!-- URL Input Row -->
-        <div class="row" style="margin-bottom:12px; gap:8px;">
-          <div style="flex:1;">
+        <div class="row u101">
+          <div class="u102">
             <label class="field-label" for="mediaUrlInput"><strong data-i18n="label_media_url">رابط الفيديو أو قائمة التشغيل:</strong></label>
-            <div style="display:flex; gap:8px;">
-              <input type="url" id="mediaUrlInput" class="ltr" placeholder="https://www.youtube.com/watch?v=... or TikTok, Instagram, X..." style="flex:1;" />
-              <button class="btn btn-primary" id="mediaInspectBtn" type="button" style="background:#ef4444; border-color:#dc2626; font-weight:700;">
+            <div class="u103">
+              <input type="url" id="mediaUrlInput" class="ltr u102" placeholder="https://www.youtube.com/watch?v=... or TikTok, Instagram, X..." />
+              <button class="btn btn-primary u104" id="mediaInspectBtn" type="button">
                 <span data-i18n="btn_inspect_media">فحص الرابط</span>
               </button>
             </div>
@@ -1489,35 +1949,35 @@
         </div>
 
         <!-- Local Save Directory Row -->
-        <div class="row" style="margin-bottom:14px; gap:8px;">
-          <div style="flex:1;">
+        <div class="row u105">
+          <div class="u102">
             <label class="field-label" for="mediaDestDirInput"><strong data-i18n="label_media_dest">مجلد الحفظ المحلي:</strong></label>
-            <div style="display:flex; gap:8px;">
-              <input type="text" id="mediaDestDirInput" class="ltr" placeholder="D:\Downloads\Media" style="flex:1;" />
+            <div class="u103">
+              <input type="text" id="mediaDestDirInput" class="ltr u102" placeholder="D:\Downloads\Media" />
               <button class="btn btn-secondary btn-sm" id="pickMediaDirBtn" type="button" data-i18n="btn_browse_folder">اختيار المجلد</button>
             </div>
           </div>
         </div>
 
         <!-- Preview & Format Selector Card (Dynamic) -->
-        <div id="mediaPreviewBox" class="hidden" style="margin-top:14px; padding:16px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface);">
-          <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
-            <div id="mediaThumbWrap" style="width:160px; min-width:140px; border-radius:8px; overflow:hidden; background:#000; box-shadow:0 3px 10px rgba(0,0,0,0.15); position:relative;">
-              <img id="mediaThumbnailImg" src="" alt="Thumbnail" style="width:100%; height:auto; display:block; object-fit:cover;" />
-              <span id="mediaDurationBadge" style="position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,0.75); color:#fff; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:700;">00:00</span>
+        <div id="mediaPreviewBox" class="hidden u106">
+          <div class="u107">
+            <div class="u108" id="mediaThumbWrap">
+              <img class="u109" id="mediaThumbnailImg" src="" alt="Thumbnail" />
+              <span class="u110" id="mediaDurationBadge">00:00</span>
             </div>
-            <div style="flex:1; min-width:240px;">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <div class="u111">
+              <div class="u112">
                 <span class="badge badge-info" id="mediaPlatformBadge">YouTube</span>
                 <span id="mediaPlaylistBadge" class="badge badge-warning hidden">قائمة تشغيل</span>
               </div>
-              <h3 id="mediaTitleText" style="margin:0 0 6px; font-size:16px; line-height:1.4;">--</h3>
-              <div id="mediaAuthorText" style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">--</div>
+              <h3 class="u113" id="mediaTitleText">--</h3>
+              <div class="u114" id="mediaAuthorText">--</div>
 
-              <div class="row" style="gap:10px; align-items:center; flex-wrap:wrap;">
+              <div class="row u115">
                 <div>
-                  <label class="field-label" for="mediaFormatSelect" style="margin-bottom:4px;"><strong data-i18n="label_media_quality">الجودة والصيغة:</strong></label>
-                  <select id="mediaFormatSelect" style="padding:7px 12px; border-radius:var(--radius-xs); border:1px solid var(--border); font-size:13.5px; font-weight:600; background:var(--bg); color:var(--text); min-width:220px;">
+                  <label class="field-label u116" for="mediaFormatSelect"><strong data-i18n="label_media_quality">الجودة والصيغة:</strong></label>
+                  <select class="u117" id="mediaFormatSelect">
                     <option value="best">أفضل جودة فيديو + صوت (Best MP4)</option>
                     <option value="1080p">Full HD (1080p)</option>
                     <option value="720p">HD (720p)</option>
@@ -1526,8 +1986,8 @@
                     <option value="audio_m4a">استخراج صوت فقط (M4A)</option>
                   </select>
                 </div>
-                <div style="margin-top:18px;">
-                  <button class="btn btn-primary" id="startMediaDownloadBtn" type="button" style="background:#ef4444; border-color:#dc2626; font-weight:700; padding:8px 24px;">
+                <div class="u70">
+                  <button class="btn btn-primary u118" id="startMediaDownloadBtn" type="button">
                     <span data-i18n="btn_start_media_download">بدء التحميل الآن ⚡</span>
                   </button>
                 </div>
@@ -1536,19 +1996,70 @@
           </div>
         </div>
 
-        <div id="mediaStatusBanner" class="banner hidden" style="margin-top:14px;"></div>
+        <div id="mediaStatusBanner" class="banner hidden u78"></div>
       </div>
     </section>
+    </div>
+    <div class="tab-panel" id="tabp-history" role="tabpanel">
+      <section class="card" id="historyCard">
+        <div class="card-header"><h2 class="card-title"><span class="step-badge">LOG</span><span data-i18n="tab_history">سجل المهام</span></h2></div>
+        <div class="card-body">
+          <div class="row">
+            <button class="btn btn-secondary btn-sm" id="histRefreshBtn" type="button" data-i18n="btn_refresh"></button>
+            <button class="btn btn-danger btn-sm" id="histClearBtn" type="button" data-i18n="btn_clear"></button>
+            <button class="btn btn-secondary btn-sm" id="histExportBtn" type="button" data-i18n="btn_export"></button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th data-i18n="th_id"></th><th data-i18n="th_kind"></th><th data-i18n="th_source"></th><th data-i18n="th_dest"></th><th data-i18n="th_started"></th><th data-i18n="th_finished"></th><th data-i18n="th_status"></th><th data-i18n="th_files"></th><th data-i18n="th_bytes"></th><th data-i18n="th_errors"></th></tr></thead><tbody id="histBody"></tbody></table></div>
+          <h3 class="field-label" data-i18n="q_title"></h3>
+          <div class="table-wrap"><table><thead><tr><th data-i18n="th_id"></th><th data-i18n="th_kind"></th><th data-i18n="th_status"></th><th data-i18n="th_priority"></th><th data-i18n="th_source"></th><th data-i18n="th_errors"></th><th data-i18n="btn_cancel_job"></th></tr></thead><tbody id="queueBody"></tbody></table></div>
+          <div class="settings-grid">
+            <div><label class="field-label" for="qKind" data-i18n="th_kind"></label>
+              <select id="qKind"><option value="download">download</option><option value="sync">sync</option><option value="media">media</option></select></div>
+            <div><label class="field-label" for="qPriority" data-i18n="th_priority"></label><input type="number" id="qPriority" value="0" /></div>
+          </div>
+          <div><label class="field-label" for="qParams" data-i18n="sch_params"></label><textarea id="qParams" class="ltr mono">{}</textarea></div>
+          <div class="row"><button class="btn btn-primary btn-sm" id="qAddBtn" type="button" data-i18n="btn_add"></button></div>
+          <h3 class="field-label" data-i18n="sch_title"></h3>
+          <div class="settings-grid">
+            <div><label class="field-label" for="schKind" data-i18n="th_kind"></label>
+              <select id="schKind"><option value="download">download</option><option value="sync">sync</option><option value="media">media</option></select></div>
+            <div><label class="field-label" for="schEvery" data-i18n="sch_every"></label>
+              <select id="schEvery"><option value="daily" data-i18n="every_daily"></option><option value="weekly" data-i18n="every_weekly"></option><option value="interval_minutes" data-i18n="every_interval"></option></select></div>
+            <div><label class="field-label" for="schTime" data-i18n="sch_time"></label><input type="time" id="schTime" class="ltr" value="03:00" /></div>
+            <div><label class="field-label" for="schMinutes" data-i18n="sch_minutes"></label><input type="number" id="schMinutes" min="1" value="60" /></div>
+            <div><label class="field-label" for="schWeekday" data-i18n="sch_weekday"></label><select id="schWeekday"></select></div>
+          </div>
+          <div>
+            <label class="field-label" for="schParams" data-i18n="sch_params"></label>
+            <textarea id="schParams" class="ltr mono">{}</textarea>
+          </div>
+          <div class="row"><button class="btn btn-primary btn-sm" id="schAddBtn" type="button" data-i18n="btn_add"></button></div>
+          <div class="table-wrap"><table><thead><tr><th data-i18n="th_id"></th><th data-i18n="th_kind"></th><th data-i18n="sch_every"></th><th data-i18n="sch_time"></th><th data-i18n="th_next"></th><th data-i18n="th_last"></th><th data-i18n="btn_delete"></th></tr></thead><tbody id="schBody"></tbody></table></div>
+          <h3 class="field-label" data-i18n="ntf_title"></h3>
+          <div class="settings-grid">
+            <label class="check-card"><input type="checkbox" id="ntfToast" /><span data-i18n="ntf_toast"></span></label>
+            <label class="check-card"><input type="checkbox" id="ntfTgEnabled" /><span data-i18n="ntf_tg"></span></label>
+            <div><label class="field-label" for="ntfToken" data-i18n="ntf_token"></label><input type="password" id="ntfToken" class="ltr mono" autocomplete="off" /></div>
+            <div><label class="field-label" for="ntfChat" data-i18n="ntf_chat"></label><input type="text" id="ntfChat" class="ltr" /></div>
+            <label class="check-card"><input type="checkbox" id="ntfClearToken" /><span data-i18n="ntf_clear_token"></span></label>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary btn-sm" id="ntfSaveBtn" type="button" data-i18n="btn_save"></button>
+            <button class="btn btn-secondary btn-sm" id="ntfTestBtn" type="button" data-i18n="btn_test"></button>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <!-- Footer with Copyright -->
-  <footer style="border-top:1px solid var(--border); background:var(--surface); padding:24px 20px; margin-top:40px; text-align:center; color:var(--text-soft); font-size:13.5px;">
-    <div style="max-width:1360px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:8px;">
+  <footer class="u119">
+    <div class="u120">
       <div>
         <strong>OmniSync-Downloader (OSDD)</strong> &bull; Resilient Multi-Source File Streamer &amp; Sync Engine
       </div>
       <div>
-        &copy; 2026 تم التطوير بواسطة <a href="https://github.com/esgindy" target="_blank" rel="noopener noreferrer" style="color:var(--accent); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg><span>Eslam Elgimdy</span></a> &bull; كافة الحقوق محفوظة
+        &copy; 2026 تم التطوير بواسطة <a class="u121" href="https://github.com/esgindy" target="_blank" rel="noopener noreferrer"><svg class="u122" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg><span>Eslam Elgimdy</span></a> &bull; كافة الحقوق محفوظة
       </div>
     </div>
   </footer>
@@ -1577,6 +2088,23 @@
           nav_verify: "التحقق وتقرير المزامنة",
           nav_disk_sync: "مزامنة هارد لهارد (Drive-to-Drive)",
           nav_media: "تنزيل الوسائط ويوتيوب",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive والجسر",
+          tab_disk: "مزامنة الأقراص",
+          tab_media: "الوسائط",
+          tab_history: "سجل المهام",
+          history_placeholder: "سجل المهام قادم قريباً.",
+          theme_label: "المظهر",
+          theme_auto: "تلقائي",
+          theme_light: "فاتح",
+          theme_dark: "داكن",
+          theme_ocean: "محيط",
+          theme_amoled: "AMOLED",
+          theme_sunset: "غروب",
+          kpi_done_title: "المنجز",
+          kpi_remaining_title: "المتبقي",
+          spark_title: "السرعة الإجمالية - آخر 60 ثانية",
+          label_dest_dir: "مجلد الوجهة:",
           title_media_downloader: "محرك تنزيل الفيديو والوسائط الشامل (Universal Media & Social Streamer)",
           sub_media_downloader: "تحميل الفيديوهات والمقاطع الصوتية وقوائم التشغيل مباشرة من YouTube و TikTok و Instagram و Facebook و X بأعلى جودة أو استخراج الصوت MP3.",
           label_media_url: "رابط الفيديو أو قائمة التشغيل:",
@@ -1596,7 +2124,7 @@
           btn_resume: "استئناف",
           btn_retry_failed: "إعادة محاولة الفاشل",
           btn_cancel: "إلغاء التحميل",
-          title_active_workers: "العاملون النشطون (مين شغال على إيه الآن)",
+          title_active_workers: "العاملون النشطون",
           msg_no_active_job: "لا توجد عملية تحميل نشطة حالياً.",
           filter_all: "الكل",
           filter_downloading: "قيد التحميل",
@@ -1635,6 +2163,23 @@
           nav_verify: "Verification & Audit",
           nav_disk_sync: "Drive-to-Drive Sync",
           nav_media: "Media & YouTube",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive & Bridge",
+          tab_disk: "Disk Sync",
+          tab_media: "Media",
+          tab_history: "Task history",
+          history_placeholder: "Task history is coming soon.",
+          theme_label: "Theme",
+          theme_auto: "Auto",
+          theme_light: "Light",
+          theme_dark: "Dark",
+          theme_ocean: "Ocean",
+          theme_amoled: "AMOLED",
+          theme_sunset: "Sunset",
+          kpi_done_title: "Done",
+          kpi_remaining_title: "Remaining",
+          spark_title: "Overall speed - last 60 s",
+          label_dest_dir: "Destination:",
           title_media_downloader: "Universal Media & Social Streamer (v4.0)",
           sub_media_downloader: "Direct stream downloader for YouTube, TikTok, Instagram, Facebook, X & playlists with max quality or MP3 audio extraction.",
           label_media_url: "Media or Playlist URL:",
@@ -1693,6 +2238,23 @@
           nav_verify: "Verificación y Auditoría",
           nav_disk_sync: "Sincronizar Disco a Disco",
           nav_media: "Medios y YouTube",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive y puente",
+          tab_disk: "Sincronización de discos",
+          tab_media: "Medios",
+          tab_history: "Historial de tareas",
+          history_placeholder: "El historial de tareas llegará pronto.",
+          theme_label: "Tema",
+          theme_auto: "Automático",
+          theme_light: "Claro",
+          theme_dark: "Oscuro",
+          theme_ocean: "Océano",
+          theme_amoled: "AMOLED",
+          theme_sunset: "Atardecer",
+          kpi_done_title: "Completado",
+          kpi_remaining_title: "Restante",
+          spark_title: "Velocidad total - últimos 60 s",
+          label_dest_dir: "Destino:",
           title_media_downloader: "Descargador Universal de Medios y Redes Sociales (v4.0)",
           sub_media_downloader: "Descarga directa de videos y listas de YouTube, TikTok, Instagram, Facebook, X con máxima calidad o extracción MP3.",
           label_media_url: "URL del video o lista:",
@@ -1751,6 +2313,23 @@
           nav_verify: "Vérification & Audit",
           nav_disk_sync: "Synchro Disque à Disque",
           nav_media: "Médias & YouTube",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive et pont",
+          tab_disk: "Synchro de disques",
+          tab_media: "Médias",
+          tab_history: "Historique des tâches",
+          history_placeholder: "L'historique des tâches arrive bientôt.",
+          theme_label: "Thème",
+          theme_auto: "Auto",
+          theme_light: "Clair",
+          theme_dark: "Sombre",
+          theme_ocean: "Océan",
+          theme_amoled: "AMOLED",
+          theme_sunset: "Coucher de soleil",
+          kpi_done_title: "Terminé",
+          kpi_remaining_title: "Restant",
+          spark_title: "Vitesse globale - 60 dernières s",
+          label_dest_dir: "Destination :",
           title_media_downloader: "Téléchargeur Universel de Médias & Réseaux Sociaux (v4.0)",
           sub_media_downloader: "Téléchargement direct de YouTube, TikTok, Instagram, Facebook, X avec qualité maximale ou extraction MP3.",
           label_media_url: "URL de la vidéo ou playlist:",
@@ -1809,6 +2388,23 @@
           nav_verify: "Überprüfung & Bericht",
           nav_disk_sync: "Laufwerk-zu-Laufwerk Sync",
           nav_media: "Medien & YouTube",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive & Brücke",
+          tab_disk: "Datenträger-Sync",
+          tab_media: "Medien",
+          tab_history: "Aufgabenverlauf",
+          history_placeholder: "Der Aufgabenverlauf kommt bald.",
+          theme_label: "Design",
+          theme_auto: "Automatisch",
+          theme_light: "Hell",
+          theme_dark: "Dunkel",
+          theme_ocean: "Ozean",
+          theme_amoled: "AMOLED",
+          theme_sunset: "Sonnenuntergang",
+          kpi_done_title: "Erledigt",
+          kpi_remaining_title: "Verbleibend",
+          spark_title: "Gesamtgeschwindigkeit - letzte 60 s",
+          label_dest_dir: "Ziel:",
           title_media_downloader: "Universeller Medien- & Social-Downloader (v4.0)",
           sub_media_downloader: "Direkter Download von YouTube, TikTok, Instagram, Facebook, X in bester Qualität oder MP3-Audio-Extraktion.",
           label_media_url: "Video- oder Playlist-URL:",
@@ -1867,6 +2463,23 @@
           nav_verify: "完整性核查",
           nav_disk_sync: "磁盘间同步 (v2)",
           nav_media: "媒体与YouTube下载",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive 与桥接",
+          tab_disk: "磁盘同步",
+          tab_media: "媒体",
+          tab_history: "任务历史",
+          history_placeholder: "任务历史即将推出。",
+          theme_label: "主题",
+          theme_auto: "自动",
+          theme_light: "浅色",
+          theme_dark: "深色",
+          theme_ocean: "海洋",
+          theme_amoled: "AMOLED",
+          theme_sunset: "日落",
+          kpi_done_title: "已完成",
+          kpi_remaining_title: "剩余",
+          spark_title: "整体速度 - 最近 60 秒",
+          label_dest_dir: "目标文件夹：",
           title_media_downloader: "通用社交媒体与视频流下载引擎 (v4.0)",
           sub_media_downloader: "直接下载 YouTube、TikTok、Instagram、Facebook、X 等平台的视频、音频及播放列表，支持最高画质或提取 MP3。",
           label_media_url: "视频或播放列表链接:",
@@ -1925,6 +2538,23 @@
           nav_verify: "Проверка и Отчет",
           nav_disk_sync: "Синхронизация Дисков",
           nav_media: "Медиа и YouTube",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive и мост",
+          tab_disk: "Синхронизация дисков",
+          tab_media: "Медиа",
+          tab_history: "История задач",
+          history_placeholder: "История задач скоро появится.",
+          theme_label: "Тема",
+          theme_auto: "Авто",
+          theme_light: "Светлая",
+          theme_dark: "Тёмная",
+          theme_ocean: "Океан",
+          theme_amoled: "AMOLED",
+          theme_sunset: "Закат",
+          kpi_done_title: "Готово",
+          kpi_remaining_title: "Осталось",
+          spark_title: "Общая скорость - последние 60 с",
+          label_dest_dir: "Папка назначения:",
           title_media_downloader: "Универсальный Загрузчик Медиа и Соцсетей (v4.0)",
           sub_media_downloader: "Прямая загрузка видео и плейлистов с YouTube, TikTok, Instagram, Facebook, X в максимальном качестве или извлечение MP3.",
           label_media_url: "Ссылка на видео или плейлист:",
@@ -1983,6 +2613,23 @@
           nav_verify: "Verificação & Auditoria",
           nav_disk_sync: "Sincronização Disco a Disco",
           nav_media: "Mídia & YouTube",
+          tab_sharepoint: "SharePoint",
+          tab_gdrive: "Google Drive e ponte",
+          tab_disk: "Sincronização de discos",
+          tab_media: "Mídia",
+          tab_history: "Histórico de tarefas",
+          history_placeholder: "O histórico de tarefas chegará em breve.",
+          theme_label: "Tema",
+          theme_auto: "Automático",
+          theme_light: "Claro",
+          theme_dark: "Escuro",
+          theme_ocean: "Oceano",
+          theme_amoled: "AMOLED",
+          theme_sunset: "Pôr do sol",
+          kpi_done_title: "Concluído",
+          kpi_remaining_title: "Restante",
+          spark_title: "Velocidade total - últimos 60 s",
+          label_dest_dir: "Destino:",
           title_media_downloader: "Downloader Universal de Mídia & Redes Sociais (v4.0)",
           sub_media_downloader: "Download direto do YouTube, TikTok, Instagram, Facebook, X em qualidade máxima ou extração de áudio MP3.",
           label_media_url: "URL do vídeo ou playlist:",
@@ -2029,11 +2676,569 @@
         }
       };
 
+      // v6 i18n additions
+      const I18N_V6 = {
+ "ar": {
+  "flt_title": "الفلاتر",
+  "flt_inc": "امتدادات مضمّنة (مثال: pdf, docx)",
+  "flt_exc": "امتدادات مستبعدة",
+  "flt_min": "أقل حجم (MB)",
+  "flt_max": "أكبر حجم (MB)",
+  "flt_after": "عُدّل بعد",
+  "flt_before": "عُدّل قبل",
+  "flt_regex": "تعبير نمطي للاستبعاد (Regex)",
+  "flt_samples": "عينات للاختبار (مسار في كل سطر، اختياريا | الحجم بالبايت)",
+  "flt_test": "اختبار الفلتر",
+  "speed_label": "حد السرعة (KB/s، 0 = بلا حد)",
+  "disk_dryrun": "محاكاة (Dry-run)",
+  "disk_dups": "البحث عن الملفات المكررة",
+  "delete_extra": "حذف الزائد من الهدف",
+  "dup_root": "مجلد البحث عن المكرر (الافتراضي: المصدر)",
+  "th_path": "المسار",
+  "th_reason": "السبب",
+  "th_size": "الحجم",
+  "th_files": "الملفات",
+  "hist_title": "سجل المهام",
+  "btn_refresh": "تحديث",
+  "btn_clear": "مسح السجل",
+  "btn_export": "تصدير CSV",
+  "th_id": "#",
+  "th_kind": "النوع",
+  "th_source": "المصدر",
+  "th_dest": "الهدف",
+  "th_started": "البداية",
+  "th_finished": "النهاية",
+  "th_status": "الحالة",
+  "th_bytes": "البايتات",
+  "th_errors": "أخطاء",
+  "q_title": "طابور المهام",
+  "th_priority": "الأولوية",
+  "btn_cancel_job": "إلغاء",
+  "sch_title": "الجدولة",
+  "sch_every": "التكرار",
+  "sch_time": "الوقت (HH:MM)",
+  "sch_minutes": "كل كم دقيقة",
+  "sch_weekday": "اليوم",
+  "sch_params": "معاملات JSON",
+  "btn_add": "إضافة",
+  "btn_delete": "حذف",
+  "th_next": "التشغيل القادم",
+  "th_last": "آخر تشغيل",
+  "ntf_title": "الإشعارات",
+  "ntf_toast": "إشعارات ويندوز",
+  "ntf_tg": "تفعيل Telegram",
+  "ntf_token": "Telegram Bot Token",
+  "ntf_chat": "Telegram Chat ID",
+  "ntf_clear_token": "مسح التوكن المحفوظ",
+  "btn_save": "حفظ",
+  "btn_test": "اختبار الإشعار",
+  "msg_empty": "لا توجد بيانات.",
+  "msg_done": "تم.",
+  "msg_confirm_clear": "مسح كل السجل؟",
+  "every_daily": "يوميا",
+  "every_weekly": "أسبوعيا",
+  "every_interval": "كل فترة (دقائق)",
+  "th_group": "المجموعة",
+  "lbl_copy": "للنسخ",
+  "lbl_delete": "للحذف",
+  "lbl_wasted": "مساحة مهدرة",
+  "lbl_match": "مطابق",
+  "ntf_token_saved": "توكن محفوظ (اتركه فارغا للإبقاء عليه)",
+  "msg_bad_json": "JSON غير صالح",
+  "flt_result": "مطابق: {m} من {t}"
+ },
+ "en": {
+  "flt_title": "Filters",
+  "flt_inc": "Include extensions (e.g. pdf, docx)",
+  "flt_exc": "Exclude extensions",
+  "flt_min": "Min size (MB)",
+  "flt_max": "Max size (MB)",
+  "flt_after": "Modified after",
+  "flt_before": "Modified before",
+  "flt_regex": "Exclude regex",
+  "flt_samples": "Test samples (one path per line, optional | size in bytes)",
+  "flt_test": "Test filter",
+  "speed_label": "Speed limit (KB/s, 0 = unlimited)",
+  "disk_dryrun": "Dry-run",
+  "disk_dups": "Find duplicates",
+  "delete_extra": "Delete extras from destination",
+  "dup_root": "Duplicates folder (default: source)",
+  "th_path": "Path",
+  "th_reason": "Reason",
+  "th_size": "Size",
+  "th_files": "Files",
+  "hist_title": "Task history",
+  "btn_refresh": "Refresh",
+  "btn_clear": "Clear history",
+  "btn_export": "Export CSV",
+  "th_id": "#",
+  "th_kind": "Kind",
+  "th_source": "Source",
+  "th_dest": "Destination",
+  "th_started": "Started",
+  "th_finished": "Finished",
+  "th_status": "Status",
+  "th_bytes": "Bytes",
+  "th_errors": "Errors",
+  "q_title": "Job queue",
+  "th_priority": "Priority",
+  "btn_cancel_job": "Cancel",
+  "sch_title": "Schedules",
+  "sch_every": "Repeat",
+  "sch_time": "Time (HH:MM)",
+  "sch_minutes": "Every N minutes",
+  "sch_weekday": "Weekday",
+  "sch_params": "Params JSON",
+  "btn_add": "Add",
+  "btn_delete": "Delete",
+  "th_next": "Next run",
+  "th_last": "Last run",
+  "ntf_title": "Notifications",
+  "ntf_toast": "Windows notifications",
+  "ntf_tg": "Enable Telegram",
+  "ntf_token": "Telegram Bot Token",
+  "ntf_chat": "Telegram Chat ID",
+  "ntf_clear_token": "Clear saved token",
+  "btn_save": "Save",
+  "btn_test": "Test notification",
+  "msg_empty": "No data.",
+  "msg_done": "Done.",
+  "msg_confirm_clear": "Clear the whole history?",
+  "every_daily": "Daily",
+  "every_weekly": "Weekly",
+  "every_interval": "Every N minutes",
+  "th_group": "Group",
+  "lbl_copy": "To copy",
+  "lbl_delete": "To delete",
+  "lbl_wasted": "Wasted space",
+  "lbl_match": "Matched",
+  "ntf_token_saved": "Token saved (leave empty to keep)",
+  "msg_bad_json": "Invalid JSON",
+  "flt_result": "Matched: {m} of {t}"
+ },
+ "es": {
+  "flt_title": "Filtros",
+  "flt_inc": "Extensiones incluidas (ej. pdf, docx)",
+  "flt_exc": "Extensiones excluidas",
+  "flt_min": "Tamaño mín. (MB)",
+  "flt_max": "Tamaño máx. (MB)",
+  "flt_after": "Modificado después de",
+  "flt_before": "Modificado antes de",
+  "flt_regex": "Regex de exclusión",
+  "flt_samples": "Muestras de prueba (una ruta por línea, opcional | tamaño en bytes)",
+  "flt_test": "Probar filtro",
+  "speed_label": "Límite de velocidad (KB/s, 0 = sin límite)",
+  "disk_dryrun": "Simulación (Dry-run)",
+  "disk_dups": "Buscar duplicados",
+  "delete_extra": "Eliminar sobrantes del destino",
+  "dup_root": "Carpeta de duplicados (por defecto: origen)",
+  "th_path": "Ruta",
+  "th_reason": "Motivo",
+  "th_size": "Tamaño",
+  "th_files": "Archivos",
+  "hist_title": "Historial de tareas",
+  "btn_refresh": "Actualizar",
+  "btn_clear": "Borrar historial",
+  "btn_export": "Exportar CSV",
+  "th_id": "#",
+  "th_kind": "Tipo",
+  "th_source": "Origen",
+  "th_dest": "Destino",
+  "th_started": "Inicio",
+  "th_finished": "Fin",
+  "th_status": "Estado",
+  "th_bytes": "Bytes",
+  "th_errors": "Errores",
+  "q_title": "Cola de trabajos",
+  "th_priority": "Prioridad",
+  "btn_cancel_job": "Cancelar",
+  "sch_title": "Programaciones",
+  "sch_every": "Repetir",
+  "sch_time": "Hora (HH:MM)",
+  "sch_minutes": "Cada N minutos",
+  "sch_weekday": "Día",
+  "sch_params": "JSON de parámetros",
+  "btn_add": "Añadir",
+  "btn_delete": "Eliminar",
+  "th_next": "Próxima ejecución",
+  "th_last": "Última ejecución",
+  "ntf_title": "Notificaciones",
+  "ntf_toast": "Notificaciones de Windows",
+  "ntf_tg": "Activar Telegram",
+  "ntf_token": "Token del bot de Telegram",
+  "ntf_chat": "Chat ID de Telegram",
+  "ntf_clear_token": "Borrar token guardado",
+  "btn_save": "Guardar",
+  "btn_test": "Probar notificación",
+  "msg_empty": "Sin datos.",
+  "msg_done": "Hecho.",
+  "msg_confirm_clear": "¿Borrar todo el historial?",
+  "every_daily": "Diario",
+  "every_weekly": "Semanal",
+  "every_interval": "Cada N minutos",
+  "th_group": "Grupo",
+  "lbl_copy": "A copiar",
+  "lbl_delete": "A eliminar",
+  "lbl_wasted": "Espacio desperdiciado",
+  "lbl_match": "Coincidentes",
+  "ntf_token_saved": "Token guardado (vacío para conservar)",
+  "msg_bad_json": "JSON no válido",
+  "flt_result": "Coinciden: {m} de {t}"
+ },
+ "fr": {
+  "flt_title": "Filtres",
+  "flt_inc": "Extensions incluses (ex. pdf, docx)",
+  "flt_exc": "Extensions exclues",
+  "flt_min": "Taille min (Mo)",
+  "flt_max": "Taille max (Mo)",
+  "flt_after": "Modifié après",
+  "flt_before": "Modifié avant",
+  "flt_regex": "Regex d'exclusion",
+  "flt_samples": "Échantillons de test (un chemin par ligne, option | taille en octets)",
+  "flt_test": "Tester le filtre",
+  "speed_label": "Limite de vitesse (Ko/s, 0 = illimité)",
+  "disk_dryrun": "Simulation (Dry-run)",
+  "disk_dups": "Rechercher les doublons",
+  "delete_extra": "Supprimer les extras de la destination",
+  "dup_root": "Dossier des doublons (défaut : source)",
+  "th_path": "Chemin",
+  "th_reason": "Raison",
+  "th_size": "Taille",
+  "th_files": "Fichiers",
+  "hist_title": "Historique des tâches",
+  "btn_refresh": "Actualiser",
+  "btn_clear": "Effacer l'historique",
+  "btn_export": "Exporter CSV",
+  "th_id": "#",
+  "th_kind": "Type",
+  "th_source": "Source",
+  "th_dest": "Destination",
+  "th_started": "Début",
+  "th_finished": "Fin",
+  "th_status": "Statut",
+  "th_bytes": "Octets",
+  "th_errors": "Erreurs",
+  "q_title": "File d'attente",
+  "th_priority": "Priorité",
+  "btn_cancel_job": "Annuler",
+  "sch_title": "Planifications",
+  "sch_every": "Répétition",
+  "sch_time": "Heure (HH:MM)",
+  "sch_minutes": "Toutes les N minutes",
+  "sch_weekday": "Jour",
+  "sch_params": "JSON des paramètres",
+  "btn_add": "Ajouter",
+  "btn_delete": "Supprimer",
+  "th_next": "Prochaine exécution",
+  "th_last": "Dernière exécution",
+  "ntf_title": "Notifications",
+  "ntf_toast": "Notifications Windows",
+  "ntf_tg": "Activer Telegram",
+  "ntf_token": "Jeton du bot Telegram",
+  "ntf_chat": "Chat ID Telegram",
+  "ntf_clear_token": "Effacer le jeton enregistré",
+  "btn_save": "Enregistrer",
+  "btn_test": "Tester la notification",
+  "msg_empty": "Aucune donnée.",
+  "msg_done": "Terminé.",
+  "msg_confirm_clear": "Effacer tout l'historique ?",
+  "every_daily": "Quotidien",
+  "every_weekly": "Hebdomadaire",
+  "every_interval": "Toutes les N minutes",
+  "th_group": "Groupe",
+  "lbl_copy": "À copier",
+  "lbl_delete": "À supprimer",
+  "lbl_wasted": "Espace gaspillé",
+  "lbl_match": "Correspond",
+  "ntf_token_saved": "Jeton enregistré (vide pour conserver)",
+  "msg_bad_json": "JSON invalide",
+  "flt_result": "Correspondent : {m} sur {t}"
+ },
+ "de": {
+  "flt_title": "Filter",
+  "flt_inc": "Enthaltene Endungen (z. B. pdf, docx)",
+  "flt_exc": "Ausgeschlossene Endungen",
+  "flt_min": "Min. Größe (MB)",
+  "flt_max": "Max. Größe (MB)",
+  "flt_after": "Geändert nach",
+  "flt_before": "Geändert vor",
+  "flt_regex": "Ausschluss-Regex",
+  "flt_samples": "Testproben (ein Pfad pro Zeile, optional | Größe in Bytes)",
+  "flt_test": "Filter testen",
+  "speed_label": "Geschwindigkeitslimit (KB/s, 0 = unbegrenzt)",
+  "disk_dryrun": "Probelauf (Dry-run)",
+  "disk_dups": "Duplikate suchen",
+  "delete_extra": "Überschüsse im Ziel löschen",
+  "dup_root": "Duplikate-Ordner (Standard: Quelle)",
+  "th_path": "Pfad",
+  "th_reason": "Grund",
+  "th_size": "Größe",
+  "th_files": "Dateien",
+  "hist_title": "Aufgabenverlauf",
+  "btn_refresh": "Aktualisieren",
+  "btn_clear": "Verlauf löschen",
+  "btn_export": "CSV exportieren",
+  "th_id": "#",
+  "th_kind": "Art",
+  "th_source": "Quelle",
+  "th_dest": "Ziel",
+  "th_started": "Start",
+  "th_finished": "Ende",
+  "th_status": "Status",
+  "th_bytes": "Bytes",
+  "th_errors": "Fehler",
+  "q_title": "Warteschlange",
+  "th_priority": "Priorität",
+  "btn_cancel_job": "Abbrechen",
+  "sch_title": "Zeitpläne",
+  "sch_every": "Wiederholung",
+  "sch_time": "Uhrzeit (HH:MM)",
+  "sch_minutes": "Alle N Minuten",
+  "sch_weekday": "Wochentag",
+  "sch_params": "Parameter-JSON",
+  "btn_add": "Hinzufügen",
+  "btn_delete": "Löschen",
+  "th_next": "Nächster Lauf",
+  "th_last": "Letzter Lauf",
+  "ntf_title": "Benachrichtigungen",
+  "ntf_toast": "Windows-Benachrichtigungen",
+  "ntf_tg": "Telegram aktivieren",
+  "ntf_token": "Telegram-Bot-Token",
+  "ntf_chat": "Telegram-Chat-ID",
+  "ntf_clear_token": "Gespeichertes Token löschen",
+  "btn_save": "Speichern",
+  "btn_test": "Benachrichtigung testen",
+  "msg_empty": "Keine Daten.",
+  "msg_done": "Fertig.",
+  "msg_confirm_clear": "Gesamten Verlauf löschen?",
+  "every_daily": "Täglich",
+  "every_weekly": "Wöchentlich",
+  "every_interval": "Alle N Minuten",
+  "th_group": "Gruppe",
+  "lbl_copy": "Zu kopieren",
+  "lbl_delete": "Zu löschen",
+  "lbl_wasted": "Verschwendeter Platz",
+  "lbl_match": "Treffer",
+  "ntf_token_saved": "Token gespeichert (leer lassen zum Behalten)",
+  "msg_bad_json": "Ungültiges JSON",
+  "flt_result": "Treffer: {m} von {t}"
+ },
+ "zh": {
+  "flt_title": "筛选器",
+  "flt_inc": "包含的扩展名（如 pdf, docx）",
+  "flt_exc": "排除的扩展名",
+  "flt_min": "最小大小 (MB)",
+  "flt_max": "最大大小 (MB)",
+  "flt_after": "修改时间晚于",
+  "flt_before": "修改时间早于",
+  "flt_regex": "排除正则表达式",
+  "flt_samples": "测试样本（每行一个路径，可选 | 字节大小）",
+  "flt_test": "测试筛选器",
+  "speed_label": "速度限制 (KB/s，0 = 不限)",
+  "disk_dryrun": "试运行 (Dry-run)",
+  "disk_dups": "查找重复文件",
+  "delete_extra": "删除目标中的多余文件",
+  "dup_root": "重复文件查找目录（默认：源）",
+  "th_path": "路径",
+  "th_reason": "原因",
+  "th_size": "大小",
+  "th_files": "文件",
+  "hist_title": "任务历史",
+  "btn_refresh": "刷新",
+  "btn_clear": "清除历史",
+  "btn_export": "导出 CSV",
+  "th_id": "#",
+  "th_kind": "类型",
+  "th_source": "源",
+  "th_dest": "目标",
+  "th_started": "开始",
+  "th_finished": "结束",
+  "th_status": "状态",
+  "th_bytes": "字节",
+  "th_errors": "错误",
+  "q_title": "任务队列",
+  "th_priority": "优先级",
+  "btn_cancel_job": "取消",
+  "sch_title": "计划任务",
+  "sch_every": "重复",
+  "sch_time": "时间 (HH:MM)",
+  "sch_minutes": "每 N 分钟",
+  "sch_weekday": "星期",
+  "sch_params": "参数 JSON",
+  "btn_add": "添加",
+  "btn_delete": "删除",
+  "th_next": "下次运行",
+  "th_last": "上次运行",
+  "ntf_title": "通知",
+  "ntf_toast": "Windows 通知",
+  "ntf_tg": "启用 Telegram",
+  "ntf_token": "Telegram Bot Token",
+  "ntf_chat": "Telegram Chat ID",
+  "ntf_clear_token": "清除已保存的令牌",
+  "btn_save": "保存",
+  "btn_test": "测试通知",
+  "msg_empty": "暂无数据。",
+  "msg_done": "完成。",
+  "msg_confirm_clear": "清除全部历史？",
+  "every_daily": "每天",
+  "every_weekly": "每周",
+  "every_interval": "每 N 分钟",
+  "th_group": "分组",
+  "lbl_copy": "待复制",
+  "lbl_delete": "待删除",
+  "lbl_wasted": "浪费空间",
+  "lbl_match": "匹配",
+  "ntf_token_saved": "令牌已保存（留空则保留）",
+  "msg_bad_json": "JSON 无效",
+  "flt_result": "匹配：{m} / {t}"
+ },
+ "ru": {
+  "flt_title": "Фильтры",
+  "flt_inc": "Включить расширения (напр. pdf, docx)",
+  "flt_exc": "Исключить расширения",
+  "flt_min": "Мин. размер (МБ)",
+  "flt_max": "Макс. размер (МБ)",
+  "flt_after": "Изменено после",
+  "flt_before": "Изменено до",
+  "flt_regex": "Regex исключения",
+  "flt_samples": "Тестовые образцы (путь в строке, необяз. | размер в байтах)",
+  "flt_test": "Проверить фильтр",
+  "speed_label": "Ограничение скорости (КБ/с, 0 = без лимита)",
+  "disk_dryrun": "Пробный запуск (Dry-run)",
+  "disk_dups": "Найти дубликаты",
+  "delete_extra": "Удалить лишнее в целевой папке",
+  "dup_root": "Папка для дубликатов (по умолчанию: источник)",
+  "th_path": "Путь",
+  "th_reason": "Причина",
+  "th_size": "Размер",
+  "th_files": "Файлы",
+  "hist_title": "История задач",
+  "btn_refresh": "Обновить",
+  "btn_clear": "Очистить историю",
+  "btn_export": "Экспорт CSV",
+  "th_id": "#",
+  "th_kind": "Тип",
+  "th_source": "Источник",
+  "th_dest": "Назначение",
+  "th_started": "Начало",
+  "th_finished": "Конец",
+  "th_status": "Статус",
+  "th_bytes": "Байты",
+  "th_errors": "Ошибки",
+  "q_title": "Очередь задач",
+  "th_priority": "Приоритет",
+  "btn_cancel_job": "Отмена",
+  "sch_title": "Расписания",
+  "sch_every": "Повтор",
+  "sch_time": "Время (ЧЧ:ММ)",
+  "sch_minutes": "Каждые N минут",
+  "sch_weekday": "День недели",
+  "sch_params": "JSON параметров",
+  "btn_add": "Добавить",
+  "btn_delete": "Удалить",
+  "th_next": "Следующий запуск",
+  "th_last": "Последний запуск",
+  "ntf_title": "Уведомления",
+  "ntf_toast": "Уведомления Windows",
+  "ntf_tg": "Включить Telegram",
+  "ntf_token": "Токен бота Telegram",
+  "ntf_chat": "Chat ID Telegram",
+  "ntf_clear_token": "Удалить сохранённый токен",
+  "btn_save": "Сохранить",
+  "btn_test": "Проверить уведомление",
+  "msg_empty": "Нет данных.",
+  "msg_done": "Готово.",
+  "msg_confirm_clear": "Очистить всю историю?",
+  "every_daily": "Ежедневно",
+  "every_weekly": "Еженедельно",
+  "every_interval": "Каждые N минут",
+  "th_group": "Группа",
+  "lbl_copy": "Копировать",
+  "lbl_delete": "Удалить",
+  "lbl_wasted": "Потерянное место",
+  "lbl_match": "Совпало",
+  "ntf_token_saved": "Токен сохранён (оставьте пустым, чтобы сохранить)",
+  "msg_bad_json": "Неверный JSON",
+  "flt_result": "Совпало: {m} из {t}"
+ },
+ "pt": {
+  "flt_title": "Filtros",
+  "flt_inc": "Extensões incluídas (ex. pdf, docx)",
+  "flt_exc": "Extensões excluídas",
+  "flt_min": "Tamanho mín. (MB)",
+  "flt_max": "Tamanho máx. (MB)",
+  "flt_after": "Modificado após",
+  "flt_before": "Modificado antes",
+  "flt_regex": "Regex de exclusão",
+  "flt_samples": "Amostras de teste (um caminho por linha, opcional | tamanho em bytes)",
+  "flt_test": "Testar filtro",
+  "speed_label": "Limite de velocidade (KB/s, 0 = ilimitado)",
+  "disk_dryrun": "Simulação (Dry-run)",
+  "disk_dups": "Procurar duplicados",
+  "delete_extra": "Excluir extras do destino",
+  "dup_root": "Pasta de duplicados (padrão: origem)",
+  "th_path": "Caminho",
+  "th_reason": "Motivo",
+  "th_size": "Tamanho",
+  "th_files": "Arquivos",
+  "hist_title": "Histórico de tarefas",
+  "btn_refresh": "Atualizar",
+  "btn_clear": "Limpar histórico",
+  "btn_export": "Exportar CSV",
+  "th_id": "#",
+  "th_kind": "Tipo",
+  "th_source": "Origem",
+  "th_dest": "Destino",
+  "th_started": "Início",
+  "th_finished": "Fim",
+  "th_status": "Status",
+  "th_bytes": "Bytes",
+  "th_errors": "Erros",
+  "q_title": "Fila de tarefas",
+  "th_priority": "Prioridade",
+  "btn_cancel_job": "Cancelar",
+  "sch_title": "Agendamentos",
+  "sch_every": "Repetição",
+  "sch_time": "Hora (HH:MM)",
+  "sch_minutes": "A cada N minutos",
+  "sch_weekday": "Dia",
+  "sch_params": "JSON de parâmetros",
+  "btn_add": "Adicionar",
+  "btn_delete": "Excluir",
+  "th_next": "Próxima execução",
+  "th_last": "Última execução",
+  "ntf_title": "Notificações",
+  "ntf_toast": "Notificações do Windows",
+  "ntf_tg": "Ativar Telegram",
+  "ntf_token": "Token do bot Telegram",
+  "ntf_chat": "Chat ID do Telegram",
+  "ntf_clear_token": "Limpar token salvo",
+  "btn_save": "Salvar",
+  "btn_test": "Testar notificação",
+  "msg_empty": "Sem dados.",
+  "msg_done": "Concluído.",
+  "msg_confirm_clear": "Limpar todo o histórico?",
+  "every_daily": "Diário",
+  "every_weekly": "Semanal",
+  "every_interval": "A cada N minutos",
+  "th_group": "Grupo",
+  "lbl_copy": "A copiar",
+  "lbl_delete": "A excluir",
+  "lbl_wasted": "Espaço desperdiçado",
+  "lbl_match": "Correspondentes",
+  "ntf_token_saved": "Token salvo (deixe vazio para manter)",
+  "msg_bad_json": "JSON inválido",
+  "flt_result": "Correspondem: {m} de {t}"
+ }
+};
+      Object.keys(I18N_V6).forEach((l) => { if (I18N[l]) Object.assign(I18N[l], I18N_V6[l]); });
+      const tr = (k) => ((I18N[document.documentElement.lang] || I18N.ar)[k] || I18N.ar[k] || k);
+
       function applyLanguage(lang) {
         if (!I18N[lang]) lang = "ar";
         document.documentElement.lang = lang;
         document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
-        localStorage.setItem("osdd_lang", lang);
+        try { localStorage.setItem("osdd_lang", lang); } catch (_) {}
         const dict = I18N[lang];
 
         document.querySelectorAll("[data-i18n]").forEach(el => {
@@ -2048,6 +3253,98 @@
 
         const select = document.getElementById("langSelect");
         if (select && select.value !== lang) select.value = lang;
+
+        const themeSel = document.getElementById("themeSelect");
+        if (themeSel && dict.theme_label) {
+          themeSel.title = dict.theme_label;
+          themeSel.setAttribute("aria-label", dict.theme_label);
+        }
+      }
+
+      // ------------------------------------------------------------------
+      // Themes (light / dark / ocean / amoled / sunset / auto)
+      // ------------------------------------------------------------------
+      const THEMES = ["auto", "light", "dark", "ocean", "amoled", "sunset"];
+      function applyTheme(theme) {
+        if (THEMES.indexOf(theme) < 0) theme = "auto";
+        document.documentElement.setAttribute("data-theme", theme);
+        try { localStorage.setItem("osdd_theme", theme); } catch (_) {}
+        const sel = document.getElementById("themeSelect");
+        if (sel && sel.value !== theme) sel.value = theme;
+      }
+      const themeSelect = document.getElementById("themeSelect");
+      if (themeSelect) {
+        themeSelect.addEventListener("change", (e) => applyTheme(e.target.value));
+      }
+
+      // ------------------------------------------------------------------
+      // Tabs
+      // ------------------------------------------------------------------
+      function showTab(name) {
+        const btns = document.querySelectorAll(".tab-btn");
+        let found = false;
+        btns.forEach((b) => { if (b.dataset.tab === name) found = true; });
+        if (!found) name = "sharepoint";
+        btns.forEach((b) => {
+          const on = b.dataset.tab === name;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        document.querySelectorAll(".tab-panel").forEach((p) => {
+          p.classList.toggle("active", p.id === "tabp-" + name);
+        });
+        try { localStorage.setItem("osdd_tab", name); } catch (_) {}
+      }
+      document.querySelectorAll(".tab-btn").forEach((b) => {
+        b.addEventListener("click", () => showTab(b.dataset.tab));
+      });
+      // Stepper anchors: make sure the SharePoint tab is visible before jumping
+      document.querySelectorAll(".stepper .step-chip").forEach((a) => {
+        a.addEventListener("click", () => {
+          const id = (a.getAttribute("href") || "").slice(1);
+          const target = id ? document.getElementById(id) : null;
+          if (target && target.closest("#tabp-sharepoint")) showTab("sharepoint");
+        });
+      });
+
+      // ------------------------------------------------------------------
+      // Overall-speed sparkline (last 60 s, fed from SSE snapshots)
+      // ------------------------------------------------------------------
+      const SPARK_WINDOW_MS = 60000;
+      const speedHist = [];
+      function pushSpeedSample(bps) {
+        const now = Date.now();
+        speedHist.push({ t: now, v: Math.max(0, Number(bps) || 0) });
+        while (speedHist.length && speedHist[0].t < now - SPARK_WINDOW_MS) speedHist.shift();
+        const line = document.getElementById("dashSparkLine");
+        const area = document.getElementById("dashSparkArea");
+        const maxEl = document.getElementById("dashSparkMax");
+        if (!line || !area) return;
+        let max = 1;
+        speedHist.forEach((p) => { if (p.v > max) max = p.v; });
+        const W = 300, H = 48, pad = 3;
+        const pts = speedHist.map((p) => {
+          const x = ((p.t - (now - SPARK_WINDOW_MS)) / SPARK_WINDOW_MS) * W;
+          const y = H - pad - (p.v / max) * (H - pad * 2);
+          return x.toFixed(1) + "," + y.toFixed(1);
+        });
+        if (max <= 1) {
+          // idle: static full-width baseline (a growing line looks like a loading bar)
+          line.setAttribute("points", "0," + (H - pad) + " " + W + "," + (H - pad));
+          area.setAttribute("d", "");
+          line.style.opacity = "0.35";
+          if (maxEl) maxEl.textContent = formatSpeed(0);
+          return;
+        }
+        line.style.opacity = "";
+        line.setAttribute("points", pts.join(" "));
+        if (pts.length > 1) {
+          const first = pts[0].split(",")[0], last = pts[pts.length - 1].split(",")[0];
+          area.setAttribute("d", "M" + first + "," + H + " L" + pts.join(" L") + " L" + last + "," + H + " Z");
+        } else {
+          area.setAttribute("d", "");
+        }
+        if (maxEl) maxEl.textContent = formatSpeed(max > 1 ? max : 0);
       }
 
       const langSelect = document.getElementById("langSelect");
@@ -2381,7 +3678,7 @@
           renderTree();
           updatePathPreview();
         } catch (err) {
-          $("spTreeContainer").innerHTML = `<div class="tree-empty" style="color:var(--danger);">${escapeHtml(err.message)}</div>`;
+          $("spTreeContainer").innerHTML = `<div class="tree-empty u123">${escapeHtml(err.message)}</div>`;
           if (!silentOnError) showToast(err.message, "error");
         } finally {
           $("loadTreeBtn").disabled = false;
@@ -2668,7 +3965,7 @@
         const errCount = Array.isArray(manifest.scan_errors) ? manifest.scan_errors.length : 0;
         banner.innerHTML =
           `تم الفحص بنجاح: <strong>${manifest.total_folders || 0}</strong> مجلد، <strong>${manifest.total_files || 0}</strong> ملف، الحجم الإجمالي <strong class="ltr">${formatBytes(manifest.total_bytes || 0)}</strong>` +
-          (errCount > 0 ? ` — <span style="color:var(--danger); font-weight:700;">تنبيه: ${errCount} مجلد تعذر فحصه</span>` : "");
+          (errCount > 0 ? ` — <span class="u124">تنبيه: ${errCount} مجلد تعذر فحصه</span>` : "");
         banner.classList.remove("hidden");
         $("startScannedBtn").classList.remove("hidden");
       }
@@ -2711,7 +4008,10 @@
           max_retries: Number($("maxRetriesInput").value || 10),
           skip_verified: overrideSkipVerified !== null ? overrideSkipVerified : $("skipVerifiedInput").checked,
           create_empty_folders: $("createEmptyFoldersInput").checked,
+          speed_limit_kbps: getSpeedLimit(),
         };
+        const flt = getFilters();
+        if (flt) payload.filters = flt;
         if (overrideManifest) {
           payload.manifest = overrideManifest;
         }
@@ -2792,17 +4092,17 @@
         $("syncDiffKpis").innerHTML = `
           <div class="kpi-card">
             <div class="kpi-label">ملفات جديدة على SharePoint</div>
-            <div class="kpi-val" style="color:var(--accent);">${s.new_files_count || 0}</div>
+            <div class="kpi-val u50">${s.new_files_count || 0}</div>
             <div class="kpi-sub"><span class="ltr">${formatBytes(s.new_bytes || 0)}</span> • ${s.new_folders_count || 0} مجلد جديد</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">ملفات محدثة (تغير الحجم/الوقت)</div>
-            <div class="kpi-val" style="color:var(--warning);">${s.updated_files_count || 0}</div>
+            <div class="kpi-val u125">${s.updated_files_count || 0}</div>
             <div class="kpi-sub ltr">${formatBytes(s.updated_bytes || 0)}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">ملفات مطابقة بالفعل</div>
-            <div class="kpi-val" style="color:var(--success);">${s.up_to_date_files_count || 0}</div>
+            <div class="kpi-val u48">${s.up_to_date_files_count || 0}</div>
             <div class="kpi-sub">من أصل ${s.total_sp_files || 0} على SharePoint</div>
           </div>
           <div class="kpi-card">
@@ -2814,6 +4114,24 @@
 
         updateSyncStartButtonDisabled();
         renderSyncBreakdown();
+      }
+
+      function syncExcluded() {
+        if (!state.syncExcluded) state.syncExcluded = new Set();
+        return state.syncExcluded;
+      }
+      function syncAllChangePaths(includeUpdated) {
+        const plan = state.syncPlan || {};
+        const out = (plan.new_files || []).map((f) => f.relative_path || "");
+        if (includeUpdated) (plan.updated_files || []).forEach((f) => out.push(f.relative_path || ""));
+        return out.filter(Boolean);
+      }
+      function updateSyncPickSummary() {
+        const el = document.getElementById("syncPickSummary");
+        if (!el) return;
+        const all = syncAllChangePaths($("syncDiffIncludeUpdated") && $("syncDiffIncludeUpdated").checked);
+        const sel = all.filter((p) => !syncExcluded().has(p)).length;
+        el.textContent = `سيتم تحميل ${sel} من ${all.length} ملف`;
       }
 
       function renderSyncBreakdown() {
@@ -2856,7 +4174,7 @@
                 </tbody>
               </table>
             </div>
-            ${rows.length > 200 ? `<div class="banner" style="margin-top:8px;">يتم عرض أول 200 ملف من أصل ${rows.length} (لرؤية القائمة كاملة صدّر التقرير CSV/JSON).</div>` : ""}
+            ${rows.length > 200 ? `<div class="banner u86">يتم عرض أول 200 ملف من أصل ${rows.length} (لرؤية القائمة كاملة صدّر التقرير CSV/JSON).</div>` : ""}
           `;
           return;
         }
@@ -2877,6 +4195,13 @@
         }
 
         host.innerHTML = "";
+        const bar = document.createElement("div");
+        bar.className = "row";
+        bar.innerHTML = `<button type="button" class="btn btn-secondary btn-sm" id="syncPickAll">تحديد الكل</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="syncPickNone">إلغاء تحديد الكل</button>
+          <span class="badge badge-neutral" id="syncPickSummary"></span>`;
+        host.appendChild(bar);
+        updateSyncPickSummary();
         const list = document.createElement("div");
         list.className = "folder-diff-list";
 
@@ -2887,11 +4212,12 @@
           const head = document.createElement("div");
           head.className = "folder-diff-head";
           head.innerHTML = `
-            <div class="row" style="gap:8px;">
-              <span class="ltr mono" style="font-weight:700;">📁 ${escapeHtml(bucket.folder)}</span>
+            <div class="row u17">
+              <input type="checkbox" class="sync-pick-folder" data-folder="${escapeHtml(bucket.folder)}" ${((bucket.new_files || []).concat(bucket.updated_files || [])).every((x) => !syncExcluded().has(x.relative_path || "")) ? "checked" : ""} title="تحديد/إلغاء تحديد كل ملفات المجلد" />
+              <span class="ltr mono u57">📁 ${escapeHtml(bucket.folder)}</span>
               ${bucket.is_new_folder ? `<span class="badge badge-info">مجلد جديد</span>` : ""}
             </div>
-            <div class="row" style="gap:6px;">
+            <div class="row u126">
               ${bucket.new_count ? `<span class="badge badge-info">جديد: ${bucket.new_count} (${formatBytes(bucket.new_bytes)})</span>` : ""}
               ${bucket.updated_count ? `<span class="badge badge-warn">محدث: ${bucket.updated_count} (${formatBytes(bucket.updated_bytes)})</span>` : ""}
               <span class="badge badge-ok">مطابق: ${bucket.up_to_date_count || 0}</span>
@@ -2914,16 +4240,16 @@
                 .map(({ type, f }) => {
                   if (type === "new") {
                     return `<div class="diff-file-row">
-                      <span class="ltr"><strong>+ ${escapeHtml(f.name)}</strong></span>
-                      <span class="row" style="gap:6px;">
+                      <span class="ltr"><input type="checkbox" class="sync-pick" data-path="${escapeHtml(f.relative_path || "")}" ${syncExcluded().has(f.relative_path || "") ? "" : "checked"} /> <strong>+ ${escapeHtml(f.name)}</strong></span>
+                      <span class="row u126">
                         <span class="badge badge-info">جديد</span>
                         <span class="ltr mono">${formatBytes(f.sp_size)}</span>
                       </span>
                     </div>`;
                   }
                   return `<div class="diff-file-row">
-                    <span class="ltr"><strong>↻ ${escapeHtml(f.name)}</strong></span>
-                    <span class="row" style="gap:6px;">
+                    <span class="ltr"><input type="checkbox" class="sync-pick" data-path="${escapeHtml(f.relative_path || "")}" ${syncExcluded().has(f.relative_path || "") ? "" : "checked"} /> <strong>↻ ${escapeHtml(f.name)}</strong></span>
+                    <span class="row u126">
                       <span class="badge badge-warn">محدث (${escapeHtml(f.update_reason || "diff")})</span>
                       <span class="ltr mono">${formatBytes(f.local_size)} → ${formatBytes(f.sp_size)}</span>
                     </span>
@@ -2975,6 +4301,7 @@
             }),
           });
           state.syncPlan = plan;
+          state.syncExcluded = new Set();
           renderSyncDiffPanel();
           $("syncDiffCard").scrollIntoView({ behavior: "smooth", block: "start" });
           showToast("تمت مقارنة SharePoint مع المجلد المحلي بنجاح", "success");
@@ -2999,6 +4326,9 @@
               max_retries: Number($("maxRetriesInput").value || 10),
               include_updated: $("syncDiffIncludeUpdated").checked,
               create_empty_folders: $("createEmptyFoldersInput").checked,
+              speed_limit_kbps: getSpeedLimit(),
+              excluded_paths: Array.from(syncExcluded()),
+              ...(getFilters() ? { filters: getFilters() } : {}),
             }),
           });
           if (data.snapshot) handleSnapshot(data.snapshot);
@@ -3010,6 +4340,32 @@
           updateSyncStartButtonDisabled();
         }
       });
+
+      $("syncDiffBreakdown").addEventListener("change", (e) => {
+        const t = e.target;
+        const ex = syncExcluded();
+        if (t.classList.contains("sync-pick")) {
+          if (t.checked) ex.delete(t.dataset.path); else ex.add(t.dataset.path);
+          updateSyncPickSummary();
+        } else if (t.classList.contains("sync-pick-folder")) {
+          const plan = state.syncPlan || {};
+          const b = (plan.all_folders_summary || []).find((x) => x.folder === t.dataset.folder);
+          ((b && (b.new_files || []).concat(b.updated_files || [])) || []).forEach((x) => {
+            const p = x.relative_path || "";
+            if (t.checked) ex.delete(p); else ex.add(p);
+          });
+          renderSyncBreakdown();
+        }
+      });
+      $("syncDiffBreakdown").addEventListener("click", (e) => {
+        const id = e.target.id;
+        if (id !== "syncPickAll" && id !== "syncPickNone") return;
+        const ex = syncExcluded();
+        ex.clear();
+        if (id === "syncPickNone") syncAllChangePaths(true).forEach((p) => ex.add(p));
+        renderSyncBreakdown();
+      });
+      if ($("syncDiffIncludeUpdated")) $("syncDiffIncludeUpdated").addEventListener("change", updateSyncPickSummary);
 
       $("syncDiffTabs").addEventListener("click", (e) => {
         const btn = e.target.closest("[data-sync-tab]");
@@ -3094,9 +4450,10 @@
         if ($("dashCountsDetail")) {
           $("dashCountsDetail").textContent = `مكتمل: ${completedFiles} | متخطى: ${skippedFiles} | فشل: ${failedFiles}`;
         }
-        $("dashSpeed").textContent = snap.status === "running" ? formatSpeed(snap.overall_speed_bps) : "0 KB/s";
-        $("dashEta").textContent = snap.status === "running" ? formatEta(snap.eta_seconds) : "--";
+        if ($("dashSpeed")) $("dashSpeed").textContent = snap.status === "running" ? formatSpeed(snap.overall_speed_bps) : "0 KB/s";
+        if ($("dashEta")) $("dashEta").textContent = snap.status === "running" ? formatEta(snap.eta_seconds) : "--";
         $("dashDestDir").textContent = snap.dest_dir || "-";
+        pushSpeedSample(snap.status === "running" ? snap.overall_speed_bps : 0);
 
         const bar = $("dashProgressBar");
         bar.style.width = `${pct.toFixed(2)}%`;
@@ -3142,7 +4499,7 @@
       function renderWorkers(workers) {
         const grid = $("workersGrid");
         if (!workers.length) {
-          grid.innerHTML = `<div class="banner" style="grid-column:1/-1; color:var(--text-soft);">لا توجد عملية تحميل نشطة حالياً.</div>`;
+          grid.innerHTML = `<div class="banner u7">لا توجد عملية تحميل نشطة حالياً.</div>`;
           return;
         }
         grid.innerHTML = workers
@@ -3174,11 +4531,11 @@
                 <div class="worker-file ltr" title="${escapeHtml(w.file_name || "")}">${escapeHtml(w.file_name || "في الانتظار...")}</div>
                 <div class="worker-folder ltr" title="${escapeHtml(w.relative_path || "")}">${escapeHtml(folder)}</div>
                 <div class="progress-wrap sm"><div class="progress-bar" style="width:${pct.toFixed(1)}%;"></div></div>
-                <div class="row" style="justify-content:space-between; font-size:11.5px; color:var(--text-muted);">
+                <div class="row u127">
                   <span class="ltr">${formatBytes(w.downloaded_bytes)} / ${formatBytes(w.total_bytes)} (${pct.toFixed(0)}%)</span>
                   <span class="ltr">${formatSpeed(w.speed_bps)}</span>
                 </div>
-                <div style="font-size:11.5px; color:var(--text-soft);">
+                <div class="u128">
                   ${w.attempt ? `محاولة ${w.attempt} • ` : ""}${escapeHtml(w.message || "")}
                 </div>
               </div>
@@ -3235,7 +4592,7 @@
         const tbody = $("queueTableBody");
 
         if (!pageRows.length) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-soft); padding:20px;">لا توجد ملفات مطابقة للفلتر الحالي.</td></tr>`;
+          tbody.innerHTML = `<tr><td class="u129" colspan="7">لا توجد ملفات مطابقة للفلتر الحالي.</td></tr>`;
         } else {
           tbody.innerHTML = pageRows
             .map((f, idx) => {
@@ -3256,20 +4613,20 @@
                 <tr>
                   <td>${start + idx + 1}</td>
                   <td>
-                    <div class="row" style="gap:6px;">
+                    <div class="row u126">
                       <strong class="ltr">${escapeHtml(f.name)}</strong>
                       ${syncTag}
                     </div>
-                    <div class="ltr mono" style="font-size:11.5px; color:var(--text-soft); overflow-wrap:anywhere;">${escapeHtml(f.relative_path)}</div>
+                    <div class="ltr mono u130">${escapeHtml(f.relative_path)}</div>
                   </td>
                   <td class="ltr mono">${formatBytes(f.size)}</td>
                   <td>
                     <div class="progress-wrap sm"><div class="progress-bar ${f.status === "completed" || f.status === "skipped" ? "done" : ""}" style="width:${pct.toFixed(0)}%;"></div></div>
-                    <div class="ltr" style="font-size:11px; color:var(--text-muted); margin-top:2px;">${formatBytes(f.downloaded_bytes || 0)} (${pct.toFixed(0)}%)</div>
+                    <div class="ltr u131">${formatBytes(f.downloaded_bytes || 0)} (${pct.toFixed(0)}%)</div>
                   </td>
                   <td><span class="badge ${stCls}">${stText}</span></td>
                   <td>${f.attempts || 0}</td>
-                  <td style="font-size:12px; color:var(--danger); overflow-wrap:anywhere;">${escapeHtml(f.error || "")}</td>
+                  <td class="u132">${escapeHtml(f.error || "")}</td>
                 </tr>
               `;
             })
@@ -3424,20 +4781,20 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-label">مطابقة ومكتملة</div>
-            <div class="kpi-val" style="color:var(--success);">${r.verified_files}</div>
+            <div class="kpi-val u48">${r.verified_files}</div>
             <div class="kpi-sub ltr">${formatBytes(r.total_verified_bytes)} / ${formatBytes(r.total_expected_bytes)}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">ملفات ناقصة</div>
-            <div class="kpi-val" style="color:var(--danger);">${r.missing_files}</div>
+            <div class="kpi-val u123">${r.missing_files}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">اختلاف حجم</div>
-            <div class="kpi-val" style="color:var(--warning);">${r.size_mismatch_files}</div>
+            <div class="kpi-val u125">${r.size_mismatch_files}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">غير مكتملة (.part)</div>
-            <div class="kpi-val" style="color:var(--warning);">${r.incomplete_part_files}</div>
+            <div class="kpi-val u125">${r.incomplete_part_files}</div>
           </div>
         `;
 
@@ -3464,7 +4821,7 @@
 
         const tbody = $("verifyTableBody");
         if (!slice.length) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--success); padding:18px;">لا توجد ملفات غير مطابقة!</td></tr>`;
+          tbody.innerHTML = `<tr><td class="u133" colspan="5">لا توجد ملفات غير مطابقة!</td></tr>`;
         } else {
           const labels = {
             verified: ["مطابق", "badge-ok"],
@@ -3480,7 +4837,7 @@
                   <td>${start + idx + 1}</td>
                   <td>
                     <div class="ltr"><strong>${escapeHtml(it.name)}</strong></div>
-                    <div class="ltr mono" style="font-size:11.5px; color:var(--text-soft);">${escapeHtml(it.relative_path)}</div>
+                    <div class="ltr mono u128">${escapeHtml(it.relative_path)}</div>
                   </td>
                   <td class="ltr mono">${formatBytes(it.expected_size)}</td>
                   <td class="ltr mono">${formatBytes(it.local_size)}</td>
@@ -3517,12 +4874,12 @@
         $("syncReportKpis").innerHTML = `
           <div class="kpi-card">
             <div class="kpi-label">ملفات جديدة نزلت</div>
-            <div class="kpi-val" style="color:var(--success);">${rep.newly_downloaded_count || 0}</div>
+            <div class="kpi-val u48">${rep.newly_downloaded_count || 0}</div>
             <div class="kpi-sub">${(rep.new_folders || []).length} مجلد جديد</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">ملفات محدثة نزلت</div>
-            <div class="kpi-val" style="color:var(--accent);">${rep.updated_downloaded_count || 0}</div>
+            <div class="kpi-val u50">${rep.updated_downloaded_count || 0}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">ملفات مطابقة / متخطاة</div>
@@ -3530,7 +4887,7 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-label">ملفات فاشلة</div>
-            <div class="kpi-val" style="color:var(--danger);">${rep.failed_count || 0}</div>
+            <div class="kpi-val u123">${rep.failed_count || 0}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">إجمالي الحجم المنزّل</div>
@@ -3554,8 +4911,8 @@
             return `
               <div class="folder-diff-card">
                 <div class="folder-diff-head">
-                  <span class="ltr mono" style="font-weight:700;">📁 ${escapeHtml(g.folder)}</span>
-                  <div class="row" style="gap:6px;">
+                  <span class="ltr mono u57">📁 ${escapeHtml(g.folder)}</span>
+                  <div class="row u126">
                     ${g.new_count ? `<span class="badge badge-ok">جديد: ${g.new_count}</span>` : ""}
                     ${g.updated_count ? `<span class="badge badge-info">محدث: ${g.updated_count}</span>` : ""}
                     <span class="badge badge-neutral ltr">${formatBytes(g.total_bytes || 0)}</span>
@@ -3569,12 +4926,12 @@
 
         if ((rep.failed_files || []).length > 0) {
           const failedHtml = (rep.failed_files || [])
-            .map((f) => `<div class="diff-file-row"><span class="ltr mono">${escapeHtml(f.relative_path)}</span><span style="color:var(--danger);">${escapeHtml(f.error || "فشل")}</span></div>`)
+            .map((f) => `<div class="diff-file-row"><span class="ltr mono">${escapeHtml(f.relative_path)}</span><span class="u123">${escapeHtml(f.error || "فشل")}</span></div>`)
             .join("");
           host.innerHTML += `
-            <div class="folder-diff-card" style="border-color:#fecaca;">
-              <div class="folder-diff-head" style="background:var(--danger-bg);">
-                <strong style="color:var(--danger);">ملفات فشل تنزيلها (${rep.failed_count})</strong>
+            <div class="folder-diff-card u134">
+              <div class="folder-diff-head u135">
+                <strong class="u123">ملفات فشل تنزيلها (${rep.failed_count})</strong>
               </div>
               <div class="folder-diff-files">${failedHtml}</div>
             </div>
@@ -3740,7 +5097,7 @@
         }
 
         if (!list.length) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:18px; color:var(--text-soft);">لا توجد ملفات مطابقة لهذا الفلتر أو البحث.</td></tr>`;
+          tbody.innerHTML = `<tr><td class="u136" colspan="6">لا توجد ملفات مطابقة لهذا الفلتر أو البحث.</td></tr>`;
           return;
         }
 
@@ -3761,11 +5118,11 @@
           return `
             <tr>
               <td>${idx + 1}</td>
-              <td class="ltr mono" style="font-size:12px;">${escapeHtml(item.relative_path || item.name)}</td>
+              <td class="ltr mono u137">${escapeHtml(item.relative_path || item.name)}</td>
               <td class="ltr mono">${srcSize}</td>
               <td class="ltr mono">${dstSize}</td>
               <td><span class="badge ${cls}">${lbl}</span></td>
-              <td class="ltr mono" style="font-size:11.5px; color:var(--text-soft);">${escapeHtml(reason)}</td>
+              <td class="ltr mono u128">${escapeHtml(reason)}</td>
             </tr>
           `;
         }).join("");
@@ -4158,14 +5515,14 @@
             await fetch("/api/system/shutdown", { method: "POST" });
           } catch (_) {}
           document.body.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#0f172a; color:#f8fafc; font-family:sans-serif; text-align:center; padding:24px;">
-              <div style="background:#1e293b; border:1px solid #334155; padding:36px 48px; border-radius:18px; box-shadow:0 12px 30px rgba(0,0,0,0.5); max-width:480px; width:100%;">
-                <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:50%; background:rgba(34,197,94,0.15); display:flex; align-items:center; justify-content:center; color:#22c55e;">
+            <div class="u138">
+              <div class="u139">
+                <div class="u140">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-                <h2 style="margin:0 0 10px; font-size:20px; color:#22c55e;">تم إيقاف البرنامج بنجاح</h2>
-                <p style="margin:0 0 18px; color:#94a3b8; font-size:14px; line-height:1.6;">تم إنهاء خدمة OmniSync Downloader في الخلفية وإفراغ الذاكرة بالكامل.</p>
-                <div style="font-size:13px; color:#64748b; background:#0f172a; padding:10px; border-radius:8px;">يمكنك الآن إغلاق هذه النافذة بأمان.</div>
+                <h2 class="u141">تم إيقاف البرنامج بنجاح</h2>
+                <p class="u142">تم إنهاء خدمة OmniSync Downloader في الخلفية وإفراغ الذاكرة بالكامل.</p>
+                <div class="u143">يمكنك الآن إغلاق هذه النافذة بأمان.</div>
               </div>
             </div>
           `;
@@ -4176,9 +5533,272 @@
       // ------------------------------------------------------------------
       // Boot
       // ------------------------------------------------------------------
+      // ------------------------------------------------------------------
+      // v6 UI: filters, dry-run, duplicates, history, queue, schedules, notify
+      // ------------------------------------------------------------------
+      function getSpeedLimit() {
+        return Math.max(0, parseInt($("speedLimitInput").value, 10) || 0);
+      }
+
+      function getFilters() {
+        const f = {};
+        const inc = $("fltInclude").value.trim();
+        const exc = $("fltExclude").value.trim();
+        if (inc) f.include_ext = inc;
+        if (exc) f.exclude_ext = exc;
+        const mn = parseFloat($("fltMin").value);
+        const mx = parseFloat($("fltMax").value);
+        if (isFinite(mn) && mn > 0) f.min_size = Math.round(mn * 1048576);
+        if (isFinite(mx) && mx > 0) f.max_size = Math.round(mx * 1048576);
+        if ($("fltAfter").value) f.modified_after = $("fltAfter").value;
+        if ($("fltBefore").value) f.modified_before = $("fltBefore").value;
+        if ($("fltRegex").value.trim()) f.exclude_regex = $("fltRegex").value.trim();
+        return Object.keys(f).length ? f : null;
+      }
+
+      function fmtTime(v) {
+        if (v === null || v === undefined || v === "") return "";
+        const n = Number(v);
+        return isFinite(n) && n > 0 ? new Date(n * 1000).toLocaleString() : String(v);
+      }
+
+      function fillRows(tbodyId, rows, colCount) {
+        const body = $(tbodyId);
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="${colCount}">${escapeHtml(tr("msg_empty"))}</td></tr>`;
+          return;
+        }
+        body.innerHTML = rows.map((cells) => "<tr>" + cells.map((c) => `<td class="ltr">${c}</td>`).join("") + "</tr>").join("");
+      }
+
+      $("fltTestBtn").addEventListener("click", async () => {
+        const filter = getFilters() || {};
+        const samples = $("fltSamples").value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+          const parts = l.split("|");
+          const item = { relative_path: parts[0].trim() };
+          if (parts[1] && isFinite(Number(parts[1]))) item.size = Number(parts[1]);
+          return item;
+        });
+        try {
+          const res = await apiJson("/api/filters/test", { method: "POST", body: JSON.stringify({ filter, samples }) });
+          const badge = $("fltTestResult");
+          badge.textContent = tr("flt_result").replace("{m}", res.matched).replace("{t}", res.total);
+          badge.classList.remove("hidden");
+        } catch (err) {
+          $("fltTestResult").classList.add("hidden");
+          showToast(err.message, "error");
+        }
+      });
+
+      $("diskDryRunBtn").addEventListener("click", async () => {
+        const src = $("diskSourceDirInput").value.trim();
+        const dst = $("diskDestDirInput").value.trim();
+        if (!src || !dst) { showToast(tr("th_source") + " / " + tr("th_dest"), "warning"); return; }
+        $("diskDryRunBtn").disabled = true;
+        try {
+          const res = await apiJson("/api/disk/dryrun", {
+            method: "POST",
+            body: JSON.stringify({ source_dir: src, dest_dir: dst, deep: $("diskCompareHashCheckbox").checked, delete_extra: $("diskDeleteExtraInput").checked }),
+          });
+          const sum = $("diskDryRunSummary");
+          sum.textContent = `${tr("lbl_copy")}: ${res.copy_count} (${formatBytes(res.copy_bytes)}) | ${tr("lbl_delete")}: ${res.delete_count} (${formatBytes(res.delete_bytes)})`;
+          sum.classList.remove("hidden");
+          const rel = (f) => escapeHtml(f.relative_path || f.name || "");
+          const rows = (res.to_copy || []).map((f) => [rel(f), escapeHtml(f.reason || tr("lbl_copy")), formatBytes(f.size || 0)])
+            .concat((res.to_delete || []).map((f) => [rel(f), escapeHtml(tr("lbl_delete")), formatBytes(f.size || 0)]));
+          fillRows("diskDryRunBody", rows, 3);
+          $("diskDryRunWrap").classList.remove("hidden");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("diskDryRunBtn").disabled = false;
+        }
+      });
+
+      $("diskDupBtn").addEventListener("click", async () => {
+        const root = $("dupRootInput").value.trim() || $("diskSourceDirInput").value.trim();
+        if (!root) { showToast(tr("dup_root"), "warning"); return; }
+        $("diskDupBtn").disabled = true;
+        try {
+          const res = await apiJson("/api/disk/duplicates", { method: "POST", body: JSON.stringify({ root }) });
+          const sum = $("diskDupSummary");
+          sum.textContent = `${tr("th_group")}: ${res.group_count} | ${tr("th_files")}: ${res.duplicate_files} | ${tr("lbl_wasted")}: ${formatBytes(res.wasted_bytes)}`;
+          sum.classList.remove("hidden");
+          fillRows("diskDupBody", (res.groups || []).map((g) => [
+            escapeHtml(String(g.hash || "").slice(0, 12)) + ` x${g.count}`,
+            `${formatBytes(g.size)} (${escapeHtml(tr("lbl_wasted"))}: ${formatBytes(g.wasted_bytes)})`,
+            (g.files || []).map(escapeHtml).join("<br>"),
+          ]), 3);
+          $("diskDupWrap").classList.remove("hidden");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          $("diskDupBtn").disabled = false;
+        }
+      });
+
+      async function loadHistory() {
+        try {
+          const res = await apiJson("/api/history");
+          fillRows("histBody", (res.jobs || []).map((j) => [
+            escapeHtml(j.id), escapeHtml(j.kind), escapeHtml(j.source || ""), escapeHtml(j.dest || ""),
+            escapeHtml(fmtTime(j.started)), escapeHtml(fmtTime(j.finished)), escapeHtml(j.status || ""),
+            escapeHtml(j.files ?? ""), formatBytes(j.bytes || 0), escapeHtml(j.errors || ""),
+          ]), 10);
+        } catch (err) { showToast(err.message, "error"); }
+      }
+
+      async function loadQueue() {
+        try {
+          const res = await apiJson("/api/queue");
+          fillRows("queueBody", (res.jobs || []).map((j) => [
+            escapeHtml(j.id), escapeHtml(j.kind), escapeHtml(j.status), escapeHtml(j.priority ?? 0),
+            escapeHtml(j.source || ""), escapeHtml(j.error || ""),
+            (j.status === "pending" || j.status === "running")
+              ? `<button class="btn btn-danger btn-sm" type="button" data-q-cancel="${escapeHtml(j.id)}">${escapeHtml(tr("btn_cancel_job"))}</button>` : "",
+          ]), 7);
+        } catch (err) { showToast(err.message, "error"); }
+      }
+
+      async function loadSchedules() {
+        try {
+          const res = await apiJson("/api/schedule");
+          fillRows("schBody", (res.schedules || []).map((e) => [
+            escapeHtml(e.id), escapeHtml(e.kind), escapeHtml(e.every),
+            escapeHtml(e.every === "interval_minutes" ? e.minutes : e.time),
+            escapeHtml(e.next_run || ""), escapeHtml(fmtTime(e.last_run)),
+            `<button class="btn btn-danger btn-sm" type="button" data-s-del="${escapeHtml(e.id)}">${escapeHtml(tr("btn_delete"))}</button>`,
+          ]), 7);
+        } catch (err) { showToast(err.message, "error"); }
+      }
+
+      async function loadNotify() {
+        try {
+          const c = await apiJson("/api/settings/notify");
+          $("ntfToast").checked = !!c.toast;
+          $("ntfTgEnabled").checked = !!c.telegram_enabled;
+          $("ntfChat").value = c.telegram_chat_id || "";
+          $("ntfToken").value = "";
+          $("ntfToken").placeholder = c.has_token ? tr("ntf_token_saved") : "";
+          $("ntfClearToken").checked = false;
+        } catch (err) { showToast(err.message, "error"); }
+      }
+
+      function refreshHistoryTab() { loadHistory(); loadQueue(); loadSchedules(); loadNotify(); }
+
+      $("histRefreshBtn").addEventListener("click", refreshHistoryTab);
+      $("navHistory").addEventListener("click", refreshHistoryTab);
+      $("histExportBtn").addEventListener("click", () => {
+        const a = document.createElement("a");
+        a.href = "/api/history/export";
+        a.download = "osdd_history.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+      $("histClearBtn").addEventListener("click", async () => {
+        if (!window.confirm(tr("msg_confirm_clear"))) return;
+        try {
+          await apiJson("/api/history", { method: "DELETE" });
+          showToast(tr("msg_done"), "success");
+          loadHistory();
+        } catch (err) { showToast(err.message, "error"); }
+      });
+
+      $("queueBody").addEventListener("click", async (e) => {
+        const btn = e.target.closest("[data-q-cancel]");
+        if (!btn) return;
+        try {
+          await apiJson("/api/queue/cancel", { method: "POST", body: JSON.stringify({ id: btn.getAttribute("data-q-cancel") }) });
+          loadQueue();
+        } catch (err) { showToast(err.message, "error"); }
+      });
+
+      $("qAddBtn").addEventListener("click", async () => {
+        let params = {};
+        try { params = JSON.parse($("qParams").value.trim() || "{}"); } catch { showToast(tr("msg_bad_json"), "error"); return; }
+        try {
+          await apiJson("/api/queue/add", { method: "POST", body: JSON.stringify({ kind: $("qKind").value, priority: parseInt($("qPriority").value, 10) || 0, params }) });
+          showToast(tr("msg_done"), "success");
+          loadQueue();
+        } catch (err) { showToast(err.message, "error"); }
+      });
+
+      $("schBody").addEventListener("click", async (e) => {
+        const btn = e.target.closest("[data-s-del]");
+        if (!btn) return;
+        try {
+          await apiJson("/api/schedule?id=" + encodeURIComponent(btn.getAttribute("data-s-del")), { method: "DELETE" });
+          loadSchedules();
+        } catch (err) { showToast(err.message, "error"); }
+      });
+
+      (function initScheduleForm() {
+        const sel = $("schWeekday");
+        for (let i = 0; i < 7; i++) {
+          const o = document.createElement("option");
+          o.value = String(i);
+          o.textContent = new Date(2024, 0, 1 + i).toLocaleDateString(document.documentElement.lang || "en", { weekday: "long" });
+          sel.appendChild(o);
+        }
+        const sync = () => {
+          const every = $("schEvery").value;
+          $("schMinutes").disabled = every !== "interval_minutes";
+          $("schTime").disabled = every === "interval_minutes";
+          $("schWeekday").disabled = every !== "weekly";
+        };
+        $("schEvery").addEventListener("change", sync);
+        sync();
+      })();
+
+      $("schAddBtn").addEventListener("click", async () => {
+        let params = {};
+        try { params = JSON.parse($("schParams").value.trim() || "{}"); } catch { showToast(tr("msg_bad_json"), "error"); return; }
+        const every = $("schEvery").value;
+        const body = { kind: $("schKind").value, every, params };
+        if (every === "interval_minutes") body.minutes = parseInt($("schMinutes").value, 10) || 60;
+        else body.time = $("schTime").value;
+        if (every === "weekly") body.weekday = parseInt($("schWeekday").value, 10) || 0;
+        try {
+          await apiJson("/api/schedule", { method: "POST", body: JSON.stringify(body) });
+          showToast(tr("msg_done"), "success");
+          loadSchedules();
+        } catch (err) { showToast(err.message, "error"); }
+      });
+
+      async function saveNotify() {
+        const body = {
+          toast: $("ntfToast").checked,
+          telegram_enabled: $("ntfTgEnabled").checked,
+          telegram_chat_id: $("ntfChat").value.trim(),
+        };
+        const tok = $("ntfToken").value.trim();
+        if (tok) body.telegram_token = tok;
+        if ($("ntfClearToken").checked) body.clear_token = true;
+        await apiJson("/api/settings/notify", { method: "POST", body: JSON.stringify(body) });
+        await loadNotify();
+      }
+      $("ntfSaveBtn").addEventListener("click", async () => {
+        try { await saveNotify(); showToast(tr("msg_done"), "success"); } catch (err) { showToast(err.message, "error"); }
+      });
+      $("ntfTestBtn").addEventListener("click", async () => {
+        try {
+          await saveNotify();
+          await apiJson("/api/notify/test", { method: "POST", body: "{}" });
+          showToast(tr("msg_done"), "success");
+        } catch (err) { showToast(err.message, "error"); }
+      });
+
       async function boot() {
-        const savedLang = localStorage.getItem("osdd_lang") || "ar";
+        let savedLang = "ar";
+        try { savedLang = localStorage.getItem("osdd_lang") || "ar"; } catch (_) {}
         applyLanguage(savedLang);
+        let savedTheme = "auto";
+        try { savedTheme = localStorage.getItem("osdd_theme") || "auto"; } catch (_) {}
+        applyTheme(savedTheme);
+        let savedTab = "sharepoint";
+        try { savedTab = localStorage.getItem("osdd_tab") || "sharepoint"; } catch (_) {}
+        showTab(savedTab);
         initHeartbeat();
         await refreshAuthStatus(false);
         try {
@@ -4192,6 +5812,7 @@
         } catch {}
         updatePathPreview();
         connectSSE();
+        loadNotify();
       }
 
       boot();

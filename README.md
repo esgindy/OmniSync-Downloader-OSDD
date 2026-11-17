@@ -2,156 +2,183 @@
 
 <div align="center">
 
-**Resilient Multi-Source File Streamer & Sync Engine**  
-*أداة التحميل المباشر والمزامنة الذكية للملفات والمجلدات الضخمة*
+**Enterprise-Grade Multi-Source File Streamer & High-Speed Data Sync Engine**  
+*الأداة البرمجية المتقدمة للتحميل المباشر المتدفق والمزامنة الفائقة للملفات والمكتبات الضخمة*
 
-[![Release](https://img.shields.io/badge/Release-v4.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
+[![Release](https://img.shields.io/badge/Release-v6.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
-[![Async Engine](https://img.shields.io/badge/Engine-Starlette%20%2B%20HTTPX-green.svg)]()
+[![Engine](https://img.shields.io/badge/Engine-Starlette%20%7C%20HTTPX%20%7C%20Playwright-green.svg)]()
+[![Languages](https://img.shields.io/badge/Languages-8%20Built--in%20(RTL%2FLTR)-success.svg)]()
 
-[English](#-english) • [العربية](#-باللغة-العربية)
+---
+
+### 🌐 Built-in 8-Language UI Support / واجهة متعددة اللغات تدعم 8 لغات عالمية
+**🇸🇦 العربية** &nbsp;•&nbsp; **🇺🇸 English** &nbsp;•&nbsp; **🇪🇸 Español** &nbsp;•&nbsp; **🇫🇷 Français** &nbsp;•&nbsp; **🇩🇪 Deutsch** &nbsp;•&nbsp; **🇨🇳 中文** &nbsp;•&nbsp; **🇷🇺 Русский** &nbsp;•&nbsp; **🇧🇷 Português**
+
+*The application features an instant real-time localization switcher with native RTL (Right-to-Left) and LTR (Left-to-Right) layout adjustments.*
+
+---
+
+[English Guide](#-english) • [الدليل باللغة العربية](#-دليل-الاستخدام-باللغة-العربية) • [GitHub Topics & Tags](#-recommended-github-topics--hashtags)
 
 </div>
 
 ---
 
+## 🆕 What's New in v6.0 / الجديد في الإصدار 6.0
+
+### 🇬🇧 English
+- **Security:** a Host/Origin guard rejects any non-local `Host`/`Origin` and `Sec-Fetch-Site: cross-site` requests (blocks CSRF and DNS rebinding). Graceful shutdown: the server asks uvicorn to stop so active downloads are cancelled cleanly (10 s fallback); heartbeat timeout is 25 s.
+- **Performance:** HTTP/2 (with fallback), exponential backoff honoring `Retry-After`/429, parallel `Range` chunks for large files (resume metadata in `.part.pdl`), and a bandwidth limiter via `speed_limit_kbps` (0 = unlimited) on `/api/download/start` and `/api/sync/download`.
+- **Disk sync:** fast compare by size + mtime (2 s tolerance); hashing only when mtime differs or when `"deep": true`. `POST /api/disk/dryrun` `{source_dir, dest_dir, deep, delete_extra}` previews a plan without touching files; `POST /api/disk/duplicates` `{root, min_size?}` finds duplicate files.
+- **UI:** 5 themes (+ auto) and a tab bar with KPI cards, workers view and a 60 s speed sparkline. (UI wiring for the features below is pending.)
+- **Filters:** `filters` object on `/api/download/start` and `/api/sync/download`: `include_ext`, `exclude_ext`, `min_size`, `max_size`, `modified_after`, `modified_before`, `exclude_regex`. Try them with `POST /api/filters/test` `{filter, samples:[...]}`.
+- **Job queue:** `POST /api/queue/add` `{kind: download|sync|media, params, priority}`, `GET /api/queue`, `POST /api/queue/cancel` `{id}`. Higher priority first, FIFO within.
+- **Scheduler:** `POST /api/schedule` `{kind, params, every: daily|weekly|interval_minutes, time: "HH:MM", weekday?, minutes?}`, `GET /api/schedule`, `DELETE /api/schedule?id=`. Fires jobs into the queue.
+- **Notifications:** Windows toast and/or Telegram on job completion. `GET/POST /api/settings/notify` `{toast, telegram_enabled, telegram_chat_id, telegram_token, clear_token}` (the token is never returned) and `POST /api/notify/test`.
+- **History:** SQLite job history: `GET /api/history?limit=`, `DELETE /api/history`, `GET /api/history/export` (CSV).
+- **CI:** GitHub Actions workflow (`.github/workflows/ci.yml`), `ruff.toml`, and `requirements.lock.txt`.
+
+### 🇸🇦 العربية
+- **الأمان:** حارس Host/Origin يرفض أي طلب غير محلي وطلبات `cross-site` (يمنع CSRF وDNS rebinding). إيقاف آمن (graceful) يلغي التحميل الجاري بسلاسة، ومهلة heartbeat هي 25 ثانية.
+- **الأداء:** HTTP/2، وbackoff أسي مع احترام `Retry-After` وكود 429، وتحميل الملفات الكبيرة بأجزاء Range متوازية (ملف الاستئناف `.part.pdl`)، وحد للسرعة `speed_limit_kbps` (0 = بلا حد).
+- **مزامنة القرص:** مقارنة سريعة بالحجم + وقت التعديل، ولا يُحسب hash إلا عند اختلاف الوقت أو عند `"deep": true`. مسار `dryrun` يعرض خطة المزامنة دون تنفيذ، ومسار `duplicates` يكتشف الملفات المكررة.
+- **الواجهة:** 5 ثيمات (+ تلقائي) وتبويبات ولوحة مؤشرات وsparkline للسرعة. (ربط الواجهة بالفلاتر والجدولة والسجل والطابور قيد الإنجاز.)
+- **الفلاتر، الطابور، الجدولة، الإشعارات (Windows/Telegram)، السجل (SQLite):** بنفس أشكال الطلبات الموضحة أعلاه.
+- **CI:** سير عمل GitHub Actions مع `ruff` وملف `requirements.lock.txt`.
+
+> ⚠️ **Behavior change / تغيير سلوك:** disk compare no longer hashes every file by default; pass `deep: true` for a full SHA-256 comparison. / مقارنة القرص لم تعد تحسب hash لكل الملفات افتراضياً؛ استخدم `deep: true` للمقارنة الكاملة.
+
+---
+
 ## 🇬🇧 English
 
-### 🌟 Overview
+### 🌟 What is OmniSync-Downloader (OSDD)?
 
-**OmniSync-Downloader (OSDD)** is a high-performance, open-source tool and web dashboard designed to eliminate the common headaches of downloading and synchronizing large directories from cloud and local/network storage.
-
-- In **v1.0**, OSDD solved Microsoft SharePoint and OneDrive folder downloads by pulling files **directly file-by-file**, bypassing server-side zip compression that leads to corrupted archives, download timeouts, and the restrictive 250 GB / 10,000 file caps.
-- In **v2.0**, OSDD introduced a native **Drive-to-Drive / Disk-to-Disk Sync & Deep Audit Engine** with chunked streaming SHA-256 verification (< 5MB RAM even for 100GB+ files), live dashboard indicators (speed, downloaded vs. remaining volume, remaining files), 1-click silent background execution, and automatic process termination when the browser closes.
-- In **v3.0**, OSDD introduced **Google Drive Direct Streaming & Cloud-to-Cloud Bridge**: file-by-file direct download of Google Drive shared links (bypassing the 2GB zip limit and download timeouts), direct stream piping between cloud providers (e.g. SharePoint to Google Drive / OneDrive), top-positioned live dashboard, and a built-in 8-language localization engine.
-- In **v4.0**, OSDD introduces the **Universal Media & Social Streamer & 1-Click Auto-Installer**: direct video, audio, and playlist streaming from YouTube (including Shorts), TikTok, Instagram (Reels & Posts), Facebook, X (Twitter), Reddit, Vimeo, SoundCloud and more with custom quality selection (4K/1080p/720p/480p) or instant MP3 audio extraction, unified real-time dashboard telemetry, and a zero-config 1-Click **`install.bat`** script that automatically downloads Python 3 and installs all dependencies and browser drivers silently with an automated completion dialog in English.
-
----
-
-### ✨ Features (v4.0)
-
-#### 🎬 Universal Media & Social Downloader (New in v4.0)
-- **Universal Multi-Platform Support:** Download high-resolution media from YouTube, Shorts, Playlists, TikTok, Instagram, Reels, Facebook, X (Twitter), Reddit, Vimeo, SoundCloud, and Pinterest.
-- **Smart Quality & Format Presets:** Choose from Best MP4, Full HD (1080p), HD (720p), SD (480p), or direct audio extraction to MP3 / M4A.
-- **Playlist Streaming:** Automatically detect, enumerate, and download entire playlists file-by-file.
-- **Integrated Live Dashboard Telemetry:** Media downloads pipe live speed, progress, remaining bytes, and ETA straight into the top telemetry dashboard.
-
-#### ⚙️ 1-Click Automatic Setup & Dependency Installer (`install.bat`) (New in v4.0)
-- **Zero-Manual-Setup:** Double-click **`install.bat`** to get everything ready automatically.
-- **Automatic Python 3 Detection & Silent Download:** If Python 3 is missing, the script automatically downloads the official 64-bit installer from python.org, installs it silently, and configures PATH.
-- **Full Library & Driver Installation:** Automatically upgrades pip, installs all packages from `requirements.txt`, and configures Playwright Chromium drivers.
-- **Ready Notification in English:** Shows clear English console output and an instant Windows GUI dialog notifying that the application is ready and directing the user to click `start.bat`.
-
-#### 🌐 Google Drive Direct Streaming & Cloud-to-Cloud Bridge (v3.0)
-- **Google Drive File-by-File Streaming:** Download large Google Drive shared folders and files directly without waiting for Google to zip them (no 2GB zip splitting, no archive corruption).
-- **Virus Scan Warning Bypass:** Automatic token handling for large files that trigger Google's antivirus warning page.
-- **Direct Cloud-to-Cloud Bridge:** Stream-pipe files directly between cloud sources (SharePoint, OneDrive, Google Drive) without needing full intermediate disk caching.
-- **Top Live Dashboard:** Live download speedometer, progress KPIs, and remaining counters pinned to the top of the interface.
-- **Multi-Language Switcher (8 Languages):** Instant UI localization supporting Arabic (العربية), English, Spanish (Español), French (Français), German (Deutsch), Chinese (中文), Russian (Русский), and Portuguese (Português).
-
-#### 💽 Drive-to-Drive / Disk-to-Disk Sync & Deep Audit (v2.0)
-- **Directory Tree Comparison:** Compare folders across different drives, external USB HDDs, or NAS network shares.
-- **Delta Sync (Copy-based, Non-destructive):** Detects and copies **only new and modified files**; original source files are untouched.
-- **Streaming SHA-256 Deep Audit:** 1MB chunked cryptographic hash verification with **< 5MB RAM consumption** even on massive 100GB+ files.
-- **Safe Atomic Copying:** Uses `.sync_part` and atomic rename with original timestamp preservation (`shutil.copystat`).
-- **Live Transfer Telemetry:** Real-time speedometer (MB/s), copied vs. remaining bytes, remaining files, current active file, and full pause/resume/cancel controls.
-
-#### 📊 Live Download Dashboard KPIs (v2.0)
-- **⚡ Live Transfer Speedometer:** Instantaneous download and sync transfer speed in KB/s and MB/s.
-- **💾 Explicit Remaining Bytes:** Shows downloaded volume alongside remaining volume clearly (e.g., `14.2 GB / 50.0 GB (Remaining: 35.8 GB)`).
-- **📄 Remaining Files Counter:** Shows completed files vs. remaining files (e.g., `120 / 500 (Remaining: 380)`).
-- **⏱️ Dynamic ETA & Progress:** Accurate estimated completion time based on live transfer speed.
-
-#### 🚀 1-Click Silent Background Launch & Smart Auto-Close (v2.0)
-- **`start.bat` & `start.vbs`:** 1-Click launch directly into the background without popping any black CMD console window.
-- **Automatic Browser Launch:** Directly opens `http://127.0.0.1:8765` in your default browser.
-- **Intelligent Auto-Shutdown:** Automatically stops the Python background server and cleans RAM when the browser window/tab is closed (Heartbeat + `pagehide` beacon).
-- **`stop.bat` & UI Shutdown Button:** Manual 1-click stop script and an in-app shutdown button in the topbar.
-
-#### ☁️ SharePoint & OneDrive Direct File-by-File Streaming (v1.0 Core)
-- **Direct File-by-File Streaming:** Downloads entire folder trees file-by-file with exact folder hierarchy on disk.
-- **True HTTP Range Resumption:** Interrupted connections resume byte-for-byte from partial `.part` files without restarting from zero.
-- **Smart Browser Authentication:** Automated login via Edge/Chrome to capture FedAuth & session cookies, with fallback cURL / cookie import.
-- **Integrity Audit & Verification:** Post-download byte-level comparison, missing file detection, and CSV / JSON export.
-- **Windows Long Path & Unicode Support:** Native handling of paths exceeding 260 characters (`\\?\` prefix) and robust UTF-8 Arabic character sanitization.
+**OmniSync-Downloader (OSDD)** is a modern, modular, asynchronous streaming client and synchronization suite. It solves severe enterprise data transfer bottlenecks:
+1. **Cloud Zip Bottlenecks:** Cloud providers (Microsoft SharePoint, OneDrive, Google Drive) compress multi-gigabyte folders into zip archives that often corrupt, time out, or hit file count ceilings (e.g., 250 GB / 10,000 files in SharePoint, 2 GB zip limits in Google Drive). OSDD streams files individually, preserving folder hierarchies natively on your filesystem.
+2. **Drive-to-Drive Integrity Audits:** Moving hundreds of gigabytes across external drives or NAS storage often lacks real-time verification. OSDD provides delta sync with ultra-low RAM footprint (< 5MB) SHA-256 chunked validation.
+3. **Multi-Source Media Streamer:** Built-in direct media engine with auto-extraction and resolution controls.
+4. **Built-in 8-Language Localization Engine:** Switch between 8 global languages (Arabic, English, Spanish, French, German, Chinese, Russian, Portuguese) on the fly with automatic bidirectional layout (RTL/LTR).
+5. **Zero Configuration Deploy:** Automated single-click setup on Windows (`install.bat`) requiring no command-line skills.
 
 ---
 
-### 🚀 Quick Start
+### 📊 Feature Matrix
 
-#### 1. Clone or Download
-```bash
-git clone https://github.com/esgindy/OmniSync-Downloader-OSDD.git
-cd OmniSync-Downloader-OSDD
+| Feature | Standard Browser Download | Cloud Sync Client | OSDD (OmniSync-Downloader) |
+| :--- | :---: | :---: | :---: |
+| **SharePoint Direct File-by-File** | ❌ (Forces zip) | ⚠️ (Requires full sync setup) | ✅ Native file-by-file streaming |
+| **Google Drive Shared Links** | ❌ (Splits into 2GB zips) | ❌ (Requires Drive account link) | ✅ Direct stream with virus token bypass |
+| **Byte-Level Resumption** | ❌ (Fails on timeouts) | ⚠️ (Re-scans disk) | ✅ Native `.part` HTTP Range support |
+| **Drive-to-Drive Delta Sync** | ❌ | ❌ | ✅ SHA-256 stream audit (< 5MB RAM) |
+| **Media & Video Downloader** | ❌ | ❌ | ✅ Integrated universal streamer |
+| **Background Silent Mode** | ❌ | ⚠️ (Heavy background services) | ✅ 1-Click `start.bat` & auto-close on exit |
+| **Multi-Language Interface** | ❌ | ⚠️ (OS default only) | ✅ Built-in 8 languages with instant RTL/LTR |
+
+---
+
+### 🛠️ Architecture Workflow
+
+```mermaid
+flowchart TD
+    A[User Interface / Web Dashboard] -->|SSE Real-time Telemetry| B[Async Core Server: Starlette/Uvicorn]
+    B --> C{Transfer Mode}
+    C -->|SharePoint / OneDrive| D[SP Stream Engine + Playwright Auth]
+    C -->|Google Drive| E[GDrive Direct Streamer]
+    C -->|Disk-to-Disk Sync| F[Delta Sync & SHA-256 Audit Engine]
+    C -->|Media Platforms| G[Universal Media Streamer]
+    D --> H[Local Storage / Targeted Drive]
+    E --> H
+    F --> H
+    G --> H
 ```
 
-#### 2. Automatic 1-Click Setup (New in v4.0 - Recommended)
-- Double-click **`install.bat`**.
-- It will automatically check Python 3 (downloading & installing it silently if missing), install all dependencies, configure browser drivers, and display a popup confirming that the app is ready to use.
+---
 
-#### 3. Run the Application
-- **Windows (1-Click Silent Start - Recommended):** Double-click **`start.bat`** (or `start.vbs`).
-  - Launches silently in the background (no black CMD window).
-  - Automatically opens the web interface in your default browser.
-  - Automatically terminates when you close the browser window, or via **`stop.bat`**.
-- **Windows (Console Mode):** Double-click **`run.bat`** if you wish to see live server logs in CMD.
-- Open your browser at: **`http://127.0.0.1:8765`**
+### 🚀 Getting Started
+
+#### Option A: 1-Click Automated Setup (Recommended for Windows)
+1. Clone or download this repository.
+2. Double-click **`install.bat`**.
+   - Automatically detects and installs Python if missing.
+   - Installs all required modules from `requirements.txt`.
+   - Configures required browser drivers.
+3. Double-click **`start.bat`** (or `start.vbs`) to launch the app silently and open `http://127.0.0.1:8765`.
+
+#### Option B: Manual Installation
+```bash
+# 1. Clone repository
+git clone https://github.com/esgindy/OmniSync-Downloader-OSDD.git
+cd OmniSync-Downloader-OSDD
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Install Playwright browser
+playwright install chromium
+
+# 4. Start the application
+python app.py
+```
 
 ---
 
-## 🇸🇦 باللغة العربية
+## 🇸🇦 دليل الاستخدام باللغة العربية
 
-### 🌟 نظرة عامة
+### 🌟 ما هو برنامج OmniSync-Downloader (OSDD)؟
 
-**OmniSync-Downloader (OSDD)** هي أداة برمجية مفتوحة المصدر عالية الأداء تم بناؤها للتغلب على مشاكل تحميل ومزامنة المجلدات والمكتبات الضخمة من السحابة ووحدات التخزين المحلية والشبكية.
+برنامج **OmniSync-Downloader (OSDD)** هو منصة مفتوحة المصدر عالية الكفاءة تم تصميمها خصيصاً لحل أعقد مشاكل نقل وتنزيل الملفات السحابية والبيانات الضخمة:
 
-- في **الإصدار v1.0**، ركز البرنامج على حل مشاكل تحميل مجلدات **Microsoft SharePoint** و **OneDrive** عبر سحب الملفات مباشرة **ملفاً بملف** دون تجميعها في ملف مضغوط (Zip)، مما يمنع تلف الملفات ويتجاوز حدود شيربوينت الصارمة (250GB أو 10,000 ملف).
-- في **الإصدار v2.0**، قدم البرنامج ميزة **مزامنة وتدقيق الملفات بين هاردين أو جهازين (Drive-to-Drive Sync & Deep Audit)** بفحص الهاش المتدفق (SHA-256) للملفات العملاقة (+100GB) باستهلاك رام أقل من 5 ميجابايت، مع مؤشرات حية في الداش بورد لحجم وعدد الملفات المتبقية والسرعة اللحظية، وتشغيل صامت بالكامل وإيقاف تلقائي عند إغلاق المتصفح.
-- في **الإصدار v3.0**، أضاف البرنامج دعم **التحميل المباشر من Google Drive وجسر النقل السحابي (Cloud-to-Cloud Bridge)**: تحميل ملفات ومجلدات جوجل درايف ملفاً بملف متجاوزاً قيود الضغط (حد الـ 2GB وتجزئة الملفات المضغوطة)، ونقل مباشر من سحابة إلى سحابة، مع تثبيت لوحة المتابعة الحية في أعلى الواجهة، ومبدل لغات فوري يدعم 8 لغات عالمية.
-- في **الإصدار v4.0**، يقدم البرنامج **محرك التحميل الشامل للوسائط وشبكات التواصل الاجتماعي ومثبت المتطلبات التلقائي بنقرة واحدة (1-Click Auto-Installer)**: تنزيل الفيديوهات والصوتيات وقوائم التشغيل مباشرة من YouTube و TikTok و Instagram و Facebook و X و Reddit و Vimeo بأعلى جودة أو استخراج الصوت MP3، مع تكامل كامل مع لوحة المتابعة اللحظية، وملف **`install.bat`** الذي يقوم بفحص وتثبيت Python 3 تلقائياً وتحميل كافة المكتبات بدون أي تدخل يدوي مع إظهار رسالة جاهزية البرنامج بالإنجليزية.
+1. **تجاوز قيود الضغط السحابي (SharePoint / OneDrive / Google Drive):**
+   - عندما تقوم بتحميل مجلد ضخم من شيربوينت أو ون درايف أو جوجل درايف عبر المتصفح، تفرض هذه المنصات ضغط المجلد في ملف `zip`، مما يؤدي عادة إلى انقطاع التحميل، أو تلف الملفات، أو التوقف عند حد 250 جيجابايت أو حد الـ 2 جيجابايت في جوجل درايف.
+   - برنامج OSDD يقوم بسحب الملفات مباشرة **ملفاً تلو الآخر وبنفس الهيكل الشجري للمجلدات** مع إمكانية استئناف التحميل عند انقطاع الاتصال (HTTP Range Resume).
 
----
+2. **محرك مزامنة وفحص القرص إلى القرص (Drive-to-Drive Sync & Audit):**
+   - مزامنة ذكية للملفات الجديدة والمعدلة فقط بين الأقراص الصلبة ووحدات التخزين الخارجية (USB / NAS).
+   - فحص تشفيري فائق الدقة (Streaming SHA-256) يستهلك **أقل من 5 ميجابايت من الذاكرة العشوائية** حتى مع ملفات تتجاوز 100 جيجابايت.
 
-### ✨ أبرز مميزات الإصدار v4.0
+3. **محرك تنزيل الوسائط الموحد (Universal Media Streamer):**
+   - تنزيل مقاطع الفيديو وقوائم التشغيل والصوتيات من أشهر منصات الفيديو والتواصل الاجتماعي بجودات متعددة أو استخراج الصوت المباشر بصيغة MP3.
 
-#### 🎬 محرك التحميل الشامل للوسائط واليوتيوب (جديد في v4.0)
-- **دعم شامل للمنصات وشبكات التواصل:** تحميل مباشر من YouTube (الفيديوهات العادية، Shorts، وقوائم التشغيل Playlists)، TikTok، Instagram (Reels & Posts)، Facebook، X (Twitter)، Reddit، Vimeo، SoundCloud، و Pinterest.
-- **خيارات الجودة والصيغ المتنوعة:** تحميل بأعلى جودة متوفرة (Best MP4) أو 1080p أو 720p أو 480p، أو استخراج الصوت فقط بصيغة MP3 و M4A.
-- **تحميل قوائم التشغيل (Playlists):** فحص تلقائي لعدد الفيديوهات وتحميلها ملفاً بملف بهيكلية منتظمة.
-- **متابعة حية عبر الداش بورد الموحدة:** ربط سرعة ونسبة وتقدم تحميل الوسائط مباشرة مع عداد السرعة ومؤشرات الداش بورد في أعلى الواجهة.
+4. **محرك الترجمة والتعريب الداخلي (دعم 8 لغات عالمية):**
+   - الواجهة مجهزة بمحرك لغات فوري يدعم 8 لغات عالمية: **العربية، الإنجليزية، الإسبانية، الفرنسية، الألمانية، الصينية، الروسية، والبرتغالية**، مع ضبط تلقائي لاتجاه الواجهة (RTL للعربية / LTR للغات الأخرى) بنقرة زر واحدة ودون إعادة تشغيل.
 
-#### ⚙️ التثبيت التلقائي الذكي بنقرة واحدة (`install.bat`) (جديد في v4.0)
-- **تشغيل فوري بدون إعداد يدوي:** يكفي الضغط مرتين على ملف **`install.bat`**.
-- **الكشف عن Python وتثبيته تلقائياً:** في حال عدم وجود بايثون 3 على الجهاز، يقوم السكريبت بتحميل النسخة الرسمية المناسبة لويندوز وتثبيتها في الخلفية وضبط المسارات (PATH) دون أي عناء.
-- **تثبيت الحزم ومحركات المتصفح:** ترقية pip وتثبيت مكتبات `requirements.txt` وتحميل مشغل Chromium لـ Playwright.
-- **رسالة جاهزية باللغة الإنجليزية:** ظهور إشعار ونافذة منبثقة رسمية باللغة الإنجليزية تؤكد اكتمال التثبيت وتوجيه المستخدم لتشغيل `start.bat`.
+5. **تشغيل صامت وسهل بنقرة واحدة:**
+   - ملف `install.bat` يقوم بإعداد كل المتطلبات وتنزيل بايثون تلقائياً.
+   - ملف `start.bat` يشغل البرنامج في الخلفية دون أي نوافذ سوداء مزعجة، مع إيقاف التشغيل التلقائي عند إغلاق المتصفح لتوفير موارد الجهاز.
 
 ---
 
 ### 💻 خطوات التشغيل السريع
 
-1. قم باستنساخ أو تنزيل المستودع:
+1. قم بتحميل أو استنساخ المستودع:
    ```bash
    git clone https://github.com/esgindy/OmniSync-Downloader-OSDD.git
    cd OmniSync-Downloader-OSDD
    ```
-2. **التثبيت التلقائي بنقرة واحدة (جديد في v4.0 - مستحسن):**
-   - اضغط مرتين على ملف **`install.bat`**.
-   - سيقوم السكريبت بتثبيت بايثون والمكتبات والمتطلبات بالكامل، وستظهر رسالة تؤكد أن البرنامج جاهز للعمل.
-3. **تشغيل البرنامج:**
-   - اضغط مرتين على ملف **`start.bat`** (أو `start.vbs`) لبدء البرنامج في الخلفية وفتح المتصفح فوراً على الرابط:
-     **`http://127.0.0.1:8765`**
+2. اضغط مرتين على ملف **`install.bat`** ليقوم بضبط كل المتطلبات تلقائياً.
+3. اضغط مرتين على ملف **`start.bat`**، وستفتح الواجهة تلقائياً على المتصفح:
+   `http://127.0.0.1:8765`
 
 ---
 
-## 🔒 الخصوصية والأمان / Privacy & Security
+## 🏷️ Recommended GitHub Topics & Hashtags
 
-- الأداة تعمل محلياً 100%، ولا يتم إرسال أي بيانات أو جلسات أو كوكيز إلى أي خادم خارجي.
+لتسهيل وصول المستخدمين والباحثين إلى المشروع على GitHub ومحركات البحث، قم بإضافة هذه الوسوم في إعدادات المستودع (Repository Topics):
+
+`sharepoint-downloader` • `onedrive-downloader` • `google-drive-downloader` • `file-synchronizer` • `drive-sync` • `media-downloader` • `multilingual` • `i18n` • `localization` • `sha256-audit` • `starlette` • `playwright` • `yt-dlp` • `bulk-download` • `cloud-storage` • `async-streaming` • `delta-sync` • `resume-downloads` • `python` • `arabic-localization`
 
 ---
 
-## 📄 الترخيص / License
+## 🔒 Security & Privacy
 
-هذا المشروع مرخص تحت رخصة **MIT License**.
+All operations, sessions, and downloads run strictly locally on your machine (`127.0.0.1`). No telemetry, cookies, or files are transferred to external third-party servers.
+
+---
+
+## 📄 License
+
+This project is licensed under the terms of the MIT License. See [LICENSE](LICENSE) for details.

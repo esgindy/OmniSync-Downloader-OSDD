@@ -8,6 +8,7 @@ import json
 import os
 import random
 import re
+import threading
 import time
 import uuid
 from collections import deque
@@ -20,7 +21,7 @@ from urllib.parse import urlparse
 import httpx
 
 from sp_auth import LOGIN_HOSTS
-from sp_client import SharePointClient
+from sp_client import SharePointClient, http2_available, jitter_backoff
 from utils import build_local_path, win_long_path
 
 MANIFEST_FILENAME = ".sp_downloader_manifest.json"
@@ -28,6 +29,51 @@ HTML_ALLOWED_EXTENSIONS = {".html", ".htm", ".aspx", ".mht", ".mhtml"}
 
 _CONTENT_RANGE_RE = re.compile(r"^bytes\s+(\d+)-(\d+)/(\d+|\*)$", re.IGNORECASE)
 _CONTENT_RANGE_416_RE = re.compile(r"^bytes\s+\*/(\d+)$", re.IGNORECASE)
+
+
+PARALLEL_THRESHOLD_BYTES = 64 * 1024 * 1024
+PARALLEL_MIN_PART_BYTES = 16 * 1024 * 1024
+_MANIFEST_WRITE_LOCK = threading.Lock()
+PARALLEL_MAX_PARTS = 4
+PARALLEL_MIN_PARTS = 2
+
+
+class _ParallelUnsupportedError(Exception):
+    """Server/response does not allow parallel Range download; fall back to single stream."""
+
+
+class _TokenBucket:
+    """Shared async token bucket limiting aggregate bytes/sec (0 = unlimited)."""
+
+    def __init__(self, rate_bps: float = 0.0) -> None:
+        self.rate = max(0.0, float(rate_bps))
+        self._tokens = self.rate
+        self._last = time.monotonic()
+        self._lock = asyncio.Lock()
+
+    async def consume(self, n: int) -> None:
+        if self.rate <= 0 or n <= 0:
+            return
+        async with self._lock:
+            now = time.monotonic()
+            self._tokens = min(self.rate, self._tokens + (now - self._last) * self.rate)
+            self._last = now
+            self._tokens -= n
+            wait = -self._tokens / self.rate if self._tokens < 0 else 0.0
+        if wait > 0:
+            await asyncio.sleep(min(wait, 5.0))
+
+
+def _split_ranges(size: int, parts: int) -> list[tuple[int, int]]:
+    """Split [0,size) into `parts` contiguous inclusive (start,end) ranges."""
+    parts = max(1, min(parts, size))
+    step = size // parts
+    out: list[tuple[int, int]] = []
+    for i in range(parts):
+        a = i * step
+        b = size - 1 if i == parts - 1 else (a + step - 1)
+        out.append((a, b))
+    return out
 
 
 class _JobPausedError(Exception):
@@ -224,6 +270,8 @@ class DownloadManager:
         self._max_retries: int = 10
         self._skip_verified: bool = True
         self._create_empty_folders: bool = True
+        self._speed_limit_kbps: int = 0
+        self._bucket = _TokenBucket(0)
 
         self._folders: list[str] = []
         self._files: list[_FileRecord] = []
@@ -297,6 +345,7 @@ class DownloadManager:
         skip_verified: bool = True,
         create_empty_folders: bool = True,
         mode: str = "download",
+        speed_limit_kbps: int = 0,
     ) -> dict[str, Any]:
         """Start a new file-by-file download job in the background and return the initial snapshot."""
         if self._status in ("running", "paused") or (
@@ -313,6 +362,11 @@ class DownloadManager:
         self._skip_verified = bool(skip_verified)
         self._create_empty_folders = bool(create_empty_folders)
         self._created_at = time.time()
+        try:
+            self._speed_limit_kbps = max(0, int(speed_limit_kbps or 0))
+        except (TypeError, ValueError):
+            self._speed_limit_kbps = 0
+        self._bucket = _TokenBucket(self._speed_limit_kbps * 1024)
 
         raw_folders = list(manifest.get("folders") or [])
         self._folders = list(dict.fromkeys(str(f).strip("/\\") for f in raw_folders if str(f).strip("/\\")))
@@ -514,6 +568,7 @@ class DownloadManager:
             "mode": self._mode,
             "status": self._status,
             "dest_dir": self._dest_dir,
+            "speed_limit_kbps": self._speed_limit_kbps,
             "total_files": total_files,
             "completed_files": completed_files,
             "skipped_files": skipped_files,
@@ -567,6 +622,7 @@ class DownloadManager:
             "max_retries": self._max_retries,
             "skip_verified": self._skip_verified,
             "create_empty_folders": self._create_empty_folders,
+            "speed_limit_kbps": self._speed_limit_kbps,
             "summary": {
                 "total_files": len(self._files),
                 "completed_files": completed,
@@ -577,13 +633,28 @@ class DownloadManager:
             "files": [rec.to_manifest_dict() for rec in self._files],
         }
         try:
-            os.makedirs(win_long_path(Path(self._dest_dir)), exist_ok=True)
-            data = json.dumps(payload, ensure_ascii=False, indent=2)
-            with open(lp_tmp, "w", encoding="utf-8") as fh:
-                fh.write(data)
-            os.replace(lp_tmp, lp_manifest)
-        except OSError:
-            pass
+            data = json.dumps(payload, ensure_ascii=False)
+        except (TypeError, ValueError):
+            return
+        lp_dir = win_long_path(Path(self._dest_dir))
+
+        def _write() -> None:
+            with _MANIFEST_WRITE_LOCK:
+                try:
+                    os.makedirs(lp_dir, exist_ok=True)
+                    with open(lp_tmp, "w", encoding="utf-8") as fh:
+                        fh.write(data)
+                    os.replace(lp_tmp, lp_manifest)
+                except OSError:
+                    pass
+
+        # Disk I/O must never block the event loop (slow external HDD)
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            _write()
+            return
+        loop.run_in_executor(None, _write)
 
     # ------------------------------------------------------------------
     # Speed Tracking
@@ -711,7 +782,11 @@ class DownloadManager:
             cookies=self.sp_client.auth.session.to_httpx_cookies(),
             timeout=httpx.Timeout(connect=25.0, read=60.0, write=30.0, pool=20.0),
             follow_redirects=True,
-            limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
+            limits=httpx.Limits(
+                max_connections=max(32, self._concurrency * 2, PARALLEL_MAX_PARTS * 2),
+                max_keepalive_connections=max(16, self._concurrency),
+            ),
+            http2=http2_available(),
         )
         return new_client, sig
 
@@ -839,6 +914,7 @@ class DownloadManager:
         last_error: Optional[str] = None
         refreshed_url_once = False
         refreshed_session_once = False
+        parallel_disabled = False
 
         while retry_idx <= self._max_retries:
             if self._cancel_event.is_set():
@@ -886,6 +962,26 @@ class DownloadManager:
             headers = self._build_download_headers(current_url, offset)
 
             try:
+                if offset == 0 and not parallel_disabled and self._parallel_eligible(rec):
+                    try:
+                        if await self._parallel_download(
+                            client, current_url, rec, worker, lp_part, lp_final
+                        ):
+                            return
+                    except _ParallelUnsupportedError:
+                        pass
+                    parallel_disabled = True
+                    rec.downloaded_bytes = 0
+                    worker.downloaded_bytes = 0
+                    if os.path.isfile(lp_part):
+                        try:
+                            offset = os.path.getsize(lp_part)
+                        except OSError:
+                            offset = 0
+                        rec.downloaded_bytes = offset
+                        worker.downloaded_bytes = offset
+                        headers = self._build_download_headers(current_url, offset)
+
                 async with client.stream("GET", current_url, headers=headers) as resp:
                     # Detect Microsoft/ADFS login redirect
                     redirect_urls = [str(resp.url)] + [str(h.url) for h in resp.history]
@@ -911,8 +1007,8 @@ class DownloadManager:
                     # Rate limit / temporary service unavailability
                     if resp.status_code in (429, 502, 503, 504):
                         ra = _parse_retry_after(resp.headers.get("Retry-After"))
-                        delay = ra if ra is not None else self._backoff_delay(retry_idx)
-                        delay = min(120.0, delay)
+                        delay = ra if ra is not None else jitter_backoff(retry_idx, base=2.0, cap=60.0)
+                        delay = min(120.0, delay + random.uniform(0.1, 0.5))
                         last_error = f"HTTP {resp.status_code} (تقييد مؤقت من الخادم)"
                         worker.status = "retrying"
                         worker.speed_bps = 0.0
@@ -1089,8 +1185,9 @@ class DownloadManager:
                                 if not chunk:
                                     continue
 
-                                fh.write(chunk)
+                                await asyncio.to_thread(fh.write, chunk)
                                 n = len(chunk)
+                                await self._bucket.consume(n)
                                 bytes_this_stream += n
                                 total_written = base_offset + bytes_this_stream
                                 rec.downloaded_bytes = total_written
@@ -1176,7 +1273,144 @@ class DownloadManager:
         rec.status = "failed"
         rec.error = last_error or "فشل التحميل بعد استنفاد جميع المحاولات"
 
+    # ------------------------------------------------------------------
+    # Parallel Range download for large files
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _parallel_eligible(rec: _FileRecord) -> bool:
+        return rec.size >= PARALLEL_THRESHOLD_BYTES
+
+    async def _parallel_download(
+        self,
+        client: httpx.AsyncClient,
+        url: str,
+        rec: _FileRecord,
+        worker: _WorkerState,
+        lp_part: str,
+        lp_final: str,
+    ) -> bool:
+        """Download rec.size bytes in parallel Range parts. True on success.
+
+        Raises _ParallelUnsupportedError if the server refuses ranges. On any
+        interruption the contiguous completed prefix is kept as the .part file
+        so the normal single-stream resume continues from it.
+        """
+        size = rec.size
+        probe_headers = self._build_download_headers(url, 0)
+        probe_headers["Range"] = "bytes=0-0"
+        try:
+            async with client.stream("GET", url, headers=probe_headers) as resp:
+                redirects = [str(resp.url)] + [str(h.url) for h in resp.history]
+                if any(_is_login_redirect(u) for u in redirects):
+                    raise _ParallelUnsupportedError()
+                if resp.status_code != 206 or _is_unexpected_html(rec.name, resp.headers.get("Content-Type")):
+                    raise _ParallelUnsupportedError()
+                if (resp.headers.get("Accept-Ranges") or "bytes").strip().lower() == "none":
+                    raise _ParallelUnsupportedError()
+                if (resp.headers.get("Content-Encoding") or "identity").strip().lower() != "identity":
+                    raise _ParallelUnsupportedError()
+                cr = _parse_content_range(resp.headers.get("Content-Range"))
+                if cr is None or cr[0] != 0 or cr[2] != size:
+                    raise _ParallelUnsupportedError()
+        except httpx.HTTPError as exc:
+            raise _ParallelUnsupportedError() from exc
+
+        n_parts = max(
+            PARALLEL_MIN_PARTS, min(PARALLEL_MAX_PARTS, size // PARALLEL_MIN_PART_BYTES)
+        )
+        ranges = _split_ranges(size, n_parts)
+        done = [0] * len(ranges)
+        lp_tmp = lp_part + ".pdl"
+        with open(lp_tmp, "wb") as fh:
+            fh.truncate(size)
+
+        worker._sample_time = time.monotonic()
+        worker._sample_bytes = 0
+        rec.downloaded_bytes = 0
+        worker.downloaded_bytes = 0
+
+        async def fetch(i: int) -> None:
+            a, b = ranges[i]
+            headers = self._build_download_headers(url, 0)
+            headers["Range"] = f"bytes={a}-{b}"
+            async with client.stream("GET", url, headers=headers) as resp:
+                if resp.status_code != 206:
+                    raise _ParallelUnsupportedError()
+                cr = _parse_content_range(resp.headers.get("Content-Range"))
+                if cr is None or cr[0] != a or cr[1] != b:
+                    raise _ParallelUnsupportedError()
+                with open(lp_tmp, "r+b") as out:
+                    out.seek(a)
+                    async for chunk in resp.aiter_bytes():
+                        if self._cancel_event.is_set():
+                            raise _JobCancelledError()
+                        if not self._pause_event.is_set():
+                            raise _JobPausedError()
+                        if not chunk:
+                            continue
+                        if done[i] + len(chunk) > (b - a + 1):
+                            raise _ParallelUnsupportedError()
+                        await asyncio.to_thread(out.write, chunk)
+                        n = len(chunk)
+                        done[i] += n
+                        await self._bucket.consume(n)
+                        total = sum(done)
+                        rec.downloaded_bytes = total
+                        worker.downloaded_bytes = total
+                        self._record_network_bytes(n)
+                        now = time.monotonic()
+                        worker._sample_bytes += n
+                        dt = now - worker._sample_time
+                        if dt >= 0.35:
+                            inst = worker._sample_bytes / dt
+                            worker.speed_bps = (
+                                inst if worker.speed_bps <= 0 else (0.4 * inst + 0.6 * worker.speed_bps)
+                            )
+                            worker._sample_time = now
+                            worker._sample_bytes = 0
+                        self._notify_subscribers(force=False)
+
+        tasks = [asyncio.create_task(fetch(i)) for i in range(len(ranges))]
+        try:
+            await asyncio.gather(*tasks)
+        except BaseException:
+            for t in tasks:
+                t.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            self._keep_contiguous_prefix(lp_tmp, lp_part, ranges, done)
+            rec.downloaded_bytes = os.path.getsize(lp_part) if os.path.isfile(lp_part) else 0
+            raise
+
+        if sum(done) != size:
+            self._keep_contiguous_prefix(lp_tmp, lp_part, ranges, done)
+            raise _ParallelUnsupportedError()
+        os.replace(lp_tmp, lp_final)
+        rec.status = "completed"
+        rec.downloaded_bytes = size
+        rec.error = None
+        return True
+
+    @staticmethod
+    def _keep_contiguous_prefix(
+        lp_tmp: str, lp_part: str, ranges: list[tuple[int, int]], done: list[int]
+    ) -> None:
+        """Truncate the temp file to its contiguous completed prefix and make it the .part."""
+        prefix = 0
+        for (a, b), d in zip(ranges, done):
+            prefix += d
+            if d < (b - a + 1):
+                break
+        try:
+            with open(lp_tmp, "r+b") as fh:
+                fh.truncate(prefix)
+            os.replace(lp_tmp, lp_part)
+        except OSError:
+            try:
+                os.remove(lp_tmp)
+            except OSError:
+                pass
+
     @staticmethod
     def _backoff_delay(retry_index: int) -> float:
-        base = min(60.0, 0.8 * (2 ** min(retry_index, 6)))
-        return base + random.uniform(0.1, 0.5)
+        return jitter_backoff(retry_index, base=0.8, cap=60.0)

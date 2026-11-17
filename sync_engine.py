@@ -569,6 +569,11 @@ def export_sync_json(report: dict[str, Any]) -> str:
     return json.dumps(report, ensure_ascii=False, indent=2)
 
 
+MTIME_TOLERANCE_SEC = 2.0
+DUP_MIN_SIZE = 1024 * 1024
+PARTIAL_HASH_BYTES = 64 * 1024
+
+
 def calculate_file_hash(file_path: str | Path, algorithm: str = "sha256", chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calculate cryptographic hash (SHA256) of a file using streaming chunks.
@@ -595,11 +600,17 @@ def compare_two_local_directories(
     source_dir: str | Path,
     dest_dir: str | Path,
     compare_hash: bool = False,
+    deep: bool = False,
 ) -> dict[str, Any]:
     """
     Compare two local or network directories (e.g., Disk-to-Disk, External HDD, NAS share),
     detecting exact matching, modified, missing, and extra files.
+
+    Equality is decided by size + mtime (within MTIME_TOLERANCE_SEC) first. SHA-256 (streamed,
+    ~1MB buffer) runs only when size matches but mtime differs, or for every size-matched
+    file when `deep=True` (`compare_hash=True` is kept as a backward-compatible alias).
     """
+    deep = bool(deep or compare_hash)
     src_path = Path(source_dir).resolve()
     dst_path = Path(dest_dir).resolve()
 
@@ -628,7 +639,8 @@ def compare_two_local_directories(
         hash_match = True
         s_hash = None
         d_hash = None
-        if compare_hash and size_match:
+        mtime_close = abs(float(s_item["mtime"]) - float(d_item["mtime"])) <= MTIME_TOLERANCE_SEC
+        if size_match and (deep or not mtime_close):
             s_full = win_long_path(src_path / s_item["relative_path"])
             d_full = win_long_path(dst_path / d_item["relative_path"])
             s_hash = calculate_file_hash(s_full)
@@ -673,6 +685,106 @@ def compare_two_local_directories(
         "missing_in_dest_files": missing_in_dest,
         "modified_files": modified,
         "extra_in_dest_files": extra_in_dest,
+    }
+
+
+def plan_sync_dry_run(
+    source_dir: str | Path,
+    dest_dir: str | Path,
+    deep: bool = False,
+    delete_extra: bool = False,
+) -> dict[str, Any]:
+    """
+    Dry run: compare only, copy/delete nothing.
+    Signature: plan_sync_dry_run(source_dir, dest_dir, deep=False, delete_extra=False) -> dict
+    Returns {"dry_run": True, "to_copy": [...], "to_delete": [...], "copy_count",
+    "copy_bytes", "delete_count", "delete_bytes", "report"}; to_copy items feed
+    DiskSyncManager.start_sync(); to_delete lists extra dest files only if delete_extra.
+    """
+    report = compare_two_local_directories(source_dir, dest_dir, deep=deep)
+    to_copy = []
+    for item in report["missing_in_dest_files"]:
+        to_copy.append({**item, "reason": "missing"})
+    for item in report["modified_files"]:
+        to_copy.append({**item, "reason": item.get("diff_reason", "modified")})
+    to_delete = list(report["extra_in_dest_files"]) if delete_extra else []
+    return {
+        "dry_run": True,
+        "source_dir": report["source_dir"],
+        "dest_dir": report["dest_dir"],
+        "to_copy": to_copy,
+        "to_delete": to_delete,
+        "copy_count": len(to_copy),
+        "copy_bytes": sum(int(f.get("size", 0)) for f in to_copy),
+        "delete_count": len(to_delete),
+        "delete_bytes": sum(int(f.get("size", 0)) for f in to_delete),
+        "report": report,
+    }
+
+
+def _hash_head(path: str, nbytes: int = PARTIAL_HASH_BYTES) -> Optional[str]:
+    try:
+        with open(path, "rb") as f:
+            return hashlib.sha256(f.read(nbytes)).hexdigest()
+    except OSError:
+        return None
+
+
+def find_duplicates(root: str | Path, min_size: int = DUP_MIN_SIZE) -> dict[str, Any]:
+    """
+    Find identical files under `root`: group by size, then first-64KB hash, then full SHA-256.
+    Signature: find_duplicates(root, min_size=1048576) -> dict
+    Returns {"root", "groups": [{"hash", "size", "count", "wasted_bytes", "files": [rel paths]}],
+    "group_count", "duplicate_files", "wasted_bytes"}; wasted = size * (count - 1).
+    """
+    root_path = Path(root)
+    long_base = win_long_path(root_path)
+    by_size: dict[int, list[str]] = {}
+    for dirpath, dirnames, filenames in os.walk(long_base):
+        dirnames.sort()
+        for fname in sorted(filenames):
+            full = os.path.join(dirpath, fname)
+            try:
+                st = os.stat(full)
+            except OSError:
+                continue
+            if st.st_size >= max(1, min_size) and os.path.isfile(full):
+                by_size.setdefault(st.st_size, []).append(full)
+
+    base_len = len(long_base.rstrip("/\\")) + 1
+    groups: list[dict[str, Any]] = []
+    for size, paths in by_size.items():
+        if len(paths) < 2:
+            continue
+        by_part: dict[str, list[str]] = {}
+        for p in paths:
+            h = _hash_head(p)
+            if h:
+                by_part.setdefault(h, []).append(p)
+        for cands in by_part.values():
+            if len(cands) < 2:
+                continue
+            by_full: dict[str, list[str]] = {}
+            for p in cands:
+                h = calculate_file_hash(p)
+                if h:
+                    by_full.setdefault(h, []).append(p)
+            for h, same in by_full.items():
+                if len(same) > 1:
+                    groups.append({
+                        "hash": h,
+                        "size": size,
+                        "count": len(same),
+                        "wasted_bytes": size * (len(same) - 1),
+                        "files": sorted(p[base_len:].replace("\\", "/") for p in same),
+                    })
+    groups.sort(key=lambda g: g["wasted_bytes"], reverse=True)
+    return {
+        "root": str(root_path),
+        "groups": groups,
+        "group_count": len(groups),
+        "duplicate_files": sum(g["count"] - 1 for g in groups),
+        "wasted_bytes": sum(g["wasted_bytes"] for g in groups),
     }
 
 
@@ -757,6 +869,11 @@ class DiskSyncManager:
                 daemon=True,
             )
             self._worker_thread.start()
+
+    @staticmethod
+    def dry_run(source_dir, dest_dir, deep: bool = False, delete_extra: bool = False) -> dict[str, Any]:
+        """Plan only; see plan_sync_dry_run. Copies nothing."""
+        return plan_sync_dry_run(source_dir, dest_dir, deep=deep, delete_extra=delete_extra)
 
     def pause(self) -> None:
         with self._lock:

@@ -32,6 +32,11 @@ if sys.platform == "win32":
 
 from downloader import DownloadManager, MANIFEST_FILENAME  # noqa: E402
 from sp_auth import BrowserAuthManager  # noqa: E402
+import filters as filters_mod  # noqa: E402
+import history_db  # noqa: E402
+import notifier  # noqa: E402
+from job_queue import JobQueue  # noqa: E402
+from scheduler import Scheduler  # noqa: E402
 from sp_client import SPItem, SharePointClient  # noqa: E402
 from gdrive_client import (  # noqa: E402
     CloudToCloudBridge,
@@ -47,6 +52,8 @@ from sync_engine import (  # noqa: E402
     compare_two_local_directories,
     export_sync_csv,
     export_sync_json,
+    find_duplicates,
+    plan_sync_dry_run,
 )
 from utils import extract_sharepoint_url_hints, win_long_path  # noqa: E402
 from verifier import (  # noqa: E402
@@ -55,8 +62,69 @@ from verifier import (  # noqa: E402
     verify_download,
 )
 
+APP_VERSION = "6.0.0"
 STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
+
+
+# ---------------------------------------------------------------------------
+# Security: Host / Origin guard (blocks CSRF from other sites and DNS rebinding)
+# ---------------------------------------------------------------------------
+
+_LOCAL_HOSTS = {"127.0.0.1", "localhost", "[::1]", "testserver"}
+
+
+def _host_only(value: str) -> str:
+    value = (value or "").strip().lower()
+    if value.startswith("["):
+        return value.split("]")[0] + "]"
+    return value.split(":")[0]
+
+
+class LocalOnlyGuard:
+    """Pure ASGI middleware (SSE-safe). Rejects foreign Host/Origin headers."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.inner(scope, receive, send)
+        headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]}
+        bad = None
+        if _host_only(headers.get("host", "")) not in _LOCAL_HOSTS:
+            bad = "Host غير مسموح"
+        origin = headers.get("origin")
+        if bad is None and origin and origin != "null":
+            if _host_only(urlparse(origin).netloc) not in _LOCAL_HOSTS:
+                bad = "Origin غير مسموح"
+        elif bad is None and origin == "null":
+            bad = "Origin غير مسموح"
+        if bad is None and headers.get("sec-fetch-site") == "cross-site":
+            bad = "طلب عبر مواقع مرفوض"
+        if bad:
+            body = json.dumps({"error": bad}, ensure_ascii=False).encode("utf-8")
+            await send({"type": "http.response.start", "status": 403,
+                        "headers": [(b"content-type", b"application/json; charset=utf-8"),
+                                    (b"content-length", str(len(body)).encode())]})
+            await send({"type": "http.response.body", "body": body})
+            return
+        await self.inner(scope, receive, send)
+
+
+# Graceful exit: ask uvicorn to stop (lets lifespan cancel downloads), hard-exit as fallback.
+_uvicorn_server: Optional[uvicorn.Server] = None
+
+
+def _request_exit(reason: str = "") -> None:
+    if reason:
+        print(f"OmniSync: {reason}", flush=True)
+    srv = _uvicorn_server
+    if srv is not None:
+        srv.should_exit = True
+    t = threading.Timer(10.0, lambda: os._exit(0))
+    t.daemon = True
+    t.start()
 
 
 class AppState:
@@ -257,7 +325,7 @@ async def favicon_page(request: Request) -> Response:
 
 
 async def api_health(request: Request) -> JSONResponse:
-    return JSONResponse({"ok": True})
+    return JSONResponse({"ok": True, "version": APP_VERSION})
 
 
 # ---------------------------------------------------------------------------
@@ -358,6 +426,18 @@ _last_heartbeat_time: float = time.time()
 _heartbeat_active: bool = False
 _pending_shutdown: bool = False
 _shutdown_deadline: float = 0.0
+HEARTBEAT_TIMEOUT_S = 120.0  # background tabs get throttled by the browser; be generous
+
+
+def _any_job_active() -> bool:
+    """True while any download / sync / media job is running or paused."""
+    try:
+        for mgr in (state.download_manager, state.media_manager, state.disk_sync_manager):
+            if mgr.get_snapshot().get("status") in ("running", "paused"):
+                return True
+    except Exception:
+        return True  # when unsure, never kill a possibly-active job
+    return False
 
 
 async def api_system_heartbeat(request: Request) -> JSONResponse:
@@ -381,7 +461,7 @@ async def api_system_shutdown(request: Request) -> JSONResponse:
     """Gracefully terminate the server process."""
     def _delayed_exit():
         time.sleep(0.3)
-        os._exit(0)
+        _request_exit("shutdown requested")
 
     threading.Thread(target=_delayed_exit, daemon=True).start()
     return JSONResponse({"status": "shutting_down", "message": "تم إيقاف البرنامج بنجاح"})
@@ -393,12 +473,14 @@ def _start_heartbeat_watchdog() -> None:
         while True:
             time.sleep(1.5)
             now = time.time()
+            if _any_job_active():
+                continue  # never auto-exit while work is in progress
             if _pending_shutdown and now >= _shutdown_deadline:
-                print("OmniSync: Browser window closed. Shutting down background service...")
-                os._exit(0)
-            if _heartbeat_active and (now - _last_heartbeat_time) > 8.0:
-                print("OmniSync: Heartbeat timeout (window closed). Shutting down background service...")
-                os._exit(0)
+                _request_exit("Browser window closed. Shutting down background service...")
+                return
+            if _heartbeat_active and (now - _last_heartbeat_time) > HEARTBEAT_TIMEOUT_S:
+                _request_exit("Heartbeat timeout (window closed). Shutting down background service...")
+                return
 
     t = threading.Thread(target=_watchdog_loop, daemon=True)
     t.start()
@@ -608,28 +690,43 @@ async def api_download_start(request: Request) -> JSONResponse:
         body = await _read_json_body(request)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    payload, code = await _start_download(body)
+    return JSONResponse(payload, status_code=code)
 
+
+async def _start_download(body: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    """Shared by the route and the job queue. Returns (payload, http_status)."""
     dest_dir = str(body.get("dest_dir") or "").strip()
     if not dest_dir:
-        return JSONResponse({"error": "يرجى تحديد مجلد الحفظ المحلي أولاً"}, status_code=400)
+        return {"error": "يرجى تحديد مجلد الحفظ المحلي أولاً"}, 400
     if os.path.isfile(win_long_path(dest_dir)):
-        return JSONResponse({"error": "المسار المحدد يشير إلى ملف وليس مجلداً"}, status_code=400)
+        return {"error": "المسار المحدد يشير إلى ملف وليس مجلداً"}, 400
 
     manifest = body.get("manifest") if isinstance(body.get("manifest"), dict) else state.current_manifest
     if not isinstance(manifest, dict) or (
         not manifest.get("files") and not manifest.get("folders")
     ):
-        return JSONResponse({"error": "لا توجد قائمة ملفات ممسوحة للتحميل. قم بفحص المجلدات أولاً."}, status_code=400)
+        return {"error": "لا توجد قائمة ملفات ممسوحة للتحميل. قم بفحص المجلدات أولاً."}, 400
 
     try:
         concurrency = max(1, min(16, int(body.get("concurrency", 3))))
         max_retries = max(0, min(50, int(body.get("max_retries", 10))))
     except (TypeError, ValueError):
-        return JSONResponse({"error": "قيم التوازي أو المحاولات غير صالحة"}, status_code=400)
+        return {"error": "قيم التوازي أو المحاولات غير صالحة"}, 400
+
+    if body.get("filters"):
+        try:
+            manifest = filters_mod.filter_manifest(manifest, body.get("filters"))
+        except ValueError as exc:
+            return {"error": str(exc)}, 400
 
     skip_verified = bool(body.get("skip_verified", True))
     create_empty_folders = bool(body.get("create_empty_folders", True))
     mode = str(body.get("mode") or "download")
+    try:
+        speed_limit_kbps = max(0, int(body.get("speed_limit_kbps") or 0))
+    except (TypeError, ValueError):
+        return {"error": "حد السرعة غير صالح"}, 400
 
     try:
         snapshot = await state.download_manager.start_job(
@@ -640,16 +737,11 @@ async def api_download_start(request: Request) -> JSONResponse:
             skip_verified=skip_verified,
             create_empty_folders=create_empty_folders,
             mode=mode,
+            speed_limit_kbps=speed_limit_kbps,
         )
-        return JSONResponse(
-            {
-                "started": True,
-                "job_id": snapshot.get("job_id"),
-                "snapshot": snapshot,
-            }
-        )
+        return {"started": True, "job_id": snapshot.get("job_id"), "snapshot": snapshot}, 200
     except Exception as exc:
-        return JSONResponse({"error": str(exc)}, status_code=500)
+        return {"error": str(exc)}, 500
 
 
 async def api_download_pause(request: Request) -> JSONResponse:
@@ -768,27 +860,28 @@ async def api_media_download(request: Request) -> JSONResponse:
         body = await _read_json_body(request)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    payload, code = _start_media(body)
+    return JSONResponse(payload, status_code=code)
 
+
+def _start_media(body: dict[str, Any]) -> tuple[dict[str, Any], int]:
     url = (body.get("url") or "").strip()
     dest_dir = (body.get("dest_dir") or "").strip()
     format_id = (body.get("format_id") or "best").strip()
     audio_only = bool(body.get("audio_only", False))
 
     if not url:
-        return JSONResponse({"error": "يرجى إدخال رابط الوسائط"}, status_code=400)
+        return {"error": "يرجى إدخال رابط الوسائط"}, 400
     if not dest_dir:
-        return JSONResponse({"error": "يرجى تحديد مجلد الحفظ المحلي"}, status_code=400)
+        return {"error": "يرجى تحديد مجلد الحفظ المحلي"}, 400
 
     try:
         snap = state.media_manager.start_download(
-            url=url,
-            dest_dir=dest_dir,
-            format_id=format_id,
-            audio_only=audio_only,
+            url=url, dest_dir=dest_dir, format_id=format_id, audio_only=audio_only,
         )
-        return JSONResponse({"ok": True, "snapshot": snap})
+        return {"ok": True, "snapshot": snap}, 200
     except Exception as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return {"error": str(exc)}, 400
 
 
 async def api_media_status(request: Request) -> JSONResponse:
@@ -932,27 +1025,35 @@ async def api_sync_compare(request: Request) -> JSONResponse:
 
 
 async def api_sync_download(request: Request) -> JSONResponse:
-    if state.current_sync_plan is None:
-        return JSONResponse({"error": "لا توجد نتائج مقارنة حالية. قم بتشغيل المقارنة أولاً."}, status_code=400)
-
     try:
         body = await _read_json_body(request)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    payload, code = await _start_sync_download(body)
+    return JSONResponse(payload, status_code=code)
+
+
+async def _start_sync_download(body: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    if state.current_sync_plan is None:
+        return {"error": "لا توجد نتائج مقارنة حالية. قم بتشغيل المقارنة أولاً."}, 400
 
     local_dir = str(body.get("local_dir") or state.current_sync_plan.get("local_dir") or "").strip()
     if not local_dir:
-        return JSONResponse({"error": "يرجى تحديد المجلد المحلي للمزامنة"}, status_code=400)
+        return {"error": "يرجى تحديد المجلد المحلي للمزامنة"}, 400
 
     include_updated = bool(body.get("include_updated", False))
     try:
         concurrency = max(1, min(16, int(body.get("concurrency", 3))))
         max_retries = max(0, min(50, int(body.get("max_retries", 10))))
     except (TypeError, ValueError):
-        return JSONResponse({"error": "قيم التوازي أو المحاولات غير صالحة"}, status_code=400)
+        return {"error": "قيم التوازي أو المحاولات غير صالحة"}, 400
 
     create_empty_folders = bool(body.get("create_empty_folders", True))
     skip_verified = bool(body.get("skip_verified", False))
+    try:
+        speed_limit_kbps = max(0, int(body.get("speed_limit_kbps") or 0))
+    except (TypeError, ValueError):
+        return {"error": "حد السرعة غير صالح"}, 400
 
     manifest_key = "all_changes_manifest" if include_updated else "new_only_manifest"
     sync_manifest = (
@@ -960,6 +1061,23 @@ async def api_sync_download(request: Request) -> JSONResponse:
         or state.current_sync_plan.get("sync_manifest")
         or {"folders": [], "files": []}
     )
+
+    if body.get("filters"):
+        try:
+            sync_manifest = filters_mod.filter_manifest(sync_manifest, body.get("filters"))
+        except ValueError as exc:
+            return {"error": str(exc)}, 400
+
+    excluded = body.get("excluded_paths")
+    if isinstance(excluded, list) and excluded:
+        skip = {str(p) for p in excluded}
+        kept = [f for f in (sync_manifest.get("files") or []) if str(f.get("relative_path") or "") not in skip]
+        sync_manifest = dict(sync_manifest)
+        sync_manifest["files"] = kept
+        sync_manifest["total_files"] = len(kept)
+        sync_manifest["total_bytes"] = sum(int(f.get("size") or 0) for f in kept)
+        if not kept:
+            return {"error": "لم يتبقَّ أي ملف للتحميل بعد استبعاد الملفات المحددة"}, 400
 
     try:
         snapshot = await state.download_manager.start_job(
@@ -970,17 +1088,16 @@ async def api_sync_download(request: Request) -> JSONResponse:
             skip_verified=skip_verified,
             create_empty_folders=create_empty_folders,
             mode="sync",
+            speed_limit_kbps=speed_limit_kbps,
         )
-        return JSONResponse(
-            {
-                "started": True,
-                "job_id": snapshot.get("job_id"),
-                "include_updated": include_updated,
-                "snapshot": snapshot,
-            }
-        )
+        return {
+            "started": True,
+            "job_id": snapshot.get("job_id"),
+            "include_updated": include_updated,
+            "snapshot": snapshot,
+        }, 200
     except Exception as exc:
-        return JSONResponse({"error": str(exc)}, status_code=500)
+        return {"error": str(exc)}, 500
 
 
 async def api_sync_report(request: Request) -> JSONResponse:
@@ -1201,13 +1318,226 @@ async def api_cloud_bridge_status(request: Request) -> JSONResponse:
 
 
 # ---------------------------------------------------------------------------
+# v6 features: filters, history, notifications, queue, scheduler
+# ---------------------------------------------------------------------------
+
+
+def _on_job_finished(kind: str, status: str, info: dict[str, Any]) -> None:
+    """Called by the history tracker; fire notifications off the event loop."""
+    title = f"OmniSync: {kind} {status}"
+    msg = f"{info.get('files', 0)} files"
+    if info.get("errors"):
+        msg += f" - {info['errors']}"
+    threading.Thread(target=notifier.notify, args=(title, msg), daemon=True).start()
+
+
+job_tracker = history_db.JobTracker(on_finish=_on_job_finished)
+
+
+def _poll_trackers() -> None:
+    job_tracker.observe("download", state.download_manager.get_snapshot())
+    job_tracker.observe("media", state.media_manager.get_snapshot())
+    job_tracker.observe("disk_sync", state.disk_sync_manager.get_snapshot())
+
+
+async def _history_watcher() -> None:
+    while True:
+        try:
+            await asyncio.get_running_loop().run_in_executor(None, _poll_trackers)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            pass
+        await asyncio.sleep(1.0)
+
+
+_TERMINAL = {"completed", "failed", "cancelled", "error", "idle"}
+
+
+async def _run_queued(kind: str, params: dict[str, Any]) -> None:
+    """Start a job through the shared helper and wait until it ends."""
+    if kind == "media":
+        payload, code = _start_media(params)
+        mgr_snap = state.media_manager.get_snapshot
+    elif kind == "sync":
+        payload, code = await _start_sync_download(params)
+        mgr_snap = state.download_manager.get_snapshot
+    else:
+        payload, code = await _start_download(params)
+        mgr_snap = state.download_manager.get_snapshot
+    if code >= 400:
+        raise RuntimeError(str(payload.get("error") or "start failed"))
+    await asyncio.sleep(0.5)
+    while mgr_snap().get("status") not in _TERMINAL:
+        await asyncio.sleep(1.0)
+
+
+async def _cancel_running(kind: str) -> None:
+    if kind == "media":
+        state.media_manager.cancel()
+    else:
+        await state.download_manager.cancel()
+
+
+job_queue = JobQueue(_run_queued, _cancel_running)
+scheduler = Scheduler(lambda kind, params: job_queue.add(kind, params, source="schedule"))
+
+
+async def api_disk_dryrun(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    src = str(body.get("source_dir") or "").strip()
+    dst = str(body.get("dest_dir") or "").strip()
+    if not src or not dst:
+        return JSONResponse({"error": "يرجى تحديد مسار المجلد المصدر والمجلد الهدف"}, status_code=400)
+    try:
+        result = await asyncio.to_thread(
+            plan_sync_dry_run, src, dst, bool(body.get("deep", False)), bool(body.get("delete_extra", False)))
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(result)
+
+
+async def api_disk_duplicates(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    root = str(body.get("root") or "").strip()
+    if not root:
+        return JSONResponse({"error": "يرجى تحديد المجلد"}, status_code=400)
+    kwargs = {}
+    if body.get("min_size") is not None:
+        try:
+            kwargs["min_size"] = max(0, int(body["min_size"]))
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "min_size غير صالح"}, status_code=400)
+    try:
+        result = await asyncio.to_thread(find_duplicates, root, **kwargs)
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(result)
+
+
+async def api_filters_test(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+        flt = filters_mod.FileFilter.from_dict(body.get("filter") or body.get("filters"))
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    samples = body.get("samples") or body.get("items") or []
+    out = []
+    for s in samples if isinstance(samples, list) else []:
+        item = s if isinstance(s, dict) else {"relative_path": str(s)}
+        out.append({**item, "match": flt.match_item(item)})
+    matched = sum(1 for o in out if o["match"])
+    return JSONResponse({"total": len(out), "matched": matched, "results": out})
+
+
+async def api_history_list(request: Request) -> JSONResponse:
+    try:
+        limit = int(request.query_params.get("limit") or 100)
+    except ValueError:
+        limit = 100
+    return JSONResponse({"jobs": history_db.list_jobs(limit)})
+
+
+async def api_history_clear(request: Request) -> JSONResponse:
+    return JSONResponse({"ok": True, "deleted": history_db.clear()})
+
+
+async def api_history_export(request: Request) -> Response:
+    return Response(
+        history_db.export_csv().encode("utf-8-sig"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="osdd_history.csv"'},
+    )
+
+
+async def api_notify_settings_get(request: Request) -> JSONResponse:
+    return JSONResponse(notifier.public_config())
+
+
+async def api_notify_settings_set(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(notifier.update_notify_config(body))
+
+
+async def api_notify_test(request: Request) -> JSONResponse:
+    res = await asyncio.get_running_loop().run_in_executor(
+        None, notifier.notify, "OmniSync", "Test notification")
+    return JSONResponse({"ok": True, "result": res})
+
+
+async def api_queue_add(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+        params = body.get("params") if isinstance(body.get("params"), dict) else {}
+        job = job_queue.add(str(body.get("kind") or ""), params, int(body.get("priority") or 0))
+    except (ValueError, TypeError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse({"ok": True, "job": job})
+
+
+async def api_queue_list(request: Request) -> JSONResponse:
+    return JSONResponse({"jobs": job_queue.list()})
+
+
+async def api_queue_cancel(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    ok = await job_queue.cancel(str(body.get("id") or ""))
+    if not ok:
+        return JSONResponse({"error": "المهمة غير موجودة أو انتهت"}, status_code=404)
+    return JSONResponse({"ok": True})
+
+
+async def api_schedule_list(request: Request) -> JSONResponse:
+    return JSONResponse({"schedules": scheduler.list()})
+
+
+async def api_schedule_add(request: Request) -> JSONResponse:
+    try:
+        body = await _read_json_body(request)
+        entry = scheduler.add(body)
+    except (ValueError, TypeError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse({"ok": True, "schedule": entry})
+
+
+async def api_schedule_delete(request: Request) -> JSONResponse:
+    sid = request.query_params.get("id") or ""
+    if not sid:
+        try:
+            sid = str((await _read_json_body(request)).get("id") or "")
+        except ValueError:
+            sid = ""
+    if not scheduler.remove(sid):
+        return JSONResponse({"error": "الجدولة غير موجودة"}, status_code=404)
+    return JSONResponse({"ok": True})
+
+
+# ---------------------------------------------------------------------------
 # App Lifecycle & Entrypoint
 # ---------------------------------------------------------------------------
 
 
 @asynccontextmanager
 async def lifespan(app: Starlette):
+    watcher = asyncio.create_task(_history_watcher())
+    job_queue.start()
+    scheduler.start()
     yield
+    watcher.cancel()
+    await job_queue.shutdown()
+    await scheduler.shutdown()
     try:
         await state.download_manager.cancel()
     except Exception:
@@ -1269,9 +1599,25 @@ routes = [
     Route("/api/sync/download", api_sync_download, methods=["POST"]),
     Route("/api/sync/report", api_sync_report, methods=["GET"]),
     Route("/api/sync/export", api_sync_export, methods=["GET"]),
+    Route("/api/filters/test", api_filters_test, methods=["POST"]),
+    Route("/api/disk/dryrun", api_disk_dryrun, methods=["POST"]),
+    Route("/api/disk/duplicates", api_disk_duplicates, methods=["POST"]),
+    Route("/api/history", api_history_list, methods=["GET"]),
+    Route("/api/history", api_history_clear, methods=["DELETE"]),
+    Route("/api/history/export", api_history_export, methods=["GET"]),
+    Route("/api/settings/notify", api_notify_settings_get, methods=["GET"]),
+    Route("/api/settings/notify", api_notify_settings_set, methods=["POST"]),
+    Route("/api/notify/test", api_notify_test, methods=["POST"]),
+    Route("/api/queue/add", api_queue_add, methods=["POST"]),
+    Route("/api/queue", api_queue_list, methods=["GET"]),
+    Route("/api/queue/cancel", api_queue_cancel, methods=["POST"]),
+    Route("/api/schedule", api_schedule_list, methods=["GET"]),
+    Route("/api/schedule", api_schedule_add, methods=["POST"]),
+    Route("/api/schedule", api_schedule_delete, methods=["DELETE"]),
 ]
 
-app = Starlette(debug=False, routes=routes, lifespan=lifespan)
+_starlette_app = Starlette(debug=False, routes=routes, lifespan=lifespan)
+app = LocalOnlyGuard(_starlette_app)
 
 
 def find_free_port(start_port: int = 8765, host: str = "127.0.0.1", max_tries: int = 50) -> int:
@@ -1304,13 +1650,11 @@ def main() -> None:
         timer.daemon = True
         timer.start()
 
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        log_level="info",
-        loop="asyncio",
+    global _uvicorn_server
+    _uvicorn_server = uvicorn.Server(
+        uvicorn.Config(app, host=host, port=port, log_level="info", loop="asyncio")
     )
+    _uvicorn_server.run()
 
 
 if __name__ == "__main__":

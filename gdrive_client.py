@@ -15,6 +15,8 @@ from pathlib import Path
 from typing import Any, AsyncIterator, Optional
 import httpx
 
+from sp_client import http2_available
+
 # Patterns for extracting Google Drive IDs
 GDRIVE_FOLDER_RE = re.compile(r"drive\.google\.com/drive/(?:u/\d+/)?folders/([a-zA-Z0-9_-]+)")
 GDRIVE_FILE_RE = re.compile(r"drive\.google\.com/file/d/([a-zA-Z0-9_-]+)")
@@ -92,6 +94,8 @@ class GDriveClient:
         self.client = httpx.AsyncClient(
             timeout=httpx.Timeout(30.0, connect=15.0),
             follow_redirects=True,
+            limits=httpx.Limits(max_connections=64, max_keepalive_connections=32),
+            http2=http2_available(),
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
                 "Accept-Language": "en-US,en;q=0.9,ar;q=0.8",
