@@ -90,7 +90,7 @@ sharepoint-downloader/
 
 ---
 
-## 7. الإصدار v5.0 (فرع الكود v6.0) — فرع `v6.0` — آخر تحديث 2026-11-17 (مكتمل، بدون commit بعد)
+## 7. الإصدار v5.0.0 — فرع `v5.0` — آخر تحديث 2026-11-17 (مرفوع على GitHub مع tag `v5.0.0`)
 **المتابعة:** `dev_dashboard/index.html` (تتحدث كل 3 ثوانٍ من `status.js`، بدون توكينز). التحديث: `python dev_dashboard/dev_status.py set <ID> <todo|doing|done|blocked> --agent NAME --note "..."`.
 
 **الأمان/الاستقرار:** `LocalOnlyGuard` في `app.py` (رفض Host/Origin غير محلي و`Sec-Fetch-Site: cross-site`)، إيقاف آمن عبر `_request_exit()` بدل `os._exit`، مهلة heartbeat 25 ثانية، `/api/health` يعيد `version`.
@@ -100,8 +100,8 @@ sharepoint-downloader/
 **الواجهة:** 5 ثيمات + auto، تبويبات، sparkline، تبويب سجل/أتمتة، فلاتر، حد سرعة، dry-run، تكرارات، إشعارات (token للكتابة فقط).
 **الجودة:** `.github/workflows/ci.yml`، `ruff.toml`، `requirements.lock.txt`.
 
-**التحقق:** `python -m unittest discover -s tests` = 55 اختباراً ناجحاً (~22ث). فُحصت الصفحة على الخادم الفعلي: لا أخطاء console، التبويبات والثيم و`/api/history` تعمل. لم تُجرَّب تحميلات حقيقية من SharePoint/Drive/yt-dlp في v6، ولا تحميل متوازٍ مقابل خادم حقيقي (اختُبر على خادم محلي فقط).
-**ملاحظات:** مهمة disk-sync قصيرة جداً قد لا تُسجَّل في السجل (polling كل ثانية). ملف `AGENTS.md` القديم يقول "لا commits معلقة" وهذا لم يعد صحيحاً: كل عمل v6 غير ملتزَم به. لم يُنفَّذ `git push`.
+**التحقق:** `python -m unittest discover -s tests` = 55 اختباراً ناجحاً (~22ث). فُحصت الصفحة على الخادم الفعلي: لا أخطاء console، التبويبات والثيم و`/api/history` تعمل. لم تُجرَّب تحميلات حقيقية من SharePoint/Drive/yt-dlp في هذا الإصدار، ولا تحميل متوازٍ مقابل خادم حقيقي (اختُبر على خادم محلي فقط).
+**ملاحظات:** مهمة disk-sync قصيرة جداً قد لا تُسجَّل في السجل (polling كل ثانية). ملف `AGENTS.md` القديم يقول "لا commits معلقة" وهذا لم يعد صحيحاً: عمل هذا الإصدار مُلتزَم به ومرفوع (فرع `v5.0` وtag `v5.0.0`)، و`main` لم يُدمج.
 
 **نتائج فحص الواجهة الفعلي (ui-verify، 2026-11-17، متصفح مدمج على الخادم الحي):**
 - نجح: لا أخطاء console؛ `/api/health` بـ Origin غريب = 403؛ التبويبات الخمسة؛ الثيمات (auto/light/dark/ocean/amoled/sunset) تغيّر الخلفية فعلاً والحفظ في localStorage بعد إعادة التحميل (theme/lang/tab)؛ اللغات الثماني مع RTL للعربية وLTR للباقي؛ بطاقات KPI وsparkline تُرسم؛ اختبار الفلتر (`path|size`) وregex خاطئ يرجع خطأ؛ حقل حد السرعة؛ Dry-run على مجلدين مؤقتين (3 للنسخ صحيح)؛ Find duplicates (3 ملفات متطابقة صحيحة عبر API مع min_size=1)؛ تحديث/تصدير CSV للسجل؛ الطابور (مهمة بلا مجلد حفظ تفشل برسالة واضحة)؛ إضافة/حذف جدولة؛ حفظ إعدادات الإشعارات واختبار الإرسال مع Telegram معطّل.
