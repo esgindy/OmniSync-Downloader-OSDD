@@ -35,7 +35,7 @@ flowchart LR
 **Enterprise-Grade Multi-Source File Streamer & High-Speed Data Sync Engine**  
 *الأداة البرمجية المتقدمة للتحميل المباشر المتدفق والمزامنة الفائقة للملفات والمكتبات الضخمة*
 
-[![Release](https://img.shields.io/badge/Release-v6.0.0-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
+[![Release](https://img.shields.io/badge/Release-v6.0.1-blueviolet.svg)](https://github.com/esgindy/OmniSync-Downloader-OSDD/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()

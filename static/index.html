@@ -945,17 +945,43 @@
     .spark-area { fill: color-mix(in srgb, var(--primary) 18%, transparent); stroke: none; }
 
     /* ---- Tabs ---- */
-    .tabbar { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 2px solid var(--border); }
+    :root { --sb-open: 236px; --sb-closed: 64px; --sb-w: var(--sb-open); --topbar-h: 72px; }
+    body.sb-collapsed { --sb-w: var(--sb-closed); }
+    .sidebar {
+      position: fixed; top: var(--topbar-h); bottom: 0; inset-inline-start: 0; width: var(--sb-w); z-index: 30;
+      background: var(--surface); border-inline-end: 1px solid var(--border); box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 6px; padding: 10px 8px; overflow-y: auto; overflow-x: hidden;
+      transition: width 0.18s ease;
+    }
+    .sb-toggle {
+      display: flex; align-items: center; justify-content: center; gap: 8px; height: 38px; width: 100%;
+      background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: inherit; font-size: 18px; cursor: pointer;
+    }
+    .sb-toggle:hover { color: var(--text); }
+    .tabbar { display: flex; flex-direction: column; gap: 4px; }
     .tab-btn {
-      display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px;
-      background: transparent; color: var(--text-muted); border: 1px solid transparent; border-bottom: none;
-      border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-family: inherit; font-size: 13.5px; font-weight: 600;
-      cursor: pointer; margin-bottom: -2px; transition: all 0.15s ease;
+      display: flex; align-items: center; gap: 12px; padding: 9px 10px; width: 100%;
+      background: transparent; color: var(--text-muted); border: 1px solid transparent;
+      border-radius: var(--radius-sm); font-family: inherit; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s ease, color 0.15s ease; text-align: start; white-space: nowrap;
     }
     .tab-btn:hover { color: var(--text); background: var(--surface-alt); }
-    .tab-btn.active { color: var(--primary); background: var(--surface); border-color: var(--border); border-bottom: 2px solid var(--surface); }
-    .tab-ico { font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: var(--border); color: var(--text-muted); }
+    .tab-btn.active { color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, var(--surface)); border-color: var(--border); }
+    .tab-ico {
+      flex: 0 0 auto; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 17px; line-height: 1; border-radius: 8px; background: var(--border); color: var(--text-muted);
+    }
     .tab-btn.active .tab-ico { background: var(--primary); color: var(--on-accent); }
+    .tab-label { overflow: hidden; text-overflow: ellipsis; }
+    body.sb-collapsed .tab-label { display: none; }
+    body.sb-collapsed .tab-btn { justify-content: center; padding: 8px 0; }
+    body.sb-collapsed .sb-toggle .sb-toggle-text { display: none; }
+    body.has-sidebar .container { padding-inline-start: calc(var(--sb-w) + 18px); transition: padding 0.18s ease; }
+    @media (max-width: 760px) {
+      body.has-sidebar .container { padding-inline-start: calc(var(--sb-closed) + 12px); }
+      body:not(.sb-collapsed) .sidebar { box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.25), var(--shadow); }
+    }
     .tab-panel { display: none; flex-direction: column; gap: 18px; }
     .tab-panel.active { display: flex; }
 
@@ -1117,8 +1143,8 @@
           </svg>
         </div>
         <div>
-          <h1 data-i18n="app_title">تنزيل ومزامنة SharePoint المباشر (ملف بملف بدون ضغط)</h1>
-          <p data-i18n="app_subtitle">استعراض المجلدات، التحميل المتوازي مع الاستئناف، مقارنة المزامنة، والتحقق الشامل</p>
+          <h1 data-i18n="app_title">OmniSync Downloader (OSDD)</h1>
+          <p data-i18n="app_subtitle">تنزيل ومزامنة شامل: SharePoint وGoogle Drive وجسر بين السحابات، ومزامنة الأقراص ومراجعة الملفات المكررة، وتنزيل الوسائط. تحميل متوازي مع استئناف، فلاتر وطابور وجدولة وإشعارات وسجل مهام، بخمسة ثيمات وثماني لغات، ويعمل محلياً على جهازك.</p>
         </div>
       </div>
       <div class="top-badges">
@@ -1276,14 +1302,17 @@
     </section>
 
     <!-- Tab bar -->
-    <nav class="tabbar" role="tablist" aria-label="Sections">
-      <button type="button" class="tab-btn active" role="tab" id="navSharepoint" data-tab="sharepoint" aria-selected="true"><span class="tab-ico" aria-hidden="true">SP</span><span data-i18n="tab_sharepoint">SharePoint</span></button>
-      <button type="button" class="tab-btn" role="tab" id="navCloudBridge" data-tab="gdrive" aria-selected="false"><span class="tab-ico" aria-hidden="true">GD</span><span data-i18n="tab_gdrive">Google Drive وجسر السحابات</span></button>
-      <button type="button" class="tab-btn" role="tab" id="navDiskSync" data-tab="disk" aria-selected="false"><span class="tab-ico" aria-hidden="true">HD</span><span data-i18n="tab_disk">مزامنة الأقراص</span></button>
-      <button type="button" class="tab-btn" role="tab" id="navDupes" data-tab="dupes" aria-selected="false"><span class="tab-ico" aria-hidden="true">DUP</span><span data-i18n="tab_dupes">مراجعة التكرار</span></button>
-      <button type="button" class="tab-btn" role="tab" id="navMedia"data-tab="media" aria-selected="false"><span class="tab-ico" aria-hidden="true">MP</span><span data-i18n="tab_media">الوسائط</span></button>
-      <button type="button" class="tab-btn" role="tab" id="navHistory" data-tab="history" aria-selected="false"><span class="tab-ico" aria-hidden="true">LOG</span><span data-i18n="tab_history">سجل المهام</span></button>
-    </nav>
+    <aside class="sidebar" id="sidebar">
+      <button type="button" class="sb-toggle" id="sidebarToggle" aria-expanded="true" aria-controls="sidebar"><span aria-hidden="true" id="sidebarToggleIco">☰</span><span class="sb-toggle-text" data-i18n="sb_menu">القائمة</span></button>
+      <nav class="tabbar" role="tablist" aria-label="Sections" aria-orientation="vertical">
+        <button type="button" class="tab-btn active" role="tab" id="navSharepoint" data-tab="sharepoint" aria-selected="true"><span class="tab-ico" aria-hidden="true">🏢</span><span class="tab-label" data-i18n="tab_sharepoint">SharePoint</span></button>
+        <button type="button" class="tab-btn" role="tab" id="navCloudBridge" data-tab="gdrive" aria-selected="false"><span class="tab-ico" aria-hidden="true">☁️</span><span class="tab-label" data-i18n="tab_gdrive">Google Drive وجسر السحابات</span></button>
+        <button type="button" class="tab-btn" role="tab" id="navDiskSync" data-tab="disk" aria-selected="false"><span class="tab-ico" aria-hidden="true">💽</span><span class="tab-label" data-i18n="tab_disk">مزامنة الأقراص</span></button>
+        <button type="button" class="tab-btn" role="tab" id="navDupes" data-tab="dupes" aria-selected="false"><span class="tab-ico" aria-hidden="true">🧬</span><span class="tab-label" data-i18n="tab_dupes">مراجعة التكرار</span></button>
+        <button type="button" class="tab-btn" role="tab" id="navMedia" data-tab="media" aria-selected="false"><span class="tab-ico" aria-hidden="true">🎬</span><span class="tab-label" data-i18n="tab_media">الوسائط</span></button>
+        <button type="button" class="tab-btn" role="tab" id="navHistory" data-tab="history" aria-selected="false"><span class="tab-ico" aria-hidden="true">🕘</span><span class="tab-label" data-i18n="tab_history">سجل المهام</span></button>
+      </nav>
+    </aside>
 
     <div class="tab-panel active" id="tabp-sharepoint" role="tabpanel">
     <!-- Stepper -->
@@ -2126,8 +2155,9 @@
       // ------------------------------------------------------------------
       const I18N = {
         ar: {
-          app_title: "تنزيل ومزامنة SharePoint المباشر (ملف بملف بدون ضغط)",
-          app_subtitle: "استعراض المجلدات، التحميل المتوازي مع الاستئناف، مقارنة المزامنة، والتحقق الشامل",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "تنزيل ومزامنة شامل: SharePoint وGoogle Drive وجسر بين السحابات، ومزامنة الأقراص ومراجعة الملفات المكررة، وتنزيل الوسائط. تحميل متوازي مع استئناف، فلاتر وطابور وجدولة وإشعارات وسجل مهام، بخمسة ثيمات وثماني لغات، ويعمل محلياً على جهازك.",
+          sb_menu: "القائمة",
           status_offline: "غير متصل",
           sse_waiting: "SSE: في الانتظار",
           job_idle: "الحالة: خامل",
@@ -2201,8 +2231,9 @@
           btn_clear_session: "مسح الجلسة"
         },
         en: {
-          app_title: "SharePoint Direct Downloader & Multi-Source Sync",
-          app_subtitle: "Folder browser, parallel streaming with Range resume, delta sync & integrity audit",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "All-in-one download and sync: SharePoint, Google Drive and a cloud-to-cloud bridge, disk sync with duplicate review, and media downloads. Parallel resumable transfers, filters, queue, scheduler, notifications and job history, with five themes and eight languages, running locally on your PC.",
+          sb_menu: "Menu",
           status_offline: "Offline",
           sse_waiting: "SSE: Standby",
           job_idle: "Status: Idle",
@@ -2276,8 +2307,9 @@
           btn_clear_session: "Clear Session"
         },
         es: {
-          app_title: "Descargador Directo de SharePoint y Sincronizador",
-          app_subtitle: "Explorador de carpetas, transmisión en paralelo con reanudación y auditoría",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "Descarga y sincronización todo en uno: SharePoint, Google Drive y puente entre nubes, sincronización de discos con revisión de duplicados y descarga de medios. Transferencias paralelas reanudables, filtros, cola, programador, notificaciones e historial, con cinco temas y ocho idiomas, en local en tu PC.",
+          sb_menu: "Menú",
           status_offline: "Desconectado",
           sse_waiting: "SSE: En espera",
           job_idle: "Estado: Inactivo",
@@ -2351,8 +2383,9 @@
           btn_clear_session: "Borrar Sesión"
         },
         fr: {
-          app_title: "Téléchargeur Direct SharePoint & Moteur de Synchronisation",
-          app_subtitle: "Explorateur de dossiers, téléchargement parallèle avec reprise et audit complet",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "Téléchargement et synchronisation tout-en-un : SharePoint, Google Drive et pont entre clouds, synchronisation de disques avec revue des doublons, et téléchargement de médias. Transferts parallèles avec reprise, filtres, file d'attente, planificateur, notifications et historique, cinq thèmes et huit langues, en local sur votre PC.",
+          sb_menu: "Menu",
           status_offline: "Hors ligne",
           sse_waiting: "SSE: En attente",
           job_idle: "Statut: Inactif",
@@ -2426,8 +2459,9 @@
           btn_clear_session: "Effacer Session"
         },
         de: {
-          app_title: "SharePoint Direkt-Downloader & Multi-Quellen Synchronisierer",
-          app_subtitle: "Ordner-Browser, paralleles Streaming mit Fortsetzungsfunktion und Audit",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "Download und Synchronisierung aus einer Hand: SharePoint, Google Drive und Cloud-zu-Cloud-Brücke, Datenträger-Sync mit Duplikatprüfung sowie Medien-Downloads. Parallele fortsetzbare Übertragungen, Filter, Warteschlange, Zeitplan, Benachrichtigungen und Verlauf, fünf Designs und acht Sprachen, lokal auf Ihrem PC.",
+          sb_menu: "Menü",
           status_offline: "Offline",
           sse_waiting: "SSE: Bereitschaft",
           job_idle: "Status: Leerlauf",
@@ -2501,8 +2535,9 @@
           btn_clear_session: "Sitzung Löschen"
         },
         zh: {
-          app_title: "SharePoint 直链下载与多源同步引擎",
-          app_subtitle: "文件夹浏览器、支持断点续传的并行流传输及增量同步审核",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "一站式下载与同步:SharePoint、Google Drive 与云到云桥接、磁盘同步及重复文件审查、媒体下载。支持并行断点续传、过滤器、任务队列、计划任务、通知和任务历史,提供五种主题和八种语言,在您的电脑本地运行。",
+          sb_menu: "菜单",
           status_offline: "离线",
           sse_waiting: "SSE: 待机",
           job_idle: "状态: 空闲",
@@ -2576,8 +2611,9 @@
           btn_clear_session: "清除会话"
         },
         ru: {
-          app_title: "Прямой загрузчик SharePoint и Движок Синхронизации",
-          app_subtitle: "Обзор папок, параллельная потоковая загрузка с докачкой и проверка целостности",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "Всё для загрузки и синхронизации: SharePoint, Google Drive и мост между облаками, синхронизация дисков с проверкой дубликатов, загрузка медиа. Параллельные передачи с докачкой, фильтры, очередь, планировщик, уведомления и история задач, пять тем и восемь языков, локально на вашем ПК.",
+          sb_menu: "Меню",
           status_offline: "Не в сети",
           sse_waiting: "SSE: Ожидание",
           job_idle: "Статус: Простой",
@@ -2651,8 +2687,9 @@
           btn_clear_session: "Очистить Сессию"
         },
         pt: {
-          app_title: "Downloader Direto do SharePoint & Motor de Sincronização",
-          app_subtitle: "Navegador de pastas, streaming paralelo com retomada e auditoria de integridade",
+          app_title: "OmniSync Downloader (OSDD)",
+          app_subtitle: "Download e sincronização tudo-em-um: SharePoint, Google Drive e ponte entre nuvens, sincronização de discos com revisão de duplicados e download de mídia. Transferências paralelas com retomada, filtros, fila, agendador, notificações e histórico, cinco temas e oito idiomas, localmente no seu PC.",
+          sb_menu: "Menu",
           status_offline: "Offline",
           sse_waiting: "SSE: Aguardando",
           job_idle: "Status: Ocioso",
@@ -3360,7 +3397,35 @@
       }
       document.querySelectorAll(".tab-btn").forEach((b) => {
         b.addEventListener("click", () => showTab(b.dataset.tab));
+        // tooltip with the tool name, useful when the sidebar shows icons only
+        b.addEventListener("mouseenter", () => {
+          const lab = b.querySelector(".tab-label");
+          if (lab) b.title = lab.textContent.trim();
+        });
       });
+
+      // Collapsible sidebar (state remembered per browser)
+      function setSidebarCollapsed(collapsed) {
+        document.body.classList.toggle("sb-collapsed", collapsed);
+        const t = document.getElementById("sidebarToggle");
+        t.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        document.getElementById("sidebarToggleIco").textContent = collapsed ? "☰" : "✕";
+        try { localStorage.setItem("osdd_sidebar", collapsed ? "collapsed" : "open"); } catch (_) {}
+      }
+      function syncTopbarHeight() {
+        const hdr = document.querySelector(".topbar");
+        if (hdr) document.documentElement.style.setProperty("--topbar-h", hdr.offsetHeight + "px");
+      }
+      document.body.classList.add("has-sidebar");
+      syncTopbarHeight();
+      window.addEventListener("resize", syncTopbarHeight);
+      if (window.ResizeObserver && document.querySelector(".topbar")) {
+        new ResizeObserver(syncTopbarHeight).observe(document.querySelector(".topbar"));
+      }
+      let sbSaved = null;
+      try { sbSaved = localStorage.getItem("osdd_sidebar"); } catch (_) {}
+      setSidebarCollapsed(sbSaved ? sbSaved === "collapsed" : window.innerWidth < 900);
+      document.getElementById("sidebarToggle").addEventListener("click", () => setSidebarCollapsed(!document.body.classList.contains("sb-collapsed")));
       // Stepper anchors: make sure the SharePoint tab is visible before jumping
       document.querySelectorAll(".stepper .step-chip").forEach((a) => {
         a.addEventListener("click", () => {

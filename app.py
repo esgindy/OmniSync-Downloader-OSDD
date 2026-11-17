@@ -65,7 +65,7 @@ from verifier import (  # noqa: E402
     verify_download,
 )
 
-APP_VERSION = "6.0.0"
+APP_VERSION = "6.0.1"
 STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 
@@ -1711,7 +1711,7 @@ def main() -> None:
     host = "127.0.0.1"
     port = find_free_port(start_port=8765, host=host)
     url = f"http://{host}:{port}"
-    print(f"SharePoint Direct Downloader running at {url}")
+    print(f"OmniSync Downloader (OSDD) running at {url}")
 
     if not os.environ.get("SP_NO_BROWSER"):
         timer = threading.Timer(0.9, lambda: webbrowser.open(url))
