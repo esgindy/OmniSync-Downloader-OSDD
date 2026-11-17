@@ -1,3 +1,33 @@
+## 🌐 8 Languages Supported · RTL / LTR
+
+🇸🇦 العربية • 🇺🇸 English • 🇪🇸 Español • 🇫🇷 Français • 🇩🇪 Deutsch • 🇨🇳 中文 • 🇷🇺 Русский • 🇧🇷 Português
+
+## Feature Matrix / مقارنة المزايا
+
+| Capability | OSDD | Traditional browser download | Sync clients |
+|---|---|---|---|
+| Large folders without ZIP packaging | Direct file-by-file streaming | Often ZIP-based with service limits | Usually syncs locally first |
+| Cloud-to-cloud transfer | Direct stream bridge across supported providers | Not supported | Provider-specific |
+| Delta sync with SHA-256 audit | Yes | No | Varies; often no hash audit |
+| Interrupted transfer recovery | HTTP range resume | Limited | Usually supported |
+| Media sources and playlists | Universal media streamer | One page at a time | Not supported |
+| Localized dashboard | 8 languages, RTL/LTR | Browser UI only | Client-dependent |
+
+## Architecture Workflow / مخطط سير العمل
+
+```mermaid
+flowchart LR
+    A[SharePoint / OneDrive / Google Drive] --> B[Provider adapters]
+    C[Media URLs] --> D[yt-dlp streamer]
+    B --> E[Async streaming engine]
+    D --> E
+    E --> F[Local files or cloud destination]
+    F --> G[SHA-256 verification and delta sync]
+    E --> H[8-language web dashboard]
+```
+
+---
+
 # OmniSync-Downloader (OSDD)
 
 <div align="center">
